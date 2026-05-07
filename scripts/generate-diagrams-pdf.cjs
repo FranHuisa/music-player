@@ -25,7 +25,7 @@ const imagePaths = blocks.map((code, i) => {
 
   const r = spawnSync(
     'npx',
-    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', '900'],
+    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', '600'],
     { shell: true, encoding: 'utf8', timeout: 60000 }
   );
 
@@ -53,8 +53,16 @@ for (let i = 0; i < blocks.length; i++) {
 const processedMd = path.join(tempDir, 'DIAGRAMAS_FLUJO.md');
 fs.writeFileSync(processedMd, final);
 
+const cssFile = path.join(tempDir, 'diagrams.css');
+fs.writeFileSync(cssFile, `
+  body { font-family: sans-serif; }
+  img { max-width: 90%; height: auto; display: block; margin: 0.5rem auto; }
+  h2 { page-break-before: auto; margin-top: 1.5rem; }
+  hr { margin: 1rem 0; }
+`);
+
 console.log('Generando PDF...');
-const pdf = spawnSync('npx', ['md-to-pdf', processedMd], {
+const pdf = spawnSync('npx', ['md-to-pdf', processedMd, '--stylesheet', cssFile], {
   shell: true, encoding: 'utf8', timeout: 60000, stdio: 'inherit',
 });
 
