@@ -23,9 +23,13 @@ const imagePaths = blocks.map((code, i) => {
   const pngFile = path.join(tempDir, `d${i}.png`);
   fs.writeFileSync(mmdFile, code);
 
+  // LR/RL diagrams are horizontal — need wider canvas
+  const isHorizontal = /^\s*(graph|flowchart)\s+(LR|RL)\b/m.test(code);
+  const width = isHorizontal ? '1100' : '620';
+
   const r = spawnSync(
     'npx',
-    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', '600'],
+    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', width],
     { shell: true, encoding: 'utf8', timeout: 60000 }
   );
 
@@ -56,9 +60,10 @@ fs.writeFileSync(processedMd, final);
 const cssFile = path.join(tempDir, 'diagrams.css');
 fs.writeFileSync(cssFile, `
   body { font-family: sans-serif; }
-  img { max-width: 90%; height: auto; display: block; margin: 0.5rem auto; }
-  h2 { page-break-before: auto; margin-top: 1.5rem; }
-  hr { margin: 1rem 0; }
+  img { max-width: 92%; height: auto; display: block; margin: 0.5rem auto; break-inside: avoid; page-break-inside: avoid; }
+  h2 { margin-top: 1.5rem; break-after: avoid; page-break-after: avoid; }
+  h2 + p { break-before: avoid; page-break-before: avoid; }
+  hr { margin: 0.75rem 0; }
 `);
 
 console.log('Generando PDF...');
