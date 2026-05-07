@@ -18,36 +18,72 @@ const placeholder = content.replace(/```mermaid\n([\s\S]*?)```/g, (_, code) => {
 
 console.log(`Encontrados ${blocks.length} diagramas Mermaid. Convirtiendo...`);
 
+const MYSQL_PNG = path.resolve(__dirname, '../docs/MemoriaTecnica/diagrama5pngMYSQL.png');
+const SQL_FILE = path.resolve(__dirname, '../docs/MemoriaTecnica/diagrama5_components.sql');
+
 const imagePaths = blocks.map((code, i) => {
   const mmdFile = path.join(tempDir, `d${i}.mmd`);
-  const pngFile = path.join(tempDir, `d${i}.png`);
+  const svgFile = path.join(tempDir, `d${i}.svg`);
   fs.writeFileSync(mmdFile, code);
-
-  // LR/RL diagrams are horizontal — need wider canvas
-  const isHorizontal = /^\s*(graph|flowchart)\s+(LR|RL)\b/m.test(code);
-  const width = isHorizontal ? '1100' : '620';
 
   const r = spawnSync(
     'npx',
-    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', width],
+    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', svgFile, '-b', 'white', '-t', 'default', '-w', '500'],
     { shell: true, encoding: 'utf8', timeout: 60000 }
   );
 
   if (r.status !== 0) {
     console.error(`  ✗ Diagrama ${i + 1} falló:`, r.stderr?.slice(0, 200));
+    if (i === 4) { console.log('  ✓ Diagrama 5 → usando solo PNG de MySQL Workbench'); return { type: 'mysql_only' }; }
     return null;
   }
+
+  if (i === 4) {
+    console.log(`  ✓ Diagrama 5 → SVG Mermaid + PNG MySQL Workbench`);
+    return { type: 'mysql_plus_mermaid', svgPath: svgFile };
+  }
   console.log(`  ✓ Diagrama ${i + 1} generado`);
-  return pngFile;
+  return { type: 'svg', path: svgFile };
 });
 
-let final = placeholder;
+// Add mermaid.live note at top
+const liveNote = `> 💡 Edita o prueba cualquier diagrama en **[mermaid.live](https://mermaid.live)** — pega el código Mermaid del bloque correspondiente.\n\n`;
+let final = liveNote + placeholder;
+
+const sqlContent = fs.existsSync(SQL_FILE) ? fs.readFileSync(SQL_FILE, 'utf8') : '';
+
 for (let i = 0; i < blocks.length; i++) {
-  const img = imagePaths[i];
+  const entry = imagePaths[i];
   let replacement;
-  if (img && fs.existsSync(img)) {
-    const b64 = fs.readFileSync(img).toString('base64');
-    replacement = `\n\n![Diagrama ${i + 1}](data:image/png;base64,${b64})\n\n`;
+
+  if (i === 4) {
+    // Diagram 5: Mermaid code + Mermaid SVG (if rendered) + MySQL PNG + SQL script
+    let d5 = `\n\n`;
+    // Mermaid code block + SVG render
+    const codeBlock5 = `\`\`\`\n${blocks[i]}\n\`\`\`\n`;
+    if (entry && entry.type === 'mysql_plus_mermaid' && fs.existsSync(entry.svgPath)) {
+      const b64svg = fs.readFileSync(entry.svgPath).toString('base64');
+      const svgImg = `<img src="data:image/svg+xml;base64,${b64svg}" style="width:60%;height:auto;display:block;margin:0.4rem auto;">`;
+      d5 += `${codeBlock5}\n${svgImg}\n\n`;
+    } else {
+      d5 += `${codeBlock5}\n`;
+    }
+    // MySQL Workbench PNG
+    if (fs.existsSync(MYSQL_PNG)) {
+      const b64png = fs.readFileSync(MYSQL_PNG).toString('base64');
+      const pngImg = `<img src="data:image/png;base64,${b64png}" style="width:90%;height:auto;display:block;margin:0.5rem auto;">`;
+      d5 += `**Diagrama MySQL Workbench (Reverse Engineer):**\n\n${pngImg}\n\n`;
+    }
+    // SQL script
+    if (sqlContent) {
+      d5 += `**Script MySQL** — ejecutar en MySQL Workbench → Database > Reverse Engineer:\n\n\`\`\`sql\n${sqlContent}\n\`\`\`\n`;
+    }
+    replacement = d5 + `\n`;
+  } else if (entry && entry.type === 'svg' && fs.existsSync(entry.path)) {
+    const b64 = fs.readFileSync(entry.path).toString('base64');
+    const codeBlock = `\`\`\`\n${blocks[i]}\n\`\`\`\n`;
+    const img = `<img src="data:image/svg+xml;base64,${b64}" style="width:60%;height:auto;display:block;margin:0.4rem auto;">`;
+    replacement = `\n\n${codeBlock}\n${img}\n\n`;
   } else {
     replacement = `\n\n*(Error al renderizar diagrama ${i + 1})*\n\n`;
   }
@@ -59,11 +95,11 @@ fs.writeFileSync(processedMd, final);
 
 const cssFile = path.join(tempDir, 'diagrams.css');
 fs.writeFileSync(cssFile, `
-  body { font-family: sans-serif; }
-  img { max-width: 92%; height: auto; display: block; margin: 0.5rem auto; break-inside: avoid; page-break-inside: avoid; }
-  h2 { margin-top: 1.5rem; break-after: avoid; page-break-after: avoid; }
-  h2 + p { break-before: avoid; page-break-before: avoid; }
-  hr { margin: 0.75rem 0; }
+  body { font-family: sans-serif; font-size: 13px; }
+  h2 { margin-top: 1.2rem; margin-bottom: 0.4rem; break-after: avoid !important; page-break-after: avoid !important; }
+  h2 + p, h2 + div { break-before: avoid !important; page-break-before: avoid !important; }
+  hr { margin: 0.6rem 0; }
+  img { break-inside: avoid; page-break-inside: avoid; }
 `);
 
 console.log('Generando PDF...');

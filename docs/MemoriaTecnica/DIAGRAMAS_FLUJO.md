@@ -165,6 +165,12 @@ graph TD
     SIDE --> ACCOUNT
     H --> ACCOUNT
     AUTH --> INTERCEPTORS
+
+    linkStyle 0 stroke:#4285f4,stroke-width:2px
+    linkStyle 1,2,3 stroke:#34a853,stroke-width:2px
+    linkStyle 4,5,6,7 stroke:#fbbc04,stroke-width:2px
+    linkStyle 8,9,10,11,12,13,14 stroke:#9c27b0,stroke-width:2px
+    linkStyle 15,16,17,18,19 stroke:#ea4335,stroke-width:2px
 ```
 
 ---
