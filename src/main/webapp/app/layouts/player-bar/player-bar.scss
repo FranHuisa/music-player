@@ -239,6 +239,108 @@ $border: rgba(255, 255, 255, 0.1);
   flex: unset;
 }
 
+.lyrics-panel {
+  position: fixed;
+  bottom: $player-height;
+  right: 0;
+  width: 360px;
+  max-height: 420px;
+  background-color: #1e293b;
+  border: 1px solid $border;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 1039;
+  box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.5);
+
+  .lyrics-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $border;
+
+    .lyrics-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: $text-primary;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+  }
+
+  .lyrics-close-btn {
+    background: none;
+    border: none;
+    color: $text-secondary;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0.25rem;
+    display: flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: color 0.15s;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
+
+  .lyrics-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+    }
+  }
+
+  .lyrics-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 2rem 0;
+    color: $text-secondary;
+    font-size: 0.8rem;
+  }
+
+  .lyrics-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    border-top-color: $accent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .lyrics-text {
+    font-family: inherit;
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: $text-secondary;
+    white-space: pre-wrap;
+    margin: 0;
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @media screen and (max-width: 768px) {
   .player-bar {
     grid-template-columns: 1fr auto;

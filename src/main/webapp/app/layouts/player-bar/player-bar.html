@@ -1,3 +1,24 @@
+@if (showLyrics()) {
+  <div class="lyrics-panel">
+    <div class="lyrics-panel-header">
+      <span class="lyrics-title">Letra</span>
+      <button class="lyrics-close-btn" (click)="toggleLyrics()" aria-label="Cerrar letras">
+        <fa-icon icon="times" />
+      </button>
+    </div>
+    <div class="lyrics-body">
+      @if (cargandoLetras()) {
+        <div class="lyrics-loading">
+          <div class="lyrics-spinner"></div>
+          <span>Buscando letra...</span>
+        </div>
+      } @else {
+        <pre class="lyrics-text">{{ letras() }}</pre>
+      }
+    </div>
+  </div>
+}
+
 <div class="player-bar">
   <!-- Left: Now Playing -->
   <div class="player-now-playing">
@@ -5,8 +26,8 @@
       <fa-icon icon="music" class="player-cover-placeholder" />
     </div>
     <div class="player-song-info">
-      <span class="player-song-name">No hay canción</span>
-      <span class="player-artist-name">Selecciona una canción</span>
+      <span class="player-song-name">{{ cancionActual() }}</span>
+      <span class="player-artist-name">{{ artistaActual() }}</span>
     </div>
     <button class="player-icon-btn like-btn" title="Me gusta" aria-label="Me gusta">
       <fa-icon icon="heart" />
@@ -69,6 +90,15 @@
 
   <!-- Right: Volume & extra -->
   <div class="player-right">
+    <button
+      class="player-icon-btn secondary-btn"
+      [class.active]="showLyrics()"
+      (click)="toggleLyrics()"
+      title="Ver letra"
+      aria-label="Ver letra"
+    >
+      <fa-icon icon="microphone" />
+    </button>
     <button class="player-icon-btn secondary-btn" (click)="toggleMute()" title="Silenciar" aria-label="Silenciar">
       <fa-icon [icon]="volumeIcon()" />
     </button>

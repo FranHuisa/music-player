@@ -54,6 +54,7 @@ import {
   faVolumeMute,
   faVolumeUp,
   faWrench,
+  faMicrophone,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -113,5 +114,6 @@ export const fontAwesomeIcons = [
   faVolumeMute,
   faVolumeUp,
   faWrench,
+  faMicrophone,
   // jhipster-needle-add-icon-import
 ];
