@@ -40,9 +40,13 @@ const imagePaths = blocks.map((code, i) => {
 let final = placeholder;
 for (let i = 0; i < blocks.length; i++) {
   const img = imagePaths[i];
-  const replacement = img
-    ? `\n\n![Diagrama ${i + 1}](${img.replace(/\\/g, '/')})\n\n`
-    : `\n\n*(Error al renderizar diagrama ${i + 1})*\n\n`;
+  let replacement;
+  if (img && fs.existsSync(img)) {
+    const b64 = fs.readFileSync(img).toString('base64');
+    replacement = `\n\n![Diagrama ${i + 1}](data:image/png;base64,${b64})\n\n`;
+  } else {
+    replacement = `\n\n*(Error al renderizar diagrama ${i + 1})*\n\n`;
+  }
   final = final.replace(`__MERMAID_${i}__`, replacement);
 }
 
