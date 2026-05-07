@@ -1,9 +1,11 @@
 import { HttpHeaders } from '@angular/common/http';
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
+import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,6 +15,7 @@ import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigati
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -24,12 +27,17 @@ import { AlbumService } from '../service/album.service';
 @Component({
   selector: 'jhi-album',
   templateUrl: './album.html',
+  styleUrls: ['./album.scss'],
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
+    HasAnyAuthorityDirective,
     SortDirective,
     SortByDirective,
     TranslateDirective,
@@ -48,6 +56,15 @@ export class Album implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
+  readonly upcomingOnly = signal(false);
+  readonly visibleAlbums = computed(() => {
+    const albums = this.albums();
+    if (!this.upcomingOnly()) {
+      return albums;
+    }
+    const today = dayjs().startOf('day');
+    return albums.filter(album => album.releaseDate && album.releaseDate.isAfter(today));
+  });
 
   readonly router = inject(Router);
   protected readonly albumService = inject(AlbumService);
@@ -83,7 +100,6 @@ export class Album implements OnInit {
   delete(album: IAlbum): void {
     const modalRef = this.modalService.open(AlbumDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.album = album;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -106,8 +122,13 @@ export class Album implements OnInit {
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
+    const upcoming = params.get('upcoming') === 'true';
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
+    this.upcomingOnly.set(upcoming);
+    if (upcoming) {
+      this.page.set(1);
+    }
   }
 
   protected fillComponentAttributesFromResponseBody(data: IAlbum[]): IAlbum[] {
@@ -120,9 +141,10 @@ export class Album implements OnInit {
 
   protected queryBackend(): void {
     const pageToLoad: number = this.page();
+    const upcomingOnly = this.upcomingOnly();
     const queryObject: any = {
-      page: pageToLoad - 1,
-      size: this.itemsPerPage(),
+      page: upcomingOnly ? 0 : pageToLoad - 1,
+      size: upcomingOnly ? 200 : this.itemsPerPage(),
       sort: this.sortService.buildSortParam(this.sortState()),
     };
     this.albumService.albumsParams.set(queryObject);
@@ -139,5 +161,9 @@ export class Album implements OnInit {
       relativeTo: this.activatedRoute,
       queryParams: queryParamsObj,
     });
+  }
+
+  playAlbum(album: IAlbum): void {
+    this.router.navigate(['/album', album.id, 'view']);
   }
 }

@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node -e \"const fa = require\\('@fortawesome/free-solid-svg-icons'\\); const icons = Object.keys\\(fa\\).filter\\(k => ['faPlay','faPause','faStepBackward','faStepForward','faBackwardStep','faForwardStep','faRandom','faShuffle','faRedo','faRotateRight','faVolumeUp','faVolumeHigh','faVolumeDown','faVolumeLow','faVolumeMute','faVolumeXmark','faFire','faGuitar'].includes\\(k\\)\\); console.log\\(JSON.stringify\\(icons, null, 2\\)\\);\")",
+      "Bash(xargs grep *)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

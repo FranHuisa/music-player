@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { Authority } from 'app/shared/jhipster/constants';
 
 import PlayResolve from './route/play-routing-resolve.service';
 
@@ -28,6 +29,9 @@ const playRoute: Routes = [
     resolve: {
       play: PlayResolve,
     },
+    data: {
+      authorities: [Authority.ADMIN],
+    },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -35,6 +39,9 @@ const playRoute: Routes = [
     loadComponent: () => import('./update/play-update').then(m => m.PlayUpdate),
     resolve: {
       play: PlayResolve,
+    },
+    data: {
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },

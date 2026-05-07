@@ -1,0 +1,98 @@
+@let acc = account();
+
+<div class="dashboard-user-page">
+  <header class="user-hero">
+    <div class="user-hero-greeting">
+      <span class="user-hero-eyebrow">Tu música, tu momento</span>
+      <h1>{{ greeting }}{{ acc?.firstName ? ', ' + acc!.firstName : '' }}</h1>
+      <p>Sigue donde lo dejaste o descubre algo nuevo en Streamify.</p>
+    </div>
+    <div class="user-hero-search">
+      <fa-icon icon="search" class="user-hero-search-icon" />
+      <input type="text" placeholder="Buscar canciones, artistas, álbumes..." class="user-hero-search-input" />
+    </div>
+  </header>
+
+  <section class="user-quick-grid">
+    <a routerLink="/like" class="user-quick-card user-quick-liked">
+      <div class="user-quick-icon"><fa-icon icon="heart" /></div>
+      <span>Canciones que te gustan</span>
+    </a>
+    <a routerLink="/playlist" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #1db954, #189b45)"><fa-icon icon="list" /></div>
+      <span>Tus playlists</span>
+    </a>
+    <a routerLink="/play" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #f59b23, #e7611a)"><fa-icon icon="chart-bar" /></div>
+      <span>Reproducidas recientemente</span>
+    </a>
+    <a routerLink="/song" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #450af5, #1db954)"><fa-icon icon="music" /></div>
+      <span>Toda la música</span>
+    </a>
+    <a routerLink="/artist" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #e7611a, #ffa726)"><fa-icon icon="guitar" /></div>
+      <span>Artistas</span>
+    </a>
+    <a routerLink="/genre" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #8d67ab, #6c4a8a)"><fa-icon icon="fire" /></div>
+      <span>Géneros</span>
+    </a>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head">
+      <h2>Hecho para ti</h2>
+      <a routerLink="/song" class="user-section-link">Ver todo</a>
+    </div>
+    <div class="user-feature-grid">
+      @for (item of featuredMixes; track item.title) {
+        <a [routerLink]="item.route" class="user-feature-card" [style.background]="item.gradient">
+          <div class="user-feature-content">
+            <span class="user-feature-eyebrow">{{ item.eyebrow }}</span>
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.subtitle }}</p>
+          </div>
+          <button class="user-feature-play" type="button" aria-label="Reproducir">
+            <fa-icon icon="play" />
+          </button>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head">
+      <h2>Explora por estilo</h2>
+      <a routerLink="/genre" class="user-section-link">Más géneros</a>
+    </div>
+    <div class="user-style-row">
+      @for (style of styles; track style.label; let idx = $index) {
+        <a [routerLink]="['/genre']" class="user-style-chip" [class]="'genre-card-color-' + idx">
+          <fa-icon [icon]="style.icon" />
+          <span>{{ style.label }}</span>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="user-section">
+    <div class="user-section-head">
+      <h2>Atajos</h2>
+    </div>
+    <div class="user-shortcut-row">
+      <a routerLink="/account/settings" class="user-shortcut">
+        <fa-icon icon="user" class="user-shortcut-icon" />
+        <span>Tu perfil</span>
+      </a>
+      <a routerLink="/account/password" class="user-shortcut">
+        <fa-icon icon="lock" class="user-shortcut-icon" />
+        <span>Cambiar contraseña</span>
+      </a>
+      <a routerLink="/playlist/new" class="user-shortcut">
+        <fa-icon icon="plus" class="user-shortcut-icon" />
+        <span>Crear playlist</span>
+      </a>
+    </div>
+  </section>
+</div>

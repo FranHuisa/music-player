@@ -1,0 +1,139 @@
+<div class="admin-dash">
+  <!-- Header -->
+  <div class="adm-header">
+    <div class="adm-header-text">
+      <h1 class="adm-title">Panel de Administración</h1>
+      <p class="adm-subtitle">Control total de la plataforma</p>
+    </div>
+    <div class="adm-header-badge">
+      <fa-icon icon="users-cog" />
+      Admin
+    </div>
+  </div>
+
+  <!-- Content grid -->
+  <div class="adm-grid">
+    <!-- Users panel -->
+    <div class="adm-panel adm-panel--wide">
+      <div class="adm-panel-head">
+        <h2 class="adm-panel-title">
+          <fa-icon icon="users" class="adm-panel-icon" />
+          Gestión de usuarios
+        </h2>
+        <a routerLink="/user-management" class="adm-panel-link">Ver todos</a>
+      </div>
+      <div class="adm-panel-body">
+        <div class="adm-quick-actions">
+          <a routerLink="/user-management" class="adm-action-item">
+            <div class="adm-action-icon">
+              <fa-icon icon="users" />
+            </div>
+            <div class="adm-action-text">
+              <span class="adm-action-label">Gestionar usuarios</span>
+              <span class="adm-action-desc">Ver, editar y eliminar cuentas</span>
+            </div>
+          </a>
+          <a routerLink="/authority" class="adm-action-item">
+            <div class="adm-action-icon">
+              <fa-icon icon="lock" />
+            </div>
+            <div class="adm-action-text">
+              <span class="adm-action-label">Roles y permisos</span>
+              <span class="adm-action-desc">Administrar autoridades del sistema</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Catalogue panel -->
+    <div class="adm-panel">
+      <div class="adm-panel-head">
+        <h2 class="adm-panel-title">
+          <fa-icon icon="music" class="adm-panel-icon" />
+          Catálogo musical
+        </h2>
+      </div>
+      <div class="adm-panel-body">
+        <div class="adm-nav-list">
+          <a routerLink="/song" class="adm-nav-item">
+            <fa-icon icon="music" />
+            <span>Canciones</span>
+          </a>
+          <a routerLink="/album" class="adm-nav-item">
+            <fa-icon icon="compact-disc" />
+            <span>Álbumes</span>
+          </a>
+          <a routerLink="/artist" class="adm-nav-item">
+            <fa-icon icon="guitar" />
+            <span>Artistas</span>
+          </a>
+          <a routerLink="/genre" class="adm-nav-item">
+            <fa-icon icon="fire" />
+            <span>Géneros</span>
+          </a>
+          <a routerLink="/playlist" class="adm-nav-item">
+            <fa-icon icon="list" />
+            <span>Playlists</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity panel -->
+    <div class="adm-panel adm-panel--accent">
+      <div class="adm-panel-head">
+        <h2 class="adm-panel-title">
+          <fa-icon icon="play" class="adm-panel-icon" />
+          Actividad reciente
+        </h2>
+      </div>
+      <div class="adm-panel-body">
+        <div class="adm-nav-list">
+          <a routerLink="/play" class="adm-nav-item">
+            <fa-icon icon="play" />
+            <span>Historial de reproducciones</span>
+          </a>
+          <a routerLink="/like" class="adm-nav-item">
+            <fa-icon icon="heart" />
+            <span>Likes de usuarios</span>
+          </a>
+          <a routerLink="/playlist-song" class="adm-nav-item">
+            <fa-icon icon="list" />
+            <span>Canciones en playlists</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- System panel -->
+    <div class="adm-panel">
+      <div class="adm-panel-head">
+        <h2 class="adm-panel-title">
+          <fa-icon icon="cogs" class="adm-panel-icon" />
+          Sistema
+        </h2>
+      </div>
+      <div class="adm-panel-body">
+        <div class="adm-nav-list">
+          <a routerLink="/admin/metrics" class="adm-nav-item">
+            <fa-icon icon="tachometer-alt" />
+            <span>Métricas</span>
+          </a>
+          <a routerLink="/admin/health" class="adm-nav-item">
+            <fa-icon icon="heart" />
+            <span>Salud del sistema</span>
+          </a>
+          <a routerLink="/admin/configuration" class="adm-nav-item">
+            <fa-icon icon="wrench" />
+            <span>Configuración</span>
+          </a>
+          <a routerLink="/admin/logs" class="adm-nav-item">
+            <fa-icon icon="tasks" />
+            <span>Logs</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

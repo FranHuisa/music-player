@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -13,6 +13,7 @@ import { StateStorageService } from 'app/core/auth/state-storage.service';
 import { ProfileService } from 'app/layouts/profiles/profile.service';
 import { LoginService } from 'app/login/login.service';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
+import { Authority } from 'app/shared/jhipster/constants';
 import { TranslateDirective } from 'app/shared/language';
 import FindLanguageFromKeyPipe from 'app/shared/language/find-language-from-key.pipe';
 
@@ -20,6 +21,7 @@ import ActiveMenuDirective from './active-menu.directive';
 
 @Component({
   selector: 'jhi-navbar',
+  standalone: true,
   templateUrl: './navbar.html',
   styleUrl: './navbar.scss',
   imports: [
@@ -37,13 +39,37 @@ import ActiveMenuDirective from './active-menu.directive';
     TranslateModule,
   ],
 })
-export default class Navbar implements OnInit {
+export class Navbar implements OnInit {
   readonly inProduction = signal(true);
   readonly isNavbarCollapsed = signal(true);
   readonly languages = LANGUAGES;
   readonly openAPIEnabled = signal(false);
   readonly version: string;
+
   readonly account = inject(AccountService).account;
+
+  readonly dashboardRoute = computed<string | null>(() => {
+    const acc = this.account();
+    if (!acc) {
+      return null;
+    }
+
+    const authorities = acc.authorities ?? [];
+
+    if (authorities.includes(Authority.ADMIN)) {
+      return '/dashboard-admin';
+    }
+
+    if (authorities.includes(Authority.EDITOR) || authorities.includes(Authority.ARTIST)) {
+      return '/dashboard-editor';
+    }
+
+    if (authorities.includes(Authority.USER)) {
+      return '/dashboard-user';
+    }
+
+    return null;
+  });
 
   private readonly loginService = inject(LoginService);
   private readonly translateService = inject(TranslateService);

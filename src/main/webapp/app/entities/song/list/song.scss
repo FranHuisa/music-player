@@ -1,0 +1,426 @@
+// ============================================================
+// Song List — Spotify-style track list
+// ============================================================
+
+$accent: #1db954;
+$text-primary: #ffffff;
+$text-secondary: #b3b3b3;
+$text-subdued: #6a6a6a;
+$bg-hover: rgba(255, 255, 255, 0.07);
+$transition: 0.15s ease;
+
+$grid: 48px 1fr 1fr 120px 100px 120px 48px;
+
+.song-list-page {
+  padding-bottom: 2rem;
+}
+
+.song-list-header {
+  padding: 1.5rem 0 2rem;
+}
+
+.song-list-hero {
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+
+  .song-list-hero-icon {
+    width: 160px;
+    height: 160px;
+    min-width: 160px;
+    background: linear-gradient(135deg, #450af5, #c4efd9);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+  }
+
+  .song-list-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+
+    .song-list-hero-type {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: $text-primary;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 3rem;
+      font-weight: 900;
+      color: $text-primary;
+      letter-spacing: -0.02em;
+      margin: 0.25rem 0;
+    }
+
+    .song-list-hero-count {
+      font-size: 0.9rem;
+      color: $text-secondary;
+    }
+  }
+}
+
+.song-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.5rem 0;
+
+  .btn-play-all {
+    width: 56px;
+    height: 56px;
+    background-color: $accent;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 1.1rem;
+    padding-left: 3px;
+    cursor: pointer;
+    transition: all $transition;
+    box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);
+
+    &:hover {
+      transform: scale(1.06);
+      background-color: #7dd3fc;
+    }
+  }
+
+  .btn-icon-action {
+    background: none;
+    border: none;
+    color: $text-subdued;
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color $transition;
+    text-decoration: none;
+
+    &:hover {
+      color: $text-primary;
+    }
+
+    &.btn-add {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+.track-list {
+  width: 100%;
+}
+
+.track-list-header {
+  display: grid;
+  grid-template-columns: $grid;
+  align-items: center;
+  padding: 0 1rem;
+  margin-bottom: 0.5rem;
+  color: $text-subdued;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  .sort-icon {
+    margin-left: 4px;
+    font-size: 0.6rem;
+    opacity: 0.6;
+  }
+
+  .col-num {
+    text-align: center;
+  }
+  .col-duration {
+    text-align: right;
+    justify-self: end;
+  }
+}
+
+.track-list-divider {
+  height: 1px;
+  background-color: rgba(255, 255, 255, 0.08);
+  margin-bottom: 0.5rem;
+}
+
+.track-row {
+  display: grid;
+  grid-template-columns: $grid;
+  align-items: center;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color $transition;
+
+  &:hover {
+    background-color: $bg-hover;
+
+    .track-num {
+      display: none;
+    }
+    .track-play-btn {
+      display: flex;
+    }
+    .track-more-btn {
+      opacity: 1;
+    }
+    .track-title {
+      color: $accent;
+    }
+  }
+}
+
+.col-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+
+  .track-num {
+    font-size: 0.95rem;
+    color: $text-subdued;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .track-play-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: $text-primary;
+    font-size: 0.85rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+
+    &:hover {
+      color: $accent;
+    }
+  }
+}
+
+.col-title {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.track-cover {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  background: linear-gradient(135deg, #282828, #404040);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .track-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .track-cover-placeholder {
+    color: $text-subdued;
+    font-size: 1rem;
+  }
+
+  .track-cover-play {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border: none;
+    color: #fff;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+}
+
+.track-row:hover .track-cover-play {
+  display: flex;
+}
+
+.track-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+
+  .track-title {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: $text-primary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color $transition;
+  }
+
+  .track-artist {
+    font-size: 0.8rem;
+    color: $text-secondary;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 0.15rem;
+
+    &:hover {
+      color: $text-primary;
+    }
+  }
+}
+
+.col-album,
+.col-genre,
+.col-date {
+  font-size: 0.875rem;
+  color: $text-secondary;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track-link {
+  color: $text-secondary;
+  text-decoration: none;
+
+  &:hover {
+    color: $text-primary;
+    text-decoration: underline;
+  }
+}
+
+.track-subdued {
+  color: $text-subdued;
+}
+
+.col-duration {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+
+  .track-like-btn {
+    background: none;
+    border: none;
+    color: $text-subdued;
+    font-size: 0.85rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: all $transition;
+    padding: 0;
+
+    &:hover {
+      color: $accent;
+    }
+  }
+
+  .track-duration {
+    font-size: 0.875rem;
+    color: $text-secondary;
+    font-variant-numeric: tabular-nums;
+    min-width: 3rem;
+    text-align: right;
+  }
+}
+
+.track-row:hover .track-like-btn {
+  opacity: 1;
+}
+
+.col-actions {
+  display: flex;
+  justify-content: center;
+
+  .track-more-btn {
+    background: none;
+    border: none;
+    color: $text-subdued;
+    cursor: pointer;
+    opacity: 0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all $transition;
+    line-height: 1;
+
+    &:hover {
+      color: $text-primary;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .dots {
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+  }
+}
+
+.text-danger {
+  color: #e74c3c !important;
+}
+
+.song-list-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  gap: 1rem;
+  color: $text-secondary;
+
+  .song-list-empty-icon {
+    font-size: 3rem;
+    color: $text-subdued;
+  }
+
+  p {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+.song-list-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  color: $text-secondary;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 900px) {
+  $grid-sm: 40px 1fr 120px 48px;
+
+  .track-list-header,
+  .track-row {
+    grid-template-columns: $grid-sm;
+  }
+
+  .col-album,
+  .col-genre,
+  .col-date {
+    display: none;
+  }
+}

@@ -1,143 +1,83 @@
 <div>
-  <h2 id="page-heading" data-cy="ArtistHeading">
-    <span jhiTranslate="musicPlayerApp.artist.home.title">Artists</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.artist.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-artist"
-        [routerLink]="['/artist/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.artist.home.createLabel">Crear nuevo Artist</span>
-      </button>
-    </div>
-  </h2>
-
   <jhi-alert-error />
-
   <jhi-alert />
 
+  <div class="entity-list-hero">
+    <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #e7611a, #f59b23)">
+      <fa-icon icon="guitar" />
+    </div>
+    <div class="entity-list-hero-info">
+      <span class="entity-list-hero-type">Música</span>
+      <h1>Artistas</h1>
+      <span class="entity-list-hero-count">{{ artists().length }} artistas</span>
+    </div>
+  </div>
+  <div class="entity-list-actions">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+    </button>
+    <a class="btn-icon-action" routerLink="/artist/new" title="Nuevo artista" aria-label="Nuevo artista">
+      <fa-icon icon="plus" />
+    </a>
+  </div>
+
   @if (artists().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.artist.home.notFound">Ningún Artists encontrado</span>
+    <div class="entity-list-empty">
+      <fa-icon icon="guitar" class="entity-list-empty-icon" />
+      <p>No hay artistas disponibles</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+    <div class="artist-grid" id="entities">
+      @for (artist of artists(); track trackId(artist)) {
+        <div class="artist-card" ngbDropdown data-cy="entityTable">
+          <div class="artist-avatar">
+            <fa-icon icon="user" />
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="name">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.name">Name</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="bio">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.bio">Bio</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="image">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.image">Image</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="country">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.country">Country</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="verified">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.verified">Verified</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.artist.createdAt">Created At</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (artist of artists(); track trackId(artist)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/artist', artist.id, 'view']">{{ artist.id }}</a>
-              </td>
-              <td>{{ artist.name }}</td>
-              <td>{{ artist.bio }}</td>
-              <td>{{ artist.image }}</td>
-              <td>{{ artist.country }}</td>
-              <td>{{ artist.verified }}</td>
-              <td>{{ artist.createdAt | formatMediumDatetime }}</td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/artist', artist.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
-                  </a>
-
-                  <a [routerLink]="['/artist', artist.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
-                  </a>
-
-                  <button type="submit" (click)="delete(artist)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
+          <a [routerLink]="['/artist', artist.id, 'view']" class="artist-name" style="text-decoration: none">
+            {{ artist.name }}
+          </a>
+          @if (artist.country) {
+            <span class="artist-country">{{ artist.country }}</span>
           }
-        </tbody>
-      </table>
-    </div>
-  }
-  @if (artists().length > 0) {
-    <div>
-      <div class="d-flex justify-content-center">
-        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
-      </div>
+          @if (artist.verified) {
+            <div class="artist-verified">
+              <fa-icon icon="check" />
+              <span>Verificado</span>
+            </div>
+          }
 
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="totalItems()"
-          [page]="page()"
-          [pageSize]="itemsPerPage()"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="navigateToPage($event)"
-        />
-      </div>
+          <button class="artist-card-more" ngbDropdownToggle [id]="'artist-actions-' + artist.id" aria-label="Más opciones">•••</button>
+          <ul ngbDropdownMenu [attr.aria-labelledby]="'artist-actions-' + artist.id">
+            <li>
+              <a class="dropdown-item" [routerLink]="['/artist', artist.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver </a>
+            </li>
+            <li>
+              <a class="dropdown-item" [routerLink]="['/artist', artist.id, 'edit']">
+                <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
+              </a>
+            </li>
+            <li>
+              <button class="dropdown-item text-danger" (click)="delete(artist)">
+                <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
+              </button>
+            </li>
+          </ul>
+        </div>
+      }
+    </div>
+
+    <div class="entity-list-pagination">
+      <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      <ngb-pagination
+        [collectionSize]="totalItems()"
+        [page]="page()"
+        [pageSize]="itemsPerPage()"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      />
     </div>
   }
 </div>

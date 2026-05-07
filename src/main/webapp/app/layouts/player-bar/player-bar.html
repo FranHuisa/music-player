@@ -1,0 +1,88 @@
+<div class="player-bar">
+  <!-- Left: Now Playing -->
+  <div class="player-now-playing">
+    <div class="player-cover">
+      <fa-icon icon="music" class="player-cover-placeholder" />
+    </div>
+    <div class="player-song-info">
+      <span class="player-song-name">No hay canción</span>
+      <span class="player-artist-name">Selecciona una canción</span>
+    </div>
+    <button class="player-icon-btn like-btn" title="Me gusta" aria-label="Me gusta">
+      <fa-icon icon="heart" />
+    </button>
+  </div>
+
+  <!-- Center: Controls -->
+  <div class="player-controls">
+    <div class="player-buttons">
+      <button
+        class="player-icon-btn secondary-btn"
+        [class.active]="isShuffle()"
+        (click)="toggleShuffle()"
+        title="Aleatorio"
+        aria-label="Aleatorio"
+      >
+        <fa-icon icon="random" />
+      </button>
+
+      <button class="player-icon-btn secondary-btn" title="Anterior" aria-label="Anterior">
+        <fa-icon icon="step-backward" />
+      </button>
+
+      <button class="player-icon-btn play-pause-btn" (click)="togglePlay()" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
+        <fa-icon [icon]="isPlaying() ? 'pause' : 'play'" />
+      </button>
+
+      <button class="player-icon-btn secondary-btn" title="Siguiente" aria-label="Siguiente">
+        <fa-icon icon="step-forward" />
+      </button>
+
+      <button
+        class="player-icon-btn secondary-btn"
+        [class.active]="isRepeat()"
+        (click)="toggleRepeat()"
+        title="Repetir"
+        aria-label="Repetir"
+      >
+        <fa-icon icon="redo" />
+      </button>
+    </div>
+
+    <div class="player-progress-row">
+      <span class="player-time">0:00</span>
+      <div class="progress-track">
+        <input
+          type="range"
+          class="player-slider progress-slider"
+          min="0"
+          max="100"
+          [value]="progress()"
+          (input)="setProgress($event)"
+          aria-label="Progreso"
+        />
+        <div class="progress-fill" [style.width.%]="progress()"></div>
+      </div>
+      <span class="player-time">0:00</span>
+    </div>
+  </div>
+
+  <!-- Right: Volume & extra -->
+  <div class="player-right">
+    <button class="player-icon-btn secondary-btn" (click)="toggleMute()" title="Silenciar" aria-label="Silenciar">
+      <fa-icon [icon]="volumeIcon()" />
+    </button>
+    <div class="volume-track">
+      <input
+        type="range"
+        class="player-slider volume-slider"
+        min="0"
+        max="100"
+        [value]="isMuted() ? 0 : volume()"
+        (input)="setVolume($event)"
+        aria-label="Volumen"
+      />
+      <div class="volume-fill" [style.width.%]="isMuted() ? 0 : volume()"></div>
+    </div>
+  </div>
+</div>

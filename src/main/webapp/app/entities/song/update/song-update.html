@@ -1,159 +1,195 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2 id="jhi-song-heading" data-cy="SongCreateUpdateHeading" jhiTranslate="musicPlayerApp.song.home.createOrEditLabel">
-        Crear o editar Song
-      </h2>
-
-      <div>
-        <jhi-alert-error />
-
+<div class="entity-form-page">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="entity-form-card">
+    <header class="entity-form-header" style="--form-accent: #1db954; --form-accent-strong: #450af5">
+      <span class="entity-form-eyebrow">Canciones</span>
+      <h1>
         @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
+          Editar canción
+        } @else {
+          Nueva canción
         }
+      </h1>
+      <p>Completa los datos del tema para publicarlo en Streamify.</p>
+    </header>
 
-        @let titleRef = editForm.get('title')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_title" jhiTranslate="musicPlayerApp.song.title">Title</label>
-          <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
-          @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+    <div class="entity-form-body">
+      <jhi-alert-error />
+
+      @if (editForm.controls.id.value !== null) {
+        <div class="entity-form-section">
+          <h3>Identificador</h3>
+          <div class="entity-form-grid">
             <div>
-              @if (editForm.get('title')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
-              }
-              @if (editForm.get('title')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '150' }"
-                  >Este campo no puede superar más de 150 caracteres.</small
-                >
-              }
+              <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+              <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
             </div>
-          }
+          </div>
         </div>
+      }
 
-        <div class="mb-3">
-          <label class="form-label" for="field_duration" jhiTranslate="musicPlayerApp.song.duration">Duration</label>
-          <input type="number" class="form-control" name="duration" id="field_duration" data-cy="duration" formControlName="duration" />
-        </div>
+      <div class="entity-form-section">
+        <h3>Detalles principales</h3>
+        <p>Nombre, duración y recursos principales de la canción.</p>
+        <div class="entity-form-grid">
+          @let titleRef = editForm.get('title')!;
+          <div>
+            <label class="form-label" for="field_title" jhiTranslate="musicPlayerApp.song.title">Title</label>
+            <input type="text" class="form-control" name="title" id="field_title" data-cy="title" formControlName="title" />
+            @if (titleRef.invalid && (titleRef.dirty || titleRef.touched)) {
+              <div>
+                @if (editForm.get('title')?.errors?.required) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
+                }
+                @if (editForm.get('title')?.errors?.maxlength) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '150' }"
+                    >Este campo no puede superar más de 150 caracteres.</small
+                  >
+                }
+              </div>
+            }
+          </div>
 
-        @let fileUrlRef = editForm.get('fileUrl')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_fileUrl" jhiTranslate="musicPlayerApp.song.fileUrl">File Url</label>
-          <input type="text" class="form-control" name="fileUrl" id="field_fileUrl" data-cy="fileUrl" formControlName="fileUrl" />
-          @if (fileUrlRef.invalid && (fileUrlRef.dirty || fileUrlRef.touched)) {
-            <div>
-              @if (editForm.get('fileUrl')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
-              }
-              @if (editForm.get('fileUrl')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
-                  >Este campo no puede superar más de 255 caracteres.</small
-                >
-              }
-            </div>
-          }
-        </div>
+          <div>
+            <label class="form-label" for="field_duration" jhiTranslate="musicPlayerApp.song.duration">Duration</label>
+            <input type="number" class="form-control" name="duration" id="field_duration" data-cy="duration" formControlName="duration" />
+          </div>
 
-        @let coverImageRef = editForm.get('coverImage')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_coverImage" jhiTranslate="musicPlayerApp.song.coverImage">Cover Image</label>
-          <input
-            type="text"
-            class="form-control"
-            name="coverImage"
-            id="field_coverImage"
-            data-cy="coverImage"
-            formControlName="coverImage"
-          />
-          @if (coverImageRef.invalid && (coverImageRef.dirty || coverImageRef.touched)) {
-            <div>
-              @if (editForm.get('coverImage')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
-                  >Este campo no puede superar más de 255 caracteres.</small
-                >
-              }
-            </div>
-          }
-        </div>
+          @let fileUrlRef = editForm.get('fileUrl')!;
+          <div>
+            <label class="form-label" for="field_fileUrl" jhiTranslate="musicPlayerApp.song.fileUrl">File Url</label>
+            <input type="text" class="form-control" name="fileUrl" id="field_fileUrl" data-cy="fileUrl" formControlName="fileUrl" />
+            @if (fileUrlRef.invalid && (fileUrlRef.dirty || fileUrlRef.touched)) {
+              <div>
+                @if (editForm.get('fileUrl')?.errors?.required) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
+                }
+                @if (editForm.get('fileUrl')?.errors?.maxlength) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                    >Este campo no puede superar más de 255 caracteres.</small
+                  >
+                }
+              </div>
+            }
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_lyrics" jhiTranslate="musicPlayerApp.song.lyrics">Lyrics</label>
-          <textarea class="form-control" name="lyrics" id="field_lyrics" data-cy="lyrics" formControlName="lyrics"></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_releaseDate" jhiTranslate="musicPlayerApp.song.releaseDate">Release Date</label>
-          <div class="input-group">
+          @let coverImageRef = editForm.get('coverImage')!;
+          <div>
+            <label class="form-label" for="field_coverImage" jhiTranslate="musicPlayerApp.song.coverImage">Cover Image</label>
             <input
-              id="field_releaseDate"
-              data-cy="releaseDate"
               type="text"
               class="form-control"
-              name="releaseDate"
-              ngbDatepicker
-              #releaseDateDp="ngbDatepicker"
-              formControlName="releaseDate"
+              name="coverImage"
+              id="field_coverImage"
+              data-cy="coverImage"
+              formControlName="coverImage"
             />
-            <button type="button" class="btn btn-secondary" (click)="releaseDateDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            @if (coverImageRef.invalid && (coverImageRef.dirty || coverImageRef.touched)) {
+              <div>
+                @if (editForm.get('coverImage')?.errors?.maxlength) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                    >Este campo no puede superar más de 255 caracteres.</small
+                  >
+                }
+              </div>
+            }
           </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_createdAt" jhiTranslate="musicPlayerApp.song.createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_album" jhiTranslate="musicPlayerApp.song.album">Album</label>
-          <select class="form-control" id="field_album" data-cy="album" name="album" formControlName="album" [compareWith]="compareAlbum">
-            <option [ngValue]="null"></option>
-            @for (albumOption of albumsSharedCollection(); track $index) {
-              <option [ngValue]="albumOption">{{ albumOption.id }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_genre" jhiTranslate="musicPlayerApp.song.genre">Genre</label>
-          <select class="form-control" id="field_genre" data-cy="genre" name="genre" formControlName="genre" [compareWith]="compareGenre">
-            <option [ngValue]="null"></option>
-            @for (genreOption of genresSharedCollection(); track $index) {
-              <option [ngValue]="genreOption">{{ genreOption.id }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label for="field_artistses" jhiTranslate="musicPlayerApp.song.artists">Artists</label>
-          <select
-            class="form-control"
-            id="field_artistses"
-            data-cy="artists"
-            multiple
-            name="artistses"
-            formControlName="artistses"
-            [compareWith]="compareArtist"
-          >
-            @for (artistOption of artistsSharedCollection(); track $index) {
-              <option [ngValue]="artistOption">{{ artistOption.id }}</option>
-            }
-          </select>
         </div>
       </div>
 
-      <div>
+      <div class="entity-form-section">
+        <h3>Publicación</h3>
+        <p>Controla cuándo estará disponible la canción.</p>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_releaseDate" jhiTranslate="musicPlayerApp.song.releaseDate">Release Date</label>
+            <div class="input-group">
+              <input
+                id="field_releaseDate"
+                data-cy="releaseDate"
+                type="text"
+                class="form-control"
+                name="releaseDate"
+                ngbDatepicker
+                #releaseDateDp="ngbDatepicker"
+                formControlName="releaseDate"
+              />
+              <button type="button" class="btn btn-secondary" (click)="releaseDateDp.toggle()"><fa-icon icon="calendar-alt" /></button>
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label" for="field_createdAt" jhiTranslate="musicPlayerApp.song.createdAt">Created At</label>
+            <div class="d-flex">
+              <input
+                id="field_createdAt"
+                data-cy="createdAt"
+                type="datetime-local"
+                class="form-control"
+                name="createdAt"
+                formControlName="createdAt"
+                placeholder="YYYY-MM-DD HH:mm"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entity-form-section">
+        <h3>Relaciones</h3>
+        <p>Vincula la canción con álbumes, géneros y artistas.</p>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_album" jhiTranslate="musicPlayerApp.song.album">Album</label>
+            <select class="form-control" id="field_album" data-cy="album" name="album" formControlName="album" [compareWith]="compareAlbum">
+              <option [ngValue]="null"></option>
+              @for (albumOption of albumsSharedCollection(); track $index) {
+                <option [ngValue]="albumOption">{{ albumOption.id }}</option>
+              }
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" for="field_genre" jhiTranslate="musicPlayerApp.song.genre">Genre</label>
+            <select class="form-control" id="field_genre" data-cy="genre" name="genre" formControlName="genre" [compareWith]="compareGenre">
+              <option [ngValue]="null"></option>
+              @for (genreOption of genresSharedCollection(); track $index) {
+                <option [ngValue]="genreOption">{{ genreOption.id }}</option>
+              }
+            </select>
+          </div>
+        </div>
+
+        <div class="entity-form-grid full">
+          <div>
+            <label for="field_artistses" jhiTranslate="musicPlayerApp.song.artists">Artists</label>
+            <select
+              class="form-control"
+              id="field_artistses"
+              data-cy="artists"
+              multiple
+              name="artistses"
+              formControlName="artistses"
+              [compareWith]="compareArtist"
+            >
+              @for (artistOption of artistsSharedCollection(); track $index) {
+                <option [ngValue]="artistOption">{{ artistOption.id }}</option>
+              }
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="entity-form-section">
+        <h3>Letra</h3>
+        <div class="entity-form-grid full">
+          <div>
+            <label class="form-label" for="field_lyrics" jhiTranslate="musicPlayerApp.song.lyrics">Lyrics</label>
+            <textarea class="form-control" name="lyrics" id="field_lyrics" data-cy="lyrics" formControlName="lyrics"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="entity-form-actions">
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
           <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancelar</span>
         </button>
@@ -168,6 +204,6 @@
           <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Guardar</span>
         </button>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>

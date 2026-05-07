@@ -1,127 +1,166 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2 id="jhi-playlist-heading" data-cy="PlaylistCreateUpdateHeading" jhiTranslate="musicPlayerApp.playlist.home.createOrEditLabel">
-        Crear o editar Playlist
-      </h2>
-
-      <div>
-        <jhi-alert-error />
-
+<div class="entity-form-page">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="entity-form-card">
+    <header class="entity-form-header" style="--form-accent: #1db954; --form-accent-strong: #189b45">
+      <span class="entity-form-eyebrow">Playlists</span>
+      <h1>
         @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
+          Editar playlist
+        } @else {
+          Nueva playlist
         }
+      </h1>
+      <p>Curación y orden para compartir tus canciones favoritas.</p>
+    </header>
 
-        @let nameRef = editForm.get('name')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_name" jhiTranslate="musicPlayerApp.playlist.name">Name</label>
-          <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
-          @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+    <div class="entity-form-body">
+      <jhi-alert-error />
+
+      @if (editForm.controls.id.value !== null) {
+        <div class="entity-form-section">
+          <h3>Identificador</h3>
+          <div class="entity-form-grid">
             <div>
-              @if (editForm.get('name')?.errors?.required) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
-              }
-              @if (editForm.get('name')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
-                  >Este campo no puede superar más de 100 caracteres.</small
-                >
-              }
+              <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+              <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
             </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_description" jhiTranslate="musicPlayerApp.playlist.description">Description</label>
-          <textarea
-            class="form-control"
-            name="description"
-            id="field_description"
-            data-cy="description"
-            formControlName="description"
-          ></textarea>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_isPublic" jhiTranslate="musicPlayerApp.playlist.isPublic">Is Public</label>
-          <input type="checkbox" class="form-check" name="isPublic" id="field_isPublic" data-cy="isPublic" formControlName="isPublic" />
-        </div>
-
-        @let coverImageRef = editForm.get('coverImage')!;
-        <div class="mb-3">
-          <label class="form-label" for="field_coverImage" jhiTranslate="musicPlayerApp.playlist.coverImage">Cover Image</label>
-          <input
-            type="text"
-            class="form-control"
-            name="coverImage"
-            id="field_coverImage"
-            data-cy="coverImage"
-            formControlName="coverImage"
-          />
-          @if (coverImageRef.invalid && (coverImageRef.dirty || coverImageRef.touched)) {
-            <div>
-              @if (editForm.get('coverImage')?.errors?.maxlength) {
-                <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
-                  >Este campo no puede superar más de 255 caracteres.</small
-                >
-              }
-            </div>
-          }
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_createdAt" jhiTranslate="musicPlayerApp.playlist.createdAt">Created At</label>
-          <div class="d-flex">
-            <input
-              id="field_createdAt"
-              data-cy="createdAt"
-              type="datetime-local"
-              class="form-control"
-              name="createdAt"
-              formControlName="createdAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
           </div>
         </div>
+      }
 
-        <div class="mb-3">
-          <label class="form-label" for="field_updatedAt" jhiTranslate="musicPlayerApp.playlist.updatedAt">Updated At</label>
-          <div class="d-flex">
-            <input
-              id="field_updatedAt"
-              data-cy="updatedAt"
-              type="datetime-local"
-              class="form-control"
-              name="updatedAt"
-              formControlName="updatedAt"
-              placeholder="YYYY-MM-DD HH:mm"
-            />
-          </div>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_user" jhiTranslate="musicPlayerApp.playlist.user">User</label>
-          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
-            @if (!editForm.get('user')!.value) {
-              <option [ngValue]="null" selected></option>
-            }
-            @for (userOption of usersSharedCollection(); track $index) {
-              <option [ngValue]="userOption">{{ userOption.id }}</option>
-            }
-          </select>
-        </div>
-        @if (editForm.get(['user'])!.invalid && (editForm.get(['user'])!.dirty || editForm.get(['user'])!.touched)) {
+      <div class="entity-form-section">
+        <h3>Detalles de la playlist</h3>
+        <div class="entity-form-grid">
+          @let nameRef = editForm.get('name')!;
           <div>
-            @if (editForm.get(['user'])?.errors?.required) {
-              <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
+            <label class="form-label" for="field_name" jhiTranslate="musicPlayerApp.playlist.name">Name</label>
+            <input type="text" class="form-control" name="name" id="field_name" data-cy="name" formControlName="name" />
+            @if (nameRef.invalid && (nameRef.dirty || nameRef.touched)) {
+              <div>
+                @if (editForm.get('name')?.errors?.required) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
+                }
+                @if (editForm.get('name')?.errors?.maxlength) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '100' }"
+                    >Este campo no puede superar más de 100 caracteres.</small
+                  >
+                }
+              </div>
             }
           </div>
-        }
+
+          @let coverImageRef = editForm.get('coverImage')!;
+          <div>
+            <label class="form-label" for="field_coverImage" jhiTranslate="musicPlayerApp.playlist.coverImage">Cover Image</label>
+            <input
+              type="text"
+              class="form-control"
+              name="coverImage"
+              id="field_coverImage"
+              data-cy="coverImage"
+              formControlName="coverImage"
+            />
+            @if (coverImageRef.invalid && (coverImageRef.dirty || coverImageRef.touched)) {
+              <div>
+                @if (editForm.get('coverImage')?.errors?.maxlength) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.maxlength" [translateValues]="{ max: '255' }"
+                    >Este campo no puede superar más de 255 caracteres.</small
+                  >
+                }
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="entity-form-grid full">
+          <div>
+            <label class="form-label" for="field_description" jhiTranslate="musicPlayerApp.playlist.description">Description</label>
+            <textarea
+              class="form-control"
+              name="description"
+              id="field_description"
+              data-cy="description"
+              formControlName="description"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_isPublic" jhiTranslate="musicPlayerApp.playlist.isPublic">Is Public</label>
+            <div class="form-check">
+              <input
+                type="checkbox"
+                class="form-check-input"
+                name="isPublic"
+                id="field_isPublic"
+                data-cy="isPublic"
+                formControlName="isPublic"
+              />
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div>
+      <div class="entity-form-section">
+        <h3>Actividad</h3>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_createdAt" jhiTranslate="musicPlayerApp.playlist.createdAt">Created At</label>
+            <div class="d-flex">
+              <input
+                id="field_createdAt"
+                data-cy="createdAt"
+                type="datetime-local"
+                class="form-control"
+                name="createdAt"
+                formControlName="createdAt"
+                placeholder="YYYY-MM-DD HH:mm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label" for="field_updatedAt" jhiTranslate="musicPlayerApp.playlist.updatedAt">Updated At</label>
+            <div class="d-flex">
+              <input
+                id="field_updatedAt"
+                data-cy="updatedAt"
+                type="datetime-local"
+                class="form-control"
+                name="updatedAt"
+                formControlName="updatedAt"
+                placeholder="YYYY-MM-DD HH:mm"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="entity-form-section">
+        <h3>Propietario</h3>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_user" jhiTranslate="musicPlayerApp.playlist.user">User</label>
+            <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+              @if (!editForm.get('user')!.value) {
+                <option [ngValue]="null" selected></option>
+              }
+              @for (userOption of usersSharedCollection(); track $index) {
+                <option [ngValue]="userOption">{{ userOption.id }}</option>
+              }
+            </select>
+            @if (editForm.get(['user'])!.invalid && (editForm.get(['user'])!.dirty || editForm.get(['user'])!.touched)) {
+              <div>
+                @if (editForm.get(['user'])?.errors?.required) {
+                  <small class="form-text text-danger" jhiTranslate="entity.validation.required">Este campo es obligatorio.</small>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="entity-form-actions">
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
           <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancelar</span>
         </button>
@@ -136,6 +175,6 @@
           <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Guardar</span>
         </button>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>

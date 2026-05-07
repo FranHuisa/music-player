@@ -1,84 +1,57 @@
 <div>
-  <h2 id="page-heading" data-cy="GenreHeading">
-    <span jhiTranslate="musicPlayerApp.genre.home.title">Genres</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.genre.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-genre"
-        [routerLink]="['/genre/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.genre.home.createLabel">Crear nuevo Genre</span>
-      </button>
-    </div>
-  </h2>
-
   <jhi-alert-error />
-
   <jhi-alert />
 
+  <div class="entity-list-hero">
+    <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #8d67ab, #6c4a8a)">
+      <fa-icon icon="fire" />
+    </div>
+    <div class="entity-list-hero-info">
+      <span class="entity-list-hero-type">Categorías</span>
+      <h1>Géneros</h1>
+      <span class="entity-list-hero-count">{{ genres().length }} géneros</span>
+    </div>
+  </div>
+  <div class="entity-list-actions">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+    </button>
+    <a class="btn-icon-action" routerLink="/genre/new" title="Nuevo género" aria-label="Nuevo género">
+      <fa-icon icon="plus" />
+    </a>
+  </div>
+
   @if (genres().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.genre.home.notFound">Ningún Genres encontrado</span>
+    <div class="entity-list-empty">
+      <fa-icon icon="fire" class="entity-list-empty-icon" />
+      <p>No hay géneros disponibles</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="name">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.genre.name">Name</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (genre of genres(); track trackId(genre)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/genre', genre.id, 'view']">{{ genre.id }}</a>
-              </td>
-              <td>{{ genre.name }}</td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/genre', genre.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
-                  </a>
-
-                  <a [routerLink]="['/genre', genre.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
-                  </a>
-
-                  <button type="submit" (click)="delete(genre)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <div class="genre-grid" id="entities">
+      @for (genre of genres(); track trackId(genre); let i = $index) {
+        <div class="genre-card genre-card-color-{{ i % 10 }}" ngbDropdown>
+          <a [routerLink]="['/genre', genre.id, 'view']" class="genre-card-link">
+            <h3 class="genre-card-name">{{ genre.name }}</h3>
+            <fa-icon icon="music" class="genre-card-icon" />
+          </a>
+          <button class="genre-card-more" ngbDropdownToggle [id]="'genre-actions-' + genre.id" aria-label="Más opciones">•••</button>
+          <ul ngbDropdownMenu [attr.aria-labelledby]="'genre-actions-' + genre.id">
+            <li>
+              <a class="dropdown-item" [routerLink]="['/genre', genre.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver </a>
+            </li>
+            <li>
+              <a class="dropdown-item" [routerLink]="['/genre', genre.id, 'edit']">
+                <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
+              </a>
+            </li>
+            <li>
+              <button class="dropdown-item text-danger" (click)="delete(genre)">
+                <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
+              </button>
+            </li>
+          </ul>
+        </div>
+      }
     </div>
   }
 </div>

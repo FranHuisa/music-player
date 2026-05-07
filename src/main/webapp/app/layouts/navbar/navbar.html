@@ -1,8 +1,8 @@
 <nav data-cy="navbar" class="navbar navbar-dark navbar-expand-md bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand logo" routerLink="/" (click)="collapseNavbar()">
-      <span class="logo-img"></span>
-      <span class="navbar-title" jhiTranslate="global.title">MusicPlayer</span>
+      <fa-icon icon="music" class="navbar-brand-icon" />
+      <span class="navbar-brand-text">Streamify</span>
       <span class="navbar-version">{{ version }}</span>
     </a>
     <a
@@ -19,14 +19,17 @@
     </a>
     <div class="navbar-collapse collapse" id="navbarResponsive" [ngbCollapse]="isNavbarCollapsed()">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <a class="nav-link" routerLink="/" (click)="collapseNavbar()">
-            <span>
-              <fa-icon icon="home" />
-              <span jhiTranslate="global.menu.home">Inicio</span>
-            </span>
-          </a>
-        </li>
+        @let dash = dashboardRoute();
+        @if (dash) {
+          <li class="nav-item" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+            <a class="nav-link" [routerLink]="dash" (click)="collapseNavbar()">
+              <span>
+                <fa-icon icon="home" />
+                <span jhiTranslate="global.menu.home">Inicio</span>
+              </span>
+            </a>
+          </li>
+        }
         @if (account() !== null) {
           <li
             ngbDropdown

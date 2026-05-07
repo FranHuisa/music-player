@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
@@ -14,6 +15,7 @@ import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/co
 import { DataUtils } from 'app/core/util/data-util.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -25,12 +27,17 @@ import { ISong } from '../song.model';
 @Component({
   selector: 'jhi-song',
   templateUrl: './song.html',
+  styleUrl: './song.scss',
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
+    HasAnyAuthorityDirective,
     SortDirective,
     SortByDirective,
     TranslateDirective,
@@ -74,6 +81,14 @@ export class Song implements OnInit {
 
   trackId = (item: ISong): number => this.songService.getSongIdentifier(item);
 
+  formatDuration(seconds: number | null | undefined): string {
+    if (!seconds) return '—';
+    const s = Math.abs(Math.round(seconds));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
+
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -94,7 +109,6 @@ export class Song implements OnInit {
   delete(song: ISong): void {
     const modalRef = this.modalService.open(SongDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.song = song;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),

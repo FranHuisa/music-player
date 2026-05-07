@@ -1,58 +1,61 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    @if (playlist(); as playlistRef) {
-      <div>
-        <h2 data-cy="playlistDetailsHeading"><span jhiTranslate="musicPlayerApp.playlist.detail.title">Playlist</span></h2>
+<div class="entity-detail-page">
+  <jhi-alert-error />
+  <jhi-alert />
 
-        <hr />
+  @if (playlist(); as playlistRef) {
+    <div class="entity-detail-card">
+      <div class="entity-detail-header">
+        <div class="entity-detail-cover">
+          @if (playlistRef.coverImage) {
+            <img [src]="playlistRef.coverImage" alt="{{ playlistRef.name }}" />
+          } @else {
+            <fa-icon icon="list" />
+          }
+        </div>
+        <div class="entity-detail-title">
+          <span class="entity-detail-eyebrow">Playlist</span>
+          <h2>{{ playlistRef.name }}</h2>
+          <div class="entity-detail-subtitle">
+            @if (playlistRef.description) {
+              <span>{{ playlistRef.description }}</span>
+            } @else {
+              <span>Sin descripción</span>
+            }
+          </div>
+        </div>
+      </div>
 
-        <jhi-alert-error />
+      <dl class="row-md jh-entity-details">
+        <dt><span jhiTranslate="global.field.id">ID</span></dt>
+        <dd>
+          <span>{{ playlistRef.id }}</span>
+        </dd>
+        <dt><span jhiTranslate="musicPlayerApp.playlist.isPublic">Is Public</span></dt>
+        <dd>
+          <span>{{ playlistRef.isPublic ? 'Pública' : 'Privada' }}</span>
+        </dd>
+        <dt><span jhiTranslate="musicPlayerApp.playlist.createdAt">Created At</span></dt>
+        <dd>
+          <span>{{ playlistRef.createdAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="musicPlayerApp.playlist.updatedAt">Updated At</span></dt>
+        <dd>
+          <span>{{ playlistRef.updatedAt | formatMediumDatetime }}</span>
+        </dd>
+        <dt><span jhiTranslate="musicPlayerApp.playlist.user">User</span></dt>
+        <dd>
+          <span>{{ playlistRef.user?.id }}</span>
+        </dd>
+      </dl>
 
-        <jhi-alert />
-
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ playlistRef.id }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.name">Name</span></dt>
-          <dd>
-            <span>{{ playlistRef.name }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.description">Description</span></dt>
-          <dd>
-            <span>{{ playlistRef.description }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.isPublic">Is Public</span></dt>
-          <dd>
-            <span>{{ playlistRef.isPublic }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.coverImage">Cover Image</span></dt>
-          <dd>
-            <span>{{ playlistRef.coverImage }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.createdAt">Created At</span></dt>
-          <dd>
-            <span>{{ playlistRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.updatedAt">Updated At</span></dt>
-          <dd>
-            <span>{{ playlistRef.updatedAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.playlist.user">User</span></dt>
-          <dd>
-            <span>{{ playlistRef.user?.id }}</span>
-          </dd>
-        </dl>
-
+      <div class="entity-detail-actions">
         <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
           <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Volver</span>
         </button>
-
         <button type="button" [routerLink]="['/playlist', playlistRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editar</span>
         </button>
       </div>
-    }
-  </div>
+    </div>
+  }
 </div>

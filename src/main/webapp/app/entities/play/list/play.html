@@ -1,114 +1,119 @@
-<div>
-  <h2 id="page-heading" data-cy="PlayHeading">
-    <span jhiTranslate="musicPlayerApp.play.home.title">Plays</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.play.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-play"
-        [routerLink]="['/play/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.play.home.createLabel">Crear nuevo Play</span>
-      </button>
-    </div>
-  </h2>
-
+<div class="play-history-page">
   <jhi-alert-error />
-
   <jhi-alert />
 
+  <div class="entity-list-hero">
+    <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #f59b23, #e7611a)">
+      <fa-icon icon="chart-bar" />
+    </div>
+    <div class="entity-list-hero-info">
+      <span class="entity-list-hero-type">Estadísticas</span>
+      <h1>Reproducciones</h1>
+      <span class="entity-list-hero-count">{{ plays().length }} reproducciones</span>
+    </div>
+  </div>
+
+  <div class="entity-list-actions">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+    </button>
+    <a
+      class="btn-icon-action"
+      routerLink="/play/new"
+      title="Registrar reproducción"
+      aria-label="Registrar reproducción"
+      *jhiHasAnyAuthority="'ROLE_ADMIN'"
+    >
+      <fa-icon icon="plus" />
+    </a>
+  </div>
+
   @if (plays().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.play.home.notFound">Ningún Plays encontrado</span>
+    <div class="entity-list-empty">
+      <fa-icon icon="chart-bar" class="entity-list-empty-icon" />
+      <p>No hay reproducciones registradas</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+    <div class="play-history-table" id="entities">
+      <div class="play-history-header" jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+        <div class="col-num">#</div>
+        <div class="col-song" jhiSortBy="song.id">Canción <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-user" jhiSortBy="user.id">Usuario <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-played" jhiSortBy="playedAt">Reproducida <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-duration" jhiSortBy="durationListened">Tiempo <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-actions"></div>
+      </div>
+      <div class="track-list-divider"></div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="playedAt">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.play.playedAt">Played At</span>
+      @for (play of plays(); track trackId(play); let i = $index) {
+        <div class="play-row" data-cy="entityTable">
+          <div class="col-num">
+            <span class="track-num">{{ i + 1 }}</span>
+            <button class="track-play-btn" title="Reproducir" aria-label="Reproducir">
+              <fa-icon icon="play" />
+            </button>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="durationListened">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.play.durationListened">Duration Listened</span>
+          <div class="col-song">
+            <div class="play-cover">
+              <fa-icon icon="music" />
+            </div>
+            <div class="play-info">
+              @if (play.song) {
+                <a [routerLink]="['/song', play.song.id, 'view']" class="play-title">Canción #{{ play.song.id }}</a>
+              } @else {
+                <span class="play-title">Canción desconocida</span>
+              }
+              <span class="play-subtitle">Reproducción #{{ play.id }}</span>
+            </div>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="user.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.play.user">User</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="song.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.play.song">Song</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (play of plays(); track trackId(play)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/play', play.id, 'view']">{{ play.id }}</a>
-              </td>
-              <td>{{ play.playedAt | formatMediumDatetime }}</td>
-              <td>{{ play.durationListened }}</td>
-              <td>
-                {{ play.user?.id }}
-              </td>
-              <td>
-                @if (play.song) {
-                  <div>
-                    <a [routerLink]="['/song', play.song.id, 'view']">{{ play.song.id }}</a>
-                  </div>
-                }
-              </td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/play', play.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
+          <div class="col-user">
+            @if (play.user) {
+              <span class="play-user">Usuario #{{ play.user.id }}</span>
+            } @else {
+              <span class="play-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-played">
+            @if (play.playedAt) {
+              {{ play.playedAt | formatMediumDatetime }}
+            } @else {
+              <span class="play-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-duration">
+            <span class="play-duration">{{ formatDuration(play.durationListened) }}</span>
+          </div>
+
+          <div class="col-actions">
+            <div ngbDropdown display="dynamic" placement="left-start">
+              <button class="track-more-btn" ngbDropdownToggle [id]="'play-actions-' + play.id" aria-label="Más acciones">
+                <span class="dots">•••</span>
+              </button>
+              <ul ngbDropdownMenu [attr.aria-labelledby]="'play-actions-' + play.id">
+                <li>
+                  <a class="dropdown-item" [routerLink]="['/play', play.id, 'view']">
+                    <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles
                   </a>
-
-                  <a [routerLink]="['/play', play.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
+                </li>
+                <li *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                  <a class="dropdown-item" [routerLink]="['/play', play.id, 'edit']">
+                    <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
                   </a>
-
-                  <button type="submit" (click)="delete(play)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
+                </li>
+                <li *jhiHasAnyAuthority="'ROLE_ADMIN'">
+                  <button class="dropdown-item text-danger" (click)="delete(play)">
+                    <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
                   </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>

@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { Authority } from 'app/shared/jhipster/constants';
 
 import SongResolve from './route/song-routing-resolve.service';
 
@@ -28,6 +29,9 @@ const songRoute: Routes = [
     resolve: {
       song: SongResolve,
     },
+    data: {
+      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+    },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -35,6 +39,9 @@ const songRoute: Routes = [
     loadComponent: () => import('./update/song-update').then(m => m.SongUpdate),
     resolve: {
       song: SongResolve,
+    },
+    data: {
+      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
     },
     canActivate: [UserRouteAccessService],
   },
