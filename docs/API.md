@@ -1,379 +1,422 @@
-# Documentacion de la API REST
+# Documentación de la API REST
 
-## Informacion general
+## Información general
 
-La API de MusicPlayer proporciona endpoints RESTful para interactuar con todas las entidades del sistema. Todos los endpoints requieren autenticacion JWT excepto donde se indique lo contrario.
+La API de MusicPlayer expone endpoints RESTful para todas las entidades del sistema. Todos los endpoints requieren autenticación JWT salvo `/api/authenticate` y `/api/register`.
 
-## Autenticacion
+Las listas devuelven un **array JSON** con la cabecera `X-Total-Count` indicando el total de registros. Admiten paginación mediante `?page=0&size=20&sort=id,asc`.
 
-### Iniciar sesion
+---
+
+## Autenticación
+
+### Iniciar sesión
 
 **POST** `/api/authenticate`
 
-Autentica a un usuario y devuelve un token JWT.
-
-**Cuerpo de la peticion:**
+**Cuerpo:**
 ```json
 {
-  "username": "usuario",
-  "password": "contrasena"
+  "username": "admin",
+  "password": "admin",
+  "rememberMe": false
 }
 ```
 
-**Respuesta:**
+**Respuesta 200:**
 ```json
 {
-  "id": 1,
-  "login": "usuario",
-  "email": "usuario@ejemplo.com",
-  "firstName": "Nombre",
-  "lastName": "Apellido",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+  "id_token": "eyJhbGciOiJIUzUxMiJ9..."
 }
 ```
+
+Usar el token en peticiones posteriores: `Authorization: Bearer <id_token>`
+
+---
 
 ### Registrar usuario
 
 **POST** `/api/register`
 
-Registra un nuevo usuario en el sistema.
-
-**Cuerpo de la peticion:**
+**Cuerpo:**
 ```json
 {
   "login": "nuevousuario",
-  "email": "nuevousuario@ejemplo.com",
-  "password": "contrasena123",
+  "email": "nuevo@ejemplo.com",
+  "password": "contraseña123",
   "firstName": "Nombre",
-  "lastName": "Apellido"
+  "lastName": "Apellido",
+  "langKey": "es"
 }
 ```
 
-## Generos musicales
+**Respuesta 201** (sin cuerpo). Se envía email de activación.
 
-### Obtener todos los generos
+---
+
+### Activar cuenta
+
+**GET** `/api/activate?key={clave}`
+
+Activa la cuenta con la clave recibida por email.
+
+---
+
+### Obtener cuenta actual
+
+**GET** `/api/account`
+
+Devuelve el perfil del usuario autenticado.
+
+---
+
+### Cambiar contraseña
+
+**POST** `/api/account/change-password`
+
+```json
+{
+  "currentPassword": "actual",
+  "newPassword": "nueva"
+}
+```
+
+---
+
+## Géneros musicales
+
+### Listar géneros
 
 **GET** `/api/genres`
 
-Devuelve una lista paginada de generos musicales.
-
-**Parametros de consulta:**
-- `page`: Numero de pagina (default: 0)
-- `size`: Tamano de pagina (default: 20)
-
-**Respuesta:**
+Respuesta — array:
 ```json
-{
-  "content": [
-    {
-      "id": 1,
-      "name": "Rock"
-    }
-  ],
-  "totalElements": 15,
-  "totalPages": 1
-}
+[
+  { "id": 1, "name": "Rock" },
+  { "id": 2, "name": "Pop" }
+]
 ```
+Cabecera: `X-Total-Count: 15`
+
+### Obtener género
+
+**GET** `/api/genres/{id}`
+
+### Crear género *(requiere ROLE_ADMIN)*
+
+**POST** `/api/genres`
+```json
+{ "name": "Jazz" }
+```
+
+### Actualizar género *(requiere ROLE_ADMIN)*
+
+**PUT** `/api/genres/{id}`
+
+### Eliminar género *(requiere ROLE_ADMIN)*
+
+**DELETE** `/api/genres/{id}` → 204
+
+---
 
 ## Artistas
 
-### Obtener todos los artistas
+### Listar artistas
 
 **GET** `/api/artists`
 
-Devuelve una lista paginada de artistas.
+Respuesta — array:
+```json
+[
+  {
+    "id": 1,
+    "name": "The Beatles",
+    "bio": "Banda inglesa...",
+    "country": "UK",
+    "verified": true
+  }
+]
+```
 
-**Parametros de consulta:**
-- `page`: Numero de pagina
-- `size`: Tamano de pagina
-
-### Obtener un artista
+### Obtener artista
 
 **GET** `/api/artists/{id}`
 
-Devuelve los detalles de un artista especifico.
-
-### Crear artista
+### Crear artista *(requiere ROLE_ADMIN o ROLE_EDITOR)*
 
 **POST** `/api/artists`
-
-Crea un nuevo artista en el sistema.
+```json
+{
+  "name": "Artista Nuevo",
+  "bio": "Descripción",
+  "country": "ES",
+  "verified": false
+}
+```
 
 ### Actualizar artista
 
 **PUT** `/api/artists/{id}`
 
-Actualiza la informacion de un artista existente.
+### Eliminar artista *(requiere ROLE_ADMIN)*
 
-### Eliminar artista
+**DELETE** `/api/artists/{id}` → 204
 
-**DELETE** `/api/artists/{id}`
+---
 
-Elimina un artista y todas sus relaciones.
+## Álbumes
 
-## Albumes
-
-### Obtener todos los albumes
+### Listar álbumes
 
 **GET** `/api/albums`
 
-Devuelve una lista paginada de albumes.
+Respuesta — array:
+```json
+[
+  {
+    "id": 1,
+    "title": "Abbey Road",
+    "releaseDate": "1969-09-26",
+    "albumType": "ALBUM",
+    "artist": { "id": 1, "name": "The Beatles" },
+    "genre": { "id": 1, "name": "Rock" }
+  }
+]
+```
 
-### Obtener un album
+Tipos válidos para `albumType`: `ALBUM`, `SINGLE`, `EP`, `PODCAST_SERIES`
+
+### Obtener álbum
 
 **GET** `/api/albums/{id}`
 
-Devuelve los detalles de un album especifico, incluyendo sus canciones.
-
-### Obtener albumes de un artista
-
-**GET** `/api/artists/{artistId}/albums`
-
-Devuelve todos los albumes asociados a un artista.
-
-### Crear album
+### Crear álbum *(requiere ROLE_ADMIN o ROLE_EDITOR)*
 
 **POST** `/api/albums`
+```json
+{
+  "title": "Nuevo álbum",
+  "releaseDate": "2024-01-15",
+  "albumType": "ALBUM",
+  "artist": { "id": 1 },
+  "genre": { "id": 2 }
+}
+```
 
-Crea un nuevo album.
-
-### Actualizar album
+### Actualizar álbum
 
 **PUT** `/api/albums/{id}`
 
-Actualiza la informacion de un album existente.
+### Eliminar álbum *(requiere ROLE_ADMIN)*
 
-### Eliminar album
+**DELETE** `/api/albums/{id}` → 204
 
-**DELETE** `/api/albums/{id}`
-
-Elimina un album y sus canciones asociadas.
+---
 
 ## Canciones
 
-### Obtener todas las canciones
+### Listar canciones
 
 **GET** `/api/songs`
 
-Devuelve una lista paginada de canciones.
+Respuesta — array:
+```json
+[
+  {
+    "id": 1,
+    "title": "Come Together",
+    "duration": 259,
+    "fileUrl": "https://...",
+    "coverImage": "https://...",
+    "releaseDate": "1969-09-26",
+    "album": { "id": 1, "title": "Abbey Road" },
+    "genre": { "id": 1, "name": "Rock" },
+    "artistses": [{ "id": 1, "name": "The Beatles" }]
+  }
+]
+```
 
-### Obtener una cancion
+### Obtener canción
 
 **GET** `/api/songs/{id}`
 
-Devuelve los detalles de una cancion especifica.
-
-### Obtener canciones de un album
-
-**GET** `/api/albums/{albumId}/songs`
-
-Devuelve todas las canciones de un album.
-
-### Buscar canciones
-
-**GET** `/api/_search/songs?query={texto}`
-
-Busca canciones por titulo o letra.
-
-### Crear cancion
+### Crear canción *(requiere ROLE_ADMIN o ROLE_EDITOR)*
 
 **POST** `/api/songs`
+```json
+{
+  "title": "Nueva canción",
+  "duration": 180,
+  "fileUrl": "https://storage.ejemplo.com/cancion.mp3",
+  "releaseDate": "2024-01-15",
+  "album": { "id": 1 },
+  "genre": { "id": 1 },
+  "artistses": [{ "id": 1 }]
+}
+```
 
-Crea una nueva cancion en el sistema.
-
-### Actualizar cancion
+### Actualizar canción
 
 **PUT** `/api/songs/{id}`
 
-Actualiza la informacion de una cancion existente.
+### Eliminar canción *(requiere ROLE_ADMIN)*
 
-### Eliminar cancion
+**DELETE** `/api/songs/{id}` → 204
 
-**DELETE** `/api/songs/{id}`
+---
 
-Elimina una cancion del sistema.
+## Listas de reproducción
 
-## Listas de reproduccion
-
-### Obtener todas las listas
+### Listar playlists
 
 **GET** `/api/playlists`
 
-Devuelve las listas de reproduccion del usuario autenticado.
+Respuesta — array:
+```json
+[
+  {
+    "id": 1,
+    "name": "Mis favoritas",
+    "description": "...",
+    "isPublic": true,
+    "user": { "id": 1, "login": "user" }
+  }
+]
+```
 
-### Obtener una lista
+### Obtener playlist
 
 **GET** `/api/playlists/{id}`
 
-Devuelve los detalles de una lista de reproduccion especifica.
-
-### Obtener listas publicas
-
-**GET** `/api/playlists?filter=public`
-
-Devuelve una lista de listas de reproduccion publicas.
-
-### Crear lista
+### Crear playlist
 
 **POST** `/api/playlists`
-
-Crea una nueva lista de reproduccion.
-
-**Cuerpo de la peticion:**
 ```json
 {
-  "name": "Mi lista favorita",
-  "description": "Una coleccion de mis canciones preferidas",
-  "isPublic": true
+  "name": "Mi nueva lista",
+  "description": "Descripción opcional",
+  "isPublic": false
 }
 ```
 
-### Actualizar lista
+### Actualizar playlist
 
 **PUT** `/api/playlists/{id}`
 
-Actualiza la informacion de una lista existente.
+### Eliminar playlist
 
-### Eliminar lista
+**DELETE** `/api/playlists/{id}` → 204
 
-**DELETE** `/api/playlists/{id}`
+---
 
-Elimina una lista de reproduccion.
+## Canciones en playlist
 
-### Agregar cancion a lista
+### Listar entradas
+
+**GET** `/api/playlist-songs`
+
+### Añadir canción a playlist
 
 **POST** `/api/playlist-songs`
-
-Agrega una cancion a una lista de reproduccion.
-
-**Cuerpo de la peticion:**
 ```json
 {
-  "playlistId": 1,
-  "songId": 5,
-  "position": 10
+  "position": 1,
+  "playlist": { "id": 1 },
+  "song": { "id": 5 }
 }
 ```
 
-### Eliminar cancion de lista
+### Actualizar posición
 
-**DELETE** `/api/playlist-songs/{playlistId}/{songId}`
+**PUT** `/api/playlist-songs/{id}`
 
-Elimina una cancion de una lista de reproduccion.
+### Quitar canción de playlist
 
-## Reproducciones
+**DELETE** `/api/playlist-songs/{id}` → 204
 
-### Registrar reproduccion
+---
+
+## Reproducciones (historial)
+
+### Registrar reproducción
 
 **POST** `/api/plays`
-
-Registra que un usuario ha reproducido una cancion.
-
-**Cuerpo de la peticion:**
 ```json
 {
-  "songId": 5,
-  "durationListened": 180
+  "playedAt": "2024-05-07T14:30:00Z",
+  "durationListened": 180,
+  "song": { "id": 5 }
 }
 ```
 
-### Obtener historial de reproducciones
+### Listar reproducciones
 
 **GET** `/api/plays`
 
-Devuelve el historial de reproducciones del usuario autenticado.
+### Obtener reproducción
 
-## Likes
+**GET** `/api/plays/{id}`
 
-### Dar like a una cancion
+### Eliminar entrada del historial
 
-**POST** `/api/likes`
+**DELETE** `/api/plays/{id}` → 204
 
-Agrega un like a una cancion.
+---
 
-**Cuerpo de la peticion:**
-```json
-{
-  "songId": 5
-}
-```
+## Likes (canciones favoritas)
 
-### Quitar like
-
-**DELETE** `/api/likes/{songId}`
-
-Elimina el like de una cancion.
-
-### Obtener canciones liked
+### Listar likes
 
 **GET** `/api/likes`
 
-Devuelve las canciones que el usuario autenticado ha dado like.
+### Dar like a una canción
 
-## Perfil de usuario
-
-### Obtener perfil
-
-**GET** `/api/user-profiles/{id}`
-
-Devuelve el perfil de un usuario.
-
-### Actualizar perfil
-
-**PUT** `/api/user-profiles/{id}`
-
-Actualiza el perfil del usuario autenticado.
-
-**Cuerpo de la peticion:**
+**POST** `/api/likes`
 ```json
 {
-  "bio": "Hola, soy un amante de la musica",
-  "profileImage": "https://ejemplo.com/imagen.jpg"
+  "song": { "id": 5 }
 }
 ```
 
-## Seguimientos
+### Obtener like
 
-### Seguir a un artista
+**GET** `/api/likes/{id}`
 
-**POST** `/api/user-followers`
+### Eliminar like
 
-El usuario autenticado sigue a un artista.
+**DELETE** `/api/likes/{id}` → 204
 
-**Cuerpo de la peticion:**
-```json
-{
-  "followedId": 3
-}
-```
+---
 
-### Dejar de seguir
+## Gestión de usuarios *(requiere ROLE_ADMIN)*
 
-**DELETE** `/api/user-followers/{followedId}`
+### Listar usuarios
 
-El usuario autenticado deja de seguir a un artista.
+**GET** `/api/admin/users`
 
-### Obtener seguidores
+### Crear usuario
 
-**GET** `/api/user-followers/followers/{userId}`
+**POST** `/api/admin/users`
 
-Devuelve los seguidores de un usuario.
+### Actualizar usuario
 
-### Obtener seguidos
+**PUT** `/api/admin/users`
 
-**GET** `/api/user-followers/following/{userId}`
+### Eliminar usuario
 
-Devuelve los usuarios que sigue un artista.
+**DELETE** `/api/admin/users/{login}` → 204
 
-## Codigos de respuesta
+---
 
-| Codigo | Descripcion |
+## Códigos de respuesta
+
+| Código | Descripción |
 |--------|-------------|
-| 200 | Operacion exitosa |
-| 201 | Recurso creado exitosamente |
-| 204 | Recurso eliminado exitosamente |
-| 400 | Solicitud incorrecta |
-| 401 | No autenticado |
-| 403 | No autorizado |
-| 404 | Recurso no encontrado |
-| 500 | Error interno del servidor |
+| 200 | OK — operación exitosa |
+| 201 | Created — recurso creado |
+| 204 | No Content — eliminado exitosamente |
+| 400 | Bad Request — datos inválidos |
+| 401 | Unauthorized — token ausente o expirado |
+| 403 | Forbidden — sin permiso de rol |
+| 404 | Not Found — recurso no encontrado |
+| 500 | Internal Server Error |

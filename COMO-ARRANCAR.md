@@ -48,7 +48,7 @@ Espera hasta ver el mensaje:
 Application 'musicPlayer' is running!
 ```
 
-** Importante:** No cierres esta terminal, déjala abierta.
+**Importante:** No cierres esta terminal, déjala abierta.
 
 ### Paso 4: Iniciar el frontend (página web)
 
@@ -65,7 +65,7 @@ Application bundle generation complete.
 ** Angular Live Development Server is listening on localhost:4200 **
 ```
 
-- Importante:\*\* Tampoco cierres esta terminal.
+**Importante:** Tampoco cierres esta terminal.
 
 ### Paso 5: Abrir en el navegador
 
