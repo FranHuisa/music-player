@@ -30,7 +30,10 @@ export class AlbumDetail implements OnInit {
   readonly availableSongs = computed(() => {
     const albumSongIds = new Set(this.albumSongs().map(s => s.id));
     const term = this.searchTerm().toLowerCase();
-    return this.allMySongs().filter(s => !albumSongIds.has(s.id) && (!term || s.title?.toLowerCase().includes(term)));
+
+    return this.allMySongs().filter(
+      s => !albumSongIds.has(s.id) && (!s.album || !s.album.id) && (!term || s.title?.toLowerCase().includes(term)),
+    );
   });
 
   private readonly http = inject(HttpClient);

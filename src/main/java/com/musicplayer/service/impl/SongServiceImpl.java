@@ -59,9 +59,21 @@ public class SongServiceImpl implements SongService {
     @Override
     public SongDTO update(SongDTO songDTO) {
         LOG.debug("Request to update Song : {}", songDTO);
-        Song song = songMapper.toEntity(songDTO);
-        song = songRepository.save(song);
-        return songMapper.toDto(song);
+
+        Song existingSong = songRepository.findById(songDTO.getId()).orElseThrow(() -> new RuntimeException("Song not found"));
+
+        existingSong.setAlbum(songDTO.getAlbum() != null ? songMapper.toEntity(songDTO).getAlbum() : null);
+
+        existingSong.setTitle(songDTO.getTitle());
+        existingSong.setDuration(songDTO.getDuration());
+        existingSong.setFileUrl(songDTO.getFileUrl());
+        existingSong.setCoverImage(songDTO.getCoverImage());
+        existingSong.setReleaseDate(songDTO.getReleaseDate());
+        existingSong.setActive(songDTO.getActive());
+
+        existingSong = songRepository.save(existingSong);
+
+        return songMapper.toDto(existingSong);
     }
 
     @Override

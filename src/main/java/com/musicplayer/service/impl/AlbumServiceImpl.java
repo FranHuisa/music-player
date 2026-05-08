@@ -56,6 +56,8 @@ public class AlbumServiceImpl implements AlbumService {
 
         album.setArtist(artist);
 
+        album.setActive(false);
+
         album = albumRepository.save(album);
 
         return albumMapper.toDto(album);

@@ -102,6 +102,7 @@ export class Album implements OnInit {
   trackId = (item: IAlbum): number => this.albumService.getAlbumIdentifier(item);
 
   ngOnInit(): void {
+    this.albumService.myAlbumsResource.reload();
     this.accountService.identity().subscribe(account => {
       const authorities = account?.authorities ?? [];
 
