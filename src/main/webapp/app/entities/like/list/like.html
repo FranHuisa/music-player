@@ -48,17 +48,13 @@
           <button class="like-row-play" (click)="playSong(like); $event.stopPropagation()">
             <fa-icon icon="play" />
           </button>
+          <button class="like-row-btn" title="Añadir a la cola">
+            <fa-icon icon="plus"></fa-icon>
+          </button>
 
-          <button class="like-row-more" ngbDropdownToggle [id]="'like-actions-' + like.id" aria-label="Más opciones">•••</button>
-
-          <ul ngbDropdownMenu [attr.aria-labelledby]="'like-actions-' + like.id">
-            <li>
-              <button class="dropdown-item text-danger" (click)="delete(like)">
-                <fa-icon icon="times" [fixedWidth]="true" />
-                Eliminar
-              </button>
-            </li>
-          </ul>
+          <button class="like-row-btn danger" (click)="delete(like); $event.stopPropagation()" title="Eliminar">
+            <fa-icon icon="trash"></fa-icon>
+          </button>
         </div>
       }
     </div>
