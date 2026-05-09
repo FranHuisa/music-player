@@ -1,6 +1,7 @@
 package com.musicplayer.service;
 
 import com.musicplayer.service.dto.PlaylistDTO;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -57,4 +58,6 @@ public interface PlaylistService {
     void delete(Long id);
 
     void addSongToPlaylist(Long playlistId, Long songId);
+
+    List<PlaylistDTO> findByUserLogin(String login);
 }

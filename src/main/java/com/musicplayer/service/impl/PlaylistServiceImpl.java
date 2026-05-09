@@ -12,6 +12,7 @@ import com.musicplayer.service.PlaylistService;
 import com.musicplayer.service.dto.PlaylistDTO;
 import com.musicplayer.service.mapper.PlaylistMapper;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,5 +140,11 @@ public class PlaylistServiceImpl implements PlaylistService {
         ps.setAddedAt(Instant.now());
 
         playlistSongRepository.save(ps);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PlaylistDTO> findByUserLogin(String login) {
+        return playlistRepository.findByUserLogin(login).stream().map(playlistMapper::toDto).toList();
     }
 }

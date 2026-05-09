@@ -19,6 +19,7 @@ import { ILike } from '../like.model';
 import { LikeService } from '../service/like.service';
 import { PlayerService } from 'app/layouts/player-bar/player.service';
 import { ISong } from 'app/entities/song/song.model';
+import { AddToPlaylistService } from 'app/entities/playlist/service/add-to-playlists.service';
 
 @Component({
   selector: 'jhi-like',
@@ -54,6 +55,7 @@ export class Like implements OnInit {
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected readonly player = inject(PlayerService);
+  protected readonly addToPlaylistService = inject(AddToPlaylistService);
   constructor() {
     effect(() => {
       this.likes.set(this.fillComponentAttributesFromResponseBody([...this.likeService.likes()]));
@@ -101,7 +103,10 @@ export class Like implements OnInit {
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
   }
-
+  openAddToPlaylist(like: ILike): void {
+    if (!like.song) return;
+    this.addToPlaylistService.openDialog(like.song.id);
+  }
   protected refineData(data: ILike[]): ILike[] {
     const { predicate, order } = this.sortState();
     return predicate && order ? data.sort(this.sortService.startSort({ predicate, order })) : data;
