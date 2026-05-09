@@ -58,6 +58,7 @@ import {
   faCalendarPlus,
   faCalendar,
   faEyeSlash,
+  faSpinner,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -121,5 +122,6 @@ export const fontAwesomeIcons = [
   faCalendarPlus,
   faCalendar,
   faEyeSlash,
+  faSpinner,
   // jhipster-needle-add-icon-import
 ];

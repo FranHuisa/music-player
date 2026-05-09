@@ -168,3 +168,15 @@
     transform: rotate(360deg);
   }
 }
+.liked {
+  color: red;
+}
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.like-btn:hover {
+  color: red;
+}

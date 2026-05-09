@@ -43,6 +43,9 @@
           <button class="play-btn" (click)="playSong(song)" aria-label="Reproducir">
             <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>
           </button>
+          <button class="like-btn" (click)="toggleLike(song)">
+            <fa-icon icon="heart" [class.text-danger]="likedSongs().includes(song.id)"></fa-icon>
+          </button>
         </div>
       }
     </div>
