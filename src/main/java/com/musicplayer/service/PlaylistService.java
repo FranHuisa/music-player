@@ -55,4 +55,6 @@ public interface PlaylistService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    void addSongToPlaylist(Long playlistId, Long songId);
 }

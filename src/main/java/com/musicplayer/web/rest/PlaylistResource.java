@@ -51,7 +51,9 @@ public class PlaylistResource {
      * {@code POST  /playlists} : Create a new playlist.
      *
      * @param playlistDTO the playlistDTO to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new playlistDTO, or with status {@code 400 (Bad Request)} if the playlist has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with
+     *         body the new playlistDTO, or with status {@code 400 (Bad Request)} if
+     *         the playlist has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
@@ -69,11 +71,14 @@ public class PlaylistResource {
     /**
      * {@code PUT  /playlists/:id} : Updates an existing playlist.
      *
-     * @param id the id of the playlistDTO to save.
+     * @param id          the id of the playlistDTO to save.
      * @param playlistDTO the playlistDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated playlistDTO,
-     * or with status {@code 400 (Bad Request)} if the playlistDTO is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the playlistDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated playlistDTO,
+     *         or with status {@code 400 (Bad Request)} if the playlistDTO is not
+     *         valid,
+     *         or with status {@code 500 (Internal Server Error)} if the playlistDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
@@ -100,14 +105,19 @@ public class PlaylistResource {
     }
 
     /**
-     * {@code PATCH  /playlists/:id} : Partial updates given fields of an existing playlist, field will ignore if it is null
+     * {@code PATCH  /playlists/:id} : Partial updates given fields of an existing
+     * playlist, field will ignore if it is null
      *
-     * @param id the id of the playlistDTO to save.
+     * @param id          the id of the playlistDTO to save.
      * @param playlistDTO the playlistDTO to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated playlistDTO,
-     * or with status {@code 400 (Bad Request)} if the playlistDTO is not valid,
-     * or with status {@code 404 (Not Found)} if the playlistDTO is not found,
-     * or with status {@code 500 (Internal Server Error)} if the playlistDTO couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the updated playlistDTO,
+     *         or with status {@code 400 (Bad Request)} if the playlistDTO is not
+     *         valid,
+     *         or with status {@code 404 (Not Found)} if the playlistDTO is not
+     *         found,
+     *         or with status {@code 500 (Internal Server Error)} if the playlistDTO
+     *         couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
@@ -139,7 +149,8 @@ public class PlaylistResource {
      * {@code GET  /playlists} : get all the Playlists.
      *
      * @param pageable the pagination information.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of Playlists in body.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
+     *         of Playlists in body.
      */
     @GetMapping("")
     public ResponseEntity<List<PlaylistDTO>> getAllPlaylists(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
@@ -153,7 +164,8 @@ public class PlaylistResource {
      * {@code GET  /playlists/:id} : get the "id" playlist.
      *
      * @param id the id of the playlistDTO to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the playlistDTO, or with status {@code 404 (Not Found)}.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
+     *         the playlistDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
     public ResponseEntity<PlaylistDTO> getPlaylist(@PathVariable("id") Long id) {
@@ -175,5 +187,11 @@ public class PlaylistResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
+    }
+
+    @PostMapping("/{playlistId}/songs/{songId}")
+    public ResponseEntity<Void> addSong(@PathVariable Long playlistId, @PathVariable Long songId) {
+        playlistService.addSongToPlaylist(playlistId, songId);
+        return ResponseEntity.ok().build();
     }
 }

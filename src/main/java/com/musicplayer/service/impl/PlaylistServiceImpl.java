@@ -1,10 +1,15 @@
 package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Playlist;
+import com.musicplayer.domain.PlaylistSong;
+import com.musicplayer.domain.Song;
 import com.musicplayer.repository.PlaylistRepository;
+import com.musicplayer.repository.PlaylistSongRepository;
+import com.musicplayer.repository.SongRepository;
 import com.musicplayer.service.PlaylistService;
 import com.musicplayer.service.dto.PlaylistDTO;
 import com.musicplayer.service.mapper.PlaylistMapper;
+import java.time.Instant;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +30,19 @@ public class PlaylistServiceImpl implements PlaylistService {
     private final PlaylistRepository playlistRepository;
 
     private final PlaylistMapper playlistMapper;
+    private final PlaylistSongRepository playlistSongRepository;
+    private final SongRepository songRepository;
 
-    public PlaylistServiceImpl(PlaylistRepository playlistRepository, PlaylistMapper playlistMapper) {
+    public PlaylistServiceImpl(
+        PlaylistRepository playlistRepository,
+        PlaylistMapper playlistMapper,
+        PlaylistSongRepository playlistSongRepository,
+        SongRepository songRepository
+    ) {
         this.playlistRepository = playlistRepository;
         this.playlistMapper = playlistMapper;
+        this.playlistSongRepository = playlistSongRepository;
+        this.songRepository = songRepository;
     }
 
     @Override
@@ -80,5 +94,23 @@ public class PlaylistServiceImpl implements PlaylistService {
     public void delete(Long id) {
         LOG.debug("Request to delete Playlist : {}", id);
         playlistRepository.deleteById(id);
+    }
+
+    @Override
+    public void addSongToPlaylist(Long playlistId, Long songId) {
+        Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
+
+        Song song = songRepository.findById(songId).orElseThrow(() -> new RuntimeException("Canción no encontrada"));
+
+        boolean exists = playlistSongRepository.findByPlaylistIdAndSongId(playlistId, songId).isPresent();
+
+        if (exists) return;
+
+        PlaylistSong ps = new PlaylistSong();
+        ps.setPlaylist(playlist);
+        ps.setSong(song);
+        ps.setAddedAt(Instant.now());
+
+        playlistSongRepository.save(ps);
     }
 }
