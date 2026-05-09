@@ -6,7 +6,7 @@
     <div class="album-detail-hero">
       <div class="album-detail-cover">
         @if (album()!.coverImage) {
-          <img [src]="album()!.coverImage" alt="Cover" />
+          <img [src]="album()!.coverImage | coverImageUrl" alt="Cover" />
         } @else {
           <div class="album-detail-cover-placeholder">
             <fa-icon icon="compact-disc" />

@@ -16,6 +16,7 @@ import { DataUtils } from 'app/core/util/data-util.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -40,6 +41,7 @@ import { PlaylistService } from '../service/playlist.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
+    CoverImageUrlPipe,
     NgbPagination,
     ItemCount,
   ],

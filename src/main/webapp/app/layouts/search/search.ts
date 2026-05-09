@@ -6,11 +6,12 @@ import { ISong } from 'app/entities/song/song.model';
 import { PlayerService } from '../player-bar/player.service';
 import { HttpClient } from '@angular/common/http';
 import { ILike } from 'app/entities/like/like.model';
+import { CoverImageUrlPipe } from 'app/shared/media';
 
 @Component({
   selector: 'jhi-search',
   standalone: true,
-  imports: [FaIconComponent, RouterLink],
+  imports: [FaIconComponent, RouterLink, CoverImageUrlPipe],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })

@@ -9,7 +9,7 @@
       <div class="entity-detail-header">
         <div class="entity-detail-cover">
           @if (playlistRef.coverImage) {
-            <img [src]="playlistRef.coverImage" alt="{{ playlistRef.name }}" />
+            <img [src]="playlistRef.coverImage | coverImageUrl" alt="{{ playlistRef.name }}" />
           } @else {
             <fa-icon icon="list" />
           }

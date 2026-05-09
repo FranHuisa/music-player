@@ -24,6 +24,7 @@ import { SongDeleteDialog } from '../delete/song-delete-dialog';
 import { SongService } from '../service/song.service';
 import { ISong } from '../song.model';
 import { AccountService } from 'app/core/auth/account.service';
+import { CoverImageUrlPipe } from 'app/shared/media';
 
 @Component({
   selector: 'jhi-song',
@@ -45,6 +46,7 @@ import { AccountService } from 'app/core/auth/account.service';
     TranslateModule,
     FormatMediumDatetimePipe,
     FormatMediumDatePipe,
+    CoverImageUrlPipe,
     NgbPagination,
     ItemCount,
   ],

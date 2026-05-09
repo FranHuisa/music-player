@@ -27,7 +27,7 @@
 
           <div class="song-cover">
             @if (song.coverImage) {
-              <img [src]="song.coverImage" alt="Cover" />
+              <img [src]="song.coverImage | coverImageUrl" alt="Cover" />
             } @else {
               <fa-icon icon="music"></fa-icon>
             }

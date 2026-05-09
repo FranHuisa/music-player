@@ -62,7 +62,7 @@
           <div class="col-title">
             <div class="track-cover">
               @if (song.coverImage) {
-                <img [src]="song.coverImage" class="track-cover-img" alt="{{ song.title }}" />
+                <img [src]="song.coverImage | coverImageUrl" class="track-cover-img" alt="{{ song.title }}" />
               } @else {
                 <fa-icon icon="music" class="track-cover-placeholder" />
               }

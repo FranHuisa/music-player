@@ -35,7 +35,7 @@
               <div class="upcoming-card">
                 <div class="upcoming-card-cover">
                   @if (album.coverImage) {
-                    <img [src]="album.coverImage" alt="Cover" />
+                    <img [src]="album.coverImage | coverImageUrl" alt="Cover" />
                   } @else {
                     <fa-icon icon="compact-disc" />
                   }
@@ -110,7 +110,7 @@
               <div class="available-card">
                 <div class="available-card-cover">
                   @if (album.coverImage) {
-                    <img [src]="album.coverImage" alt="Cover" />
+                    <img [src]="album.coverImage | coverImageUrl" alt="Cover" />
                   } @else {
                     <fa-icon icon="compact-disc" />
                   }

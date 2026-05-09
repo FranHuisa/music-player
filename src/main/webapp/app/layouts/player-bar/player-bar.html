@@ -2,7 +2,11 @@
   <!-- Left: Now Playing -->
   <div class="player-now-playing">
     <div class="player-cover">
-      <fa-icon icon="music" class="player-cover-placeholder"></fa-icon>
+      @if (player.currentSong()?.coverImage) {
+        <img [src]="player.currentSong()?.coverImage | coverImageUrl" alt="Cover" />
+      } @else {
+        <fa-icon icon="music" class="player-cover-placeholder"></fa-icon>
+      }
     </div>
     <div class="player-song-info">
       <span class="player-song-name">{{ player.currentSong()?.title ?? 'No hay canción' }}</span>

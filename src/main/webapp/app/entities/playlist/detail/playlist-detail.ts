@@ -7,6 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { TranslateDirective } from 'app/shared/language';
 import { IPlaylist } from '../playlist.model';
 
@@ -14,7 +15,7 @@ import { IPlaylist } from '../playlist.model';
   selector: 'jhi-playlist-detail',
   templateUrl: './playlist-detail.html',
   styleUrls: ['./playlist-detail.scss'],
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe],
+  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe, CoverImageUrlPipe],
 })
 export class PlaylistDetail {
   private route = inject(ActivatedRoute);

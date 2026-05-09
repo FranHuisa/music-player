@@ -6,6 +6,7 @@ import { HttpClient } from '@angular/common/http';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe } from 'app/shared/date';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { TranslateDirective } from 'app/shared/language';
 import { TranslateModule } from '@ngx-translate/core';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
@@ -17,7 +18,7 @@ import { SongService } from 'app/entities/song/service/song.service';
   selector: 'jhi-album-detail',
   templateUrl: './album-detail.html',
   styleUrls: ['./album-detail.scss'],
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatePipe],
+  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatePipe, CoverImageUrlPipe],
 })
 export class AlbumDetail implements OnInit {
   readonly album = input<IAlbum | null>(null);

@@ -8,6 +8,7 @@ import dayjs from 'dayjs/esm';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe } from 'app/shared/date';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { IAlbum } from '../album.model';
 import { AlbumService } from '../service/album.service';
 
@@ -15,7 +16,7 @@ import { AlbumService } from '../service/album.service';
   selector: 'jhi-album-coming',
   templateUrl: './album-coming.html',
   styleUrls: ['./album-coming.scss'],
-  imports: [FontAwesomeModule, FormsModule, NgbInputDatepicker, Alert, AlertError, FormatMediumDatePipe],
+  imports: [FontAwesomeModule, FormsModule, NgbInputDatepicker, Alert, AlertError, FormatMediumDatePipe, CoverImageUrlPipe],
 })
 export class AlbumUpcoming implements OnInit {
   private readonly router = inject(Router);

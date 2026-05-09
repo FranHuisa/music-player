@@ -39,7 +39,7 @@
           <div class="playlist-card" ngbDropdown data-cy="entityTable">
             <div class="playlist-cover">
               @if (playlist.coverImage) {
-                <img [src]="playlist.coverImage" alt="cover" />
+                <img [src]="playlist.coverImage | coverImageUrl" alt="cover" />
               } @else {
                 <fa-icon icon="music" />
               }
