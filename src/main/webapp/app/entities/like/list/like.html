@@ -39,19 +39,23 @@
             } @else {
               <span class="like-row-song">Canción desconocida</span>
             }
+
             @if (like.createdAt) {
-              <span class="like-row-date">Guardada el {{ like.createdAt | formatMediumDatetime }}</span>
+              <span class="like-row-date"> Guardada el {{ like.createdAt | formatMediumDatetime }} </span>
             }
           </div>
 
+          <button class="like-row-play" (click)="playSong(like); $event.stopPropagation()">
+            <fa-icon icon="play" />
+          </button>
+
           <button class="like-row-more" ngbDropdownToggle [id]="'like-actions-' + like.id" aria-label="Más opciones">•••</button>
+
           <ul ngbDropdownMenu [attr.aria-labelledby]="'like-actions-' + like.id">
             <li>
-              <a class="dropdown-item" [routerLink]="['/like', like.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver </a>
-            </li>
-            <li>
               <button class="dropdown-item text-danger" (click)="delete(like)">
-                <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
+                <fa-icon icon="times" [fixedWidth]="true" />
+                Eliminar
               </button>
             </li>
           </ul>

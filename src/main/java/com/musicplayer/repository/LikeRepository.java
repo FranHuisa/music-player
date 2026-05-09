@@ -12,9 +12,25 @@ import org.springframework.stereotype.Repository;
 @SuppressWarnings("unused")
 @Repository
 public interface LikeRepository extends JpaRepository<Like, Long> {
-    @Query("select like from Like like where like.user.login = ?#{authentication.name}")
+    @Query(
+        """
+            select l from Like l
+            join fetch l.song s
+            where l.user.login = ?#{authentication.name}
+        """
+    )
     List<Like> findByUserIsCurrentUser();
 
+    @Query(
+        """
+            select l from Like l
+            join fetch l.song s
+            where l.user.login = ?#{authentication.name}
+        """
+    )
+    List<Like> findByUserIsCurrentUserWithSong();
+
     Optional<Like> findByUserIdAndSongId(Long userId, Long songId);
+
     List<Like> findByUserLogin(String login);
 }

@@ -5,6 +5,7 @@ import dayjs from 'dayjs/esm';
 
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IPlaylistSong, NewPlaylistSong } from '../playlist-song.model';
+import { ISong } from 'app/entities/song/song.model';
 
 /**
  * A partial Type with required key is used as form input.
@@ -35,7 +36,7 @@ type PlaylistSongFormGroupContent = {
   position: FormControl<PlaylistSongFormRawValue['position']>;
   addedAt: FormControl<PlaylistSongFormRawValue['addedAt']>;
   playlist: FormControl<PlaylistSongFormRawValue['playlist']>;
-  song: FormControl<PlaylistSongFormRawValue['song']>;
+  song: FormControl<ISong | null>;
 };
 
 export type PlaylistSongFormGroup = FormGroup<PlaylistSongFormGroupContent>;
@@ -60,7 +61,7 @@ export class PlaylistSongFormService {
       playlist: new FormControl(playlistSongRawValue.playlist, {
         validators: [Validators.required],
       }),
-      song: new FormControl(playlistSongRawValue.song, {
+      song: new FormControl<ISong | null>(playlistSongRawValue.song ?? null, {
         validators: [Validators.required],
       }),
     });

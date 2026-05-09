@@ -133,8 +133,6 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional(readOnly = true)
     public List<LikeDTO> findMyLikes() {
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("No user logged"));
-
-        return likeRepository.findByUserLogin(login).stream().map(likeMapper::toDto).toList();
+        return likeRepository.findByUserIsCurrentUserWithSong().stream().map(likeMapper::toDto).toList();
     }
 }

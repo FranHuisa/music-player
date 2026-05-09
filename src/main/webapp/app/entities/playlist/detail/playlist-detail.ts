@@ -1,5 +1,5 @@
-import { Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,10 +13,19 @@ import { IPlaylist } from '../playlist.model';
 @Component({
   selector: 'jhi-playlist-detail',
   templateUrl: './playlist-detail.html',
+  styleUrls: ['./playlist-detail.scss'],
   imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe],
 })
 export class PlaylistDetail {
-  readonly playlist = input<IPlaylist | null>(null);
+  private route = inject(ActivatedRoute);
+
+  playlist: IPlaylist | null = null;
+
+  constructor() {
+    this.route.data.subscribe(({ playlist }) => {
+      this.playlist = playlist;
+    });
+  }
 
   previousState(): void {
     globalThis.history.back();

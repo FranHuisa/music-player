@@ -17,10 +17,13 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { LikeDeleteDialog } from '../delete/like-delete-dialog';
 import { ILike } from '../like.model';
 import { LikeService } from '../service/like.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
+import { ISong } from 'app/entities/song/song.model';
 
 @Component({
   selector: 'jhi-like',
   templateUrl: './like.html',
+  styleUrls: ['./like.scss'],
   imports: [
     RouterLink,
     FormsModule,
@@ -50,7 +53,7 @@ export class Like implements OnInit {
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
-
+  protected readonly player = inject(PlayerService);
   constructor() {
     effect(() => {
       this.likes.set(this.fillComponentAttributesFromResponseBody([...this.likeService.likes()]));
@@ -58,7 +61,10 @@ export class Like implements OnInit {
   }
 
   trackId = (item: ILike): number => this.likeService.getLikeIdentifier(item);
-
+  playSong(like: ILike): void {
+    if (!like.song) return;
+    this.player.playSong(like.song as ISong, this.likes() as ISong[]);
+  }
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(

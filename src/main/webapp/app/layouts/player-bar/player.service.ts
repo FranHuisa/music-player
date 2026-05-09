@@ -5,16 +5,15 @@ import { ISong } from 'app/entities/song/song.model';
 export class PlayerService {
   private audio = new Audio();
 
-  // Estado
   readonly currentSong = signal<ISong | null>(null);
   readonly isPlaying = signal(false);
   readonly isShuffle = signal(false);
   readonly isRepeat = signal(false);
   readonly volume = signal(70);
   readonly isMuted = signal(false);
-  readonly progress = signal(0); // 0-100
-  readonly currentTime = signal(0); // segundos
-  readonly duration = signal(0); // segundos
+  readonly progress = signal(0);
+  readonly currentTime = signal(0);
+  readonly duration = signal(0);
 
   readonly volumeIcon = computed(() => {
     if (this.isMuted() || this.volume() === 0) return 'volume-mute';
