@@ -81,6 +81,22 @@
 
   <div class="song-editor-right">
     <label>Letra</label>
+    <div class="lyrics-actions">
+      <button
+        type="button"
+        class="btn-upload"
+        (click)="fetchLyrics()"
+        [disabled]="fetchingLyrics() || !editForm.get('title')?.value"
+        title="Buscar letra automáticamente"
+      >
+        @if (fetchingLyrics()) {
+          <fa-icon icon="spinner" [animation]="'spin'" />
+        } @else {
+          <fa-icon icon="search" />
+        }
+        Buscar letra
+      </button>
+    </div>
     <textarea formControlName="lyrics"></textarea>
   </div>
 </form>

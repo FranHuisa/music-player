@@ -11,6 +11,7 @@ import { finalize, map } from 'rxjs/operators';
 
 import { DataUtils, FileLoadError } from 'app/core/util/data-util.service';
 import { EventManager, EventWithContent } from 'app/core/util/event-manager.service';
+import { LyricsService } from 'app/core/service/lyrics.service';
 import { IAlbum } from 'app/entities/album/album.model';
 import { AlbumService } from 'app/entities/album/service/album.service';
 import { IArtist } from 'app/entities/artist/artist.model';
@@ -34,6 +35,7 @@ import { SongFormGroup, SongFormService } from './song-form.service';
 })
 export class SongUpdate implements OnInit {
   readonly isSaving = signal(false);
+  readonly fetchingLyrics = signal(false);
   song: ISong | null = null;
 
   albumsSharedCollection = signal<IAlbum[]>([]);
@@ -48,6 +50,8 @@ export class SongUpdate implements OnInit {
   protected genreService = inject(GenreService);
   protected artistService = inject(ArtistService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected lyricsService = inject(LyricsService);
+
   // Validación de archivos
   selectedFile: File | null = null;
   selectedCover: File | null = null;
@@ -92,6 +96,21 @@ export class SongUpdate implements OnInit {
 
   previousState(): void {
     globalThis.history.back();
+  }
+
+  fetchLyrics(): void {
+    const title = this.editForm.get('title')?.value;
+    const artists = this.editForm.get('artistses')?.value as IArtist[] | null;
+    if (!title) return;
+    const artistName = artists && artists.length > 0 ? (artists[0].name ?? '') : '';
+    if (!artistName) return;
+    this.fetchingLyrics.set(true);
+    this.lyricsService.getLyrics(artistName, title).subscribe(result => {
+      if (result.found) {
+        this.editForm.get('lyrics')?.setValue(result.lyrics);
+      }
+      this.fetchingLyrics.set(false);
+    });
   }
 
   save(): void {

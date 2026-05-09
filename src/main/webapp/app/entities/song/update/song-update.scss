@@ -105,6 +105,11 @@
   gap: 0.5rem;
 }
 
+.lyrics-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .song-editor-right textarea {
   min-height: 460px;
   resize: none;

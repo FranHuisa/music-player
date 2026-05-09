@@ -1313,3 +1313,45 @@ a:not([href]):not([tabindex]):hover.dropdown-item {
   gap: 0.75rem;
   flex-wrap: wrap;
 }
+
+.lyrics-fetch-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+
+  .lyrics-textarea {
+    flex: 1;
+    min-height: 180px;
+    resize: vertical;
+  }
+
+  .btn-fetch-lyrics {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-primary);
+    padding: 0.5rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 1.6rem;
+
+    &:hover:not(:disabled) {
+      background: var(--accent);
+      color: #000;
+      border-color: var(--accent);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+}
