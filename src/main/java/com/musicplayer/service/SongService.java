@@ -79,4 +79,6 @@ public interface SongService {
     Page<SongDTO> findMySongs(Pageable pageable);
 
     Page<SongDTO> findByTitleContaining(String title, Pageable pageable);
+
+    Page<SongDTO> findPublicSongs(Pageable pageable);
 }

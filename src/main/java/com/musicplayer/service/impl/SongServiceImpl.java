@@ -163,6 +163,12 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public Page<SongDTO> findByTitleContaining(String title, Pageable pageable) {
-        return songRepository.findByTitleContainingIgnoreCase(title, pageable).map(songMapper::toDto);
+        return songRepository.findByTitleContainingIgnoreCaseAndActiveTrue(title, pageable).map(songMapper::toDto);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SongDTO> findPublicSongs(Pageable pageable) {
+        return songRepository.findByActiveTrue(pageable).map(songMapper::toDto);
     }
 }

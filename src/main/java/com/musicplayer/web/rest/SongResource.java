@@ -186,7 +186,6 @@ public class SongResource {
 
         Page<SongDTO> page;
 
-        // 🟣 ADMIN / EDITOR → todo el contenido
         if (isAdmin || isEditor) {
             if (titleContains != null && !titleContains.isBlank()) {
                 page = songService.findByTitleContaining(titleContains, pageable);
@@ -196,7 +195,11 @@ public class SongResource {
                 page = songService.findAll(pageable);
             }
         } else {
-            throw new BadRequestAlertException("No tienes permisos para acceder a este recurso", "song", "forbidden");
+            if (titleContains != null && !titleContains.isBlank()) {
+                page = songService.findByTitleContaining(titleContains, pageable);
+            } else {
+                page = songService.findPublicSongs(pageable);
+            }
         }
 
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);

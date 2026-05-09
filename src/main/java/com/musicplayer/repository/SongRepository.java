@@ -45,4 +45,8 @@ public interface SongRepository extends SongRepositoryWithBagRelationships, JpaR
     Page<Song> findByArtistLogin(@Param("login") String login, Pageable pageable);
 
     Page<Song> findByTitleContainingIgnoreCase(String title, Pageable pageable);
+
+    Page<Song> findByTitleContainingIgnoreCaseAndActiveTrue(String title, Pageable pageable);
+
+    Page<Song> findByActiveTrue(Pageable pageable);
 }
