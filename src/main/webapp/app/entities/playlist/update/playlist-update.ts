@@ -1,4 +1,4 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -23,6 +23,7 @@ import { PlaylistFormGroup, PlaylistFormService } from './playlist-form.service'
 @Component({
   selector: 'jhi-playlist-update',
   templateUrl: './playlist-update.html',
+  styleUrl: './playlist-update.scss',
   imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule],
 })
 export class PlaylistUpdate implements OnInit {
@@ -30,14 +31,15 @@ export class PlaylistUpdate implements OnInit {
   playlist: IPlaylist | null = null;
 
   usersSharedCollection = signal<IUser[]>([]);
-
+  protected http = inject(HttpClient);
   protected dataUtils = inject(DataUtils);
   protected eventManager = inject(EventManager);
   protected playlistService = inject(PlaylistService);
   protected playlistFormService = inject(PlaylistFormService);
   protected userService = inject(UserService);
   protected activatedRoute = inject(ActivatedRoute);
-
+  selectedCover: File | null = null;
+  coverPreviewUrl: string | null = null;
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: PlaylistFormGroup = this.playlistFormService.createPlaylistFormGroup();
 
@@ -74,17 +76,57 @@ export class PlaylistUpdate implements OnInit {
   previousState(): void {
     globalThis.history.back();
   }
-
   save(): void {
     this.isSaving.set(true);
+
+    if (this.selectedCover) {
+      const formData = new FormData();
+      formData.append('file', this.selectedCover);
+
+      this.http.post<{ url: string }>('/api/upload/image', formData).subscribe({
+        next: res => {
+          this.editForm.patchValue({ coverImage: res.url });
+          this.savePlaylist();
+        },
+        error: () => {
+          alert('Error al subir la imagen');
+          this.isSaving.set(false);
+        },
+      });
+    } else {
+      this.savePlaylist();
+    }
+  }
+  private savePlaylist(): void {
     const playlist = this.playlistFormService.getPlaylist(this.editForm);
+
     if (playlist.id === null) {
       this.subscribeToSaveResponse(this.playlistService.create(playlist));
     } else {
       this.subscribeToSaveResponse(this.playlistService.update(playlist));
     }
   }
+  onCoverSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
 
+    if (!input.files || input.files.length === 0) {
+      this.selectedCover = null;
+      this.coverPreviewUrl = null;
+      return;
+    }
+
+    const file = input.files[0];
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Formato no permitido');
+      return;
+    }
+
+    this.selectedCover = file;
+    this.coverPreviewUrl = URL.createObjectURL(file);
+  }
   protected subscribeToSaveResponse(result: Observable<IPlaylist | null>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),

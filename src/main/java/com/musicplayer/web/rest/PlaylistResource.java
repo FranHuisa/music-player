@@ -1,8 +1,11 @@
 package com.musicplayer.web.rest;
 
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.PlaylistRepository;
+import com.musicplayer.repository.UserRepository;
 import com.musicplayer.service.PlaylistService;
 import com.musicplayer.service.dto.PlaylistDTO;
+import com.musicplayer.service.mapper.UserMapper;
 import com.musicplayer.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -18,6 +21,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
@@ -39,12 +44,20 @@ public class PlaylistResource {
     private String applicationName;
 
     private final PlaylistService playlistService;
-
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
     private final PlaylistRepository playlistRepository;
 
-    public PlaylistResource(PlaylistService playlistService, PlaylistRepository playlistRepository) {
+    public PlaylistResource(
+        PlaylistService playlistService,
+        PlaylistRepository playlistRepository,
+        UserRepository userRepository,
+        UserMapper userMapper
+    ) {
         this.playlistService = playlistService;
         this.playlistRepository = playlistRepository;
+        this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     /**
@@ -59,10 +72,18 @@ public class PlaylistResource {
     @PostMapping("")
     public ResponseEntity<PlaylistDTO> createPlaylist(@Valid @RequestBody PlaylistDTO playlistDTO) throws URISyntaxException {
         LOG.debug("REST request to save Playlist : {}", playlistDTO);
+
         if (playlistDTO.getId() != null) {
             throw new BadRequestAlertException("A new playlist cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        String login = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepository.findOneByLogin(login).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        playlistDTO.setUserId(user.getId());
         playlistDTO = playlistService.save(playlistDTO);
+
         return ResponseEntity.created(new URI("/api/playlists/" + playlistDTO.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, playlistDTO.getId().toString()))
             .body(playlistDTO);

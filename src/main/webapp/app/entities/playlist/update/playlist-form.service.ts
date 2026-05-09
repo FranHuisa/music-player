@@ -6,27 +6,16 @@ import dayjs from 'dayjs/esm';
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { IPlaylist, NewPlaylist } from '../playlist.model';
 
-/**
- * A partial Type with required key is used as form input.
- */
 type PartialWithRequiredKeyOf<T extends { id: unknown }> = Partial<Omit<T, 'id'>> & { id: T['id'] };
 
-/**
- * Type for createFormGroup and resetForm argument.
- * It accepts IPlaylist for edit and NewPlaylistFormGroupInput for create.
- */
 type PlaylistFormGroupInput = IPlaylist | PartialWithRequiredKeyOf<NewPlaylist>;
 
-/**
- * Type that converts some properties for forms.
- */
 type FormValueOf<T extends IPlaylist | NewPlaylist> = Omit<T, 'createdAt' | 'updatedAt'> & {
   createdAt?: string | null;
   updatedAt?: string | null;
 };
 
 type PlaylistFormRawValue = FormValueOf<IPlaylist>;
-
 type NewPlaylistFormRawValue = FormValueOf<NewPlaylist>;
 
 type PlaylistFormDefaults = Pick<NewPlaylist, 'id' | 'isPublic' | 'createdAt' | 'updatedAt'>;
@@ -47,66 +36,65 @@ export type PlaylistFormGroup = FormGroup<PlaylistFormGroupContent>;
 @Injectable({ providedIn: 'root' })
 export class PlaylistFormService {
   createPlaylistFormGroup(playlist?: PlaylistFormGroupInput): PlaylistFormGroup {
-    const playlistRawValue = this.convertPlaylistToPlaylistRawValue({
-      ...this.getFormDefaults(),
+    const playlistRawValue = this.convertPlaylistToRaw({
+      ...this.getDefaults(),
       ...(playlist ?? { id: null }),
     });
+
     return new FormGroup<PlaylistFormGroupContent>({
-      id: new FormControl(
-        { value: playlistRawValue.id, disabled: true },
-        {
-          nonNullable: true,
-          validators: [Validators.required],
-        },
-      ),
+      id: new FormControl({ value: playlistRawValue.id, disabled: true }),
+
       name: new FormControl(playlistRawValue.name, {
         validators: [Validators.required, Validators.maxLength(100)],
       }),
+
       description: new FormControl(playlistRawValue.description),
+
       isPublic: new FormControl(playlistRawValue.isPublic),
-      coverImage: new FormControl(playlistRawValue.coverImage, {
-        validators: [Validators.maxLength(255)],
-      }),
+
+      coverImage: new FormControl(playlistRawValue.coverImage),
+
       createdAt: new FormControl(playlistRawValue.createdAt),
+
       updatedAt: new FormControl(playlistRawValue.updatedAt),
-      user: new FormControl(playlistRawValue.user, {
-        validators: [Validators.required],
-      }),
+
+      user: new FormControl(playlistRawValue.user),
     });
   }
 
   getPlaylist(form: PlaylistFormGroup): IPlaylist | NewPlaylist {
-    return this.convertPlaylistRawValueToPlaylist(form.getRawValue() as PlaylistFormRawValue | NewPlaylistFormRawValue);
+    return this.convertRawToPlaylist(form.getRawValue());
   }
 
   resetForm(form: PlaylistFormGroup, playlist: PlaylistFormGroupInput): void {
-    const playlistRawValue = this.convertPlaylistToPlaylistRawValue({ ...this.getFormDefaults(), ...playlist });
+    const raw = this.convertPlaylistToRaw({ ...this.getDefaults(), ...playlist });
+
     form.reset({
-      ...playlistRawValue,
-      id: { value: playlistRawValue.id, disabled: true },
+      ...raw,
+      id: { value: raw.id, disabled: true },
     });
   }
 
-  private getFormDefaults(): PlaylistFormDefaults {
-    const currentTime = dayjs();
+  private getDefaults(): PlaylistFormDefaults {
+    const now = dayjs();
 
     return {
       id: null,
       isPublic: false,
-      createdAt: currentTime,
-      updatedAt: currentTime,
+      createdAt: now,
+      updatedAt: now,
     };
   }
 
-  private convertPlaylistRawValueToPlaylist(rawPlaylist: PlaylistFormRawValue | NewPlaylistFormRawValue): IPlaylist | NewPlaylist {
+  private convertRawToPlaylist(raw: PlaylistFormRawValue | NewPlaylistFormRawValue): IPlaylist | NewPlaylist {
     return {
-      ...rawPlaylist,
-      createdAt: dayjs(rawPlaylist.createdAt, DATE_TIME_FORMAT),
-      updatedAt: dayjs(rawPlaylist.updatedAt, DATE_TIME_FORMAT),
+      ...raw,
+      createdAt: raw.createdAt ? dayjs(raw.createdAt, DATE_TIME_FORMAT) : undefined,
+      updatedAt: raw.updatedAt ? dayjs(raw.updatedAt, DATE_TIME_FORMAT) : undefined,
     };
   }
 
-  private convertPlaylistToPlaylistRawValue(
+  private convertPlaylistToRaw(
     playlist: IPlaylist | (Partial<NewPlaylist> & PlaylistFormDefaults),
   ): PlaylistFormRawValue | PartialWithRequiredKeyOf<NewPlaylistFormRawValue> {
     return {

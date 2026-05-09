@@ -11,7 +11,7 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface PlaylistMapper extends EntityMapper<PlaylistDTO, Playlist> {
-    @Mapping(target = "user", source = "user", qualifiedByName = "userId")
+    @Mapping(target = "userId", source = "user.id")
     PlaylistDTO toDto(Playlist s);
 
     @Named("userId")

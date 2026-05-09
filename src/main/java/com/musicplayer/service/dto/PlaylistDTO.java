@@ -30,8 +30,7 @@ public class PlaylistDTO implements Serializable {
 
     private Instant updatedAt;
 
-    @NotNull
-    private UserDTO user;
+    private Long userId;
 
     public Long getId() {
         return id;
@@ -89,12 +88,12 @@ public class PlaylistDTO implements Serializable {
         this.updatedAt = updatedAt;
     }
 
-    public UserDTO getUser() {
-        return user;
+    public Long getUserId() {
+        return userId;
     }
 
-    public void setUser(UserDTO user) {
-        this.user = user;
+    public void setUserId(Long userId) {
+        this.userId = userId;
     }
 
     @Override
@@ -129,7 +128,7 @@ public class PlaylistDTO implements Serializable {
             ", coverImage='" + getCoverImage() + "'" +
             ", createdAt='" + getCreatedAt() + "'" +
             ", updatedAt='" + getUpdatedAt() + "'" +
-            ", user=" + getUser() +
+            ", userId=" + getUserId() +
             "}";
     }
 }
