@@ -2,14 +2,18 @@ package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Album;
 import com.musicplayer.domain.Artist;
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.AlbumRepository;
 import com.musicplayer.repository.ArtistRepository;
+import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.AuthoritiesConstants;
 import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.AlbumService;
 import com.musicplayer.service.dto.AlbumDTO;
 import com.musicplayer.service.mapper.AlbumMapper;
 import com.musicplayer.web.rest.AlbumResource;
 import com.musicplayer.web.rest.errors.BadRequestAlertException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -29,14 +33,23 @@ public class AlbumServiceImpl implements AlbumService {
 
     private static final Logger LOG = LoggerFactory.getLogger(AlbumServiceImpl.class);
 
+    private static final String ENTITY_NAME = "album";
+
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
 
     private final AlbumMapper albumMapper;
 
-    public AlbumServiceImpl(AlbumRepository albumRepository, AlbumMapper albumMapper, ArtistRepository artistRepository) {
+    public AlbumServiceImpl(
+        AlbumRepository albumRepository,
+        AlbumMapper albumMapper,
+        ArtistRepository artistRepository,
+        UserRepository userRepository
+    ) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
         this.albumMapper = albumMapper;
     }
 
@@ -46,13 +59,7 @@ public class AlbumServiceImpl implements AlbumService {
 
         Album album = albumMapper.toEntity(albumDTO);
 
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
-            new BadRequestAlertException("Usuario no autenticado", "album", "usernotfound")
-        );
-
-        Artist artist = artistRepository
-            .findByUserLogin(login)
-            .orElseThrow(() -> new BadRequestAlertException("Artista no encontrado", "album", "artistnotfound"));
+        Artist artist = getOrCreateCurrentArtist();
 
         album.setArtist(artist);
 
@@ -104,6 +111,47 @@ public class AlbumServiceImpl implements AlbumService {
     public void delete(Long id) {
         LOG.debug("Request to delete Album : {}", id);
         albumRepository.deleteById(id);
+    }
+
+    private Artist getOrCreateCurrentArtist() {
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", ENTITY_NAME, "usernotfound")
+        );
+
+        return artistRepository.findByUserLogin(login).orElseGet(() -> createArtistForCurrentEditor(login));
+    }
+
+    private Artist createArtistForCurrentEditor(String login) {
+        if (
+            SecurityUtils.hasCurrentUserNoneOfAuthorities(
+                AuthoritiesConstants.ADMIN,
+                AuthoritiesConstants.EDITOR,
+                AuthoritiesConstants.ARTIST
+            )
+        ) {
+            throw new BadRequestAlertException("Artista no encontrado", ENTITY_NAME, "artistnotfound");
+        }
+
+        User user = userRepository
+            .findOneByLogin(login)
+            .orElseThrow(() -> new BadRequestAlertException("Usuario no encontrado", ENTITY_NAME, "usernotfound"));
+
+        Artist artist = new Artist();
+        artist.setName(buildArtistName(user));
+        artist.setVerified(false);
+        artist.setCreatedAt(Instant.now());
+        artist.setUser(user);
+
+        return artistRepository.save(artist);
+    }
+
+    private String buildArtistName(User user) {
+        String fullName = (
+            (user.getFirstName() == null ? "" : user.getFirstName()) +
+            " " +
+            (user.getLastName() == null ? "" : user.getLastName())
+        ).trim();
+        return fullName.isBlank() ? user.getLogin() : fullName;
     }
 
     @Override

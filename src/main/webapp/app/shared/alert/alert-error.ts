@@ -81,6 +81,7 @@ export class AlertError implements OnDestroy {
   }
 
   private handleBadRequest(httpErrorResponse: HttpErrorResponse): void {
+    const error = httpErrorResponse.error;
     const headers = Object.fromEntries(httpErrorResponse.headers.keys().map(key => [key, httpErrorResponse.headers.getAll(key)]));
     const message = getMessageFromHeaders(headers);
     if (message.errorKey) {
@@ -88,28 +89,21 @@ export class AlertError implements OnDestroy {
       this.addErrorAlert(message.errorKey, message.errorKey, alertData);
     } else if (message.errorMessage) {
       this.addErrorAlert(message.errorMessage);
-    } else if (httpErrorResponse.error !== '' && httpErrorResponse.error.fieldErrors) {
+    } else if (error && error !== '' && error.fieldErrors) {
       this.handleFieldsError(httpErrorResponse);
-    } else if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
-      this.addErrorAlert(
-        httpErrorResponse.error.detail ?? httpErrorResponse.error.message,
-        httpErrorResponse.error.message,
-        httpErrorResponse.error.params,
-      );
+    } else if (error && error !== '' && error.message) {
+      this.addErrorAlert(error.detail ?? error.message, error.message, error.params);
     } else {
-      this.addErrorAlert(httpErrorResponse.error, httpErrorResponse.error);
+      this.addErrorAlert(error ?? httpErrorResponse.message, error ?? httpErrorResponse.message);
     }
   }
 
   private handleDefaultError(httpErrorResponse: HttpErrorResponse): void {
-    if (httpErrorResponse.error !== '' && httpErrorResponse.error.message) {
-      this.addErrorAlert(
-        httpErrorResponse.error.detail ?? httpErrorResponse.error.message,
-        httpErrorResponse.error.message,
-        httpErrorResponse.error.params,
-      );
+    const error = httpErrorResponse.error;
+    if (error && error !== '' && error.message) {
+      this.addErrorAlert(error.detail ?? error.message, error.message, error.params);
     } else {
-      this.addErrorAlert(httpErrorResponse.error, httpErrorResponse.error);
+      this.addErrorAlert(error ?? httpErrorResponse.message, error ?? httpErrorResponse.message);
     }
   }
 

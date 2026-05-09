@@ -19,6 +19,7 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import CoverImageUrlPipe from 'app/shared/media/cover-image-url.pipe';
 import { IArtist } from '../artist.model';
 import { ArtistDeleteDialog } from '../delete/artist-delete-dialog';
 import { ArtistService } from '../service/artist.service';
@@ -42,6 +43,7 @@ import { ArtistService } from '../service/artist.service';
     FormatMediumDatetimePipe,
     NgbPagination,
     ItemCount,
+    CoverImageUrlPipe,
   ],
 })
 export class Artist implements OnInit {

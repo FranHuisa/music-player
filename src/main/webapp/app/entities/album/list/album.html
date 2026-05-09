@@ -51,7 +51,11 @@
       @for (album of visibleAlbums(); track trackId(album)) {
         <div class="album-card" ngbDropdown data-cy="entityTable">
           <div class="album-cover">
-            <fa-icon icon="compact-disc" />
+            @if (album.coverImage) {
+              <img [src]="album.coverImage | coverImageUrl" [alt]="album.title ?? 'Álbum'" />
+            } @else {
+              <fa-icon icon="compact-disc" />
+            }
             <button class="album-card-play" (click)="playAlbum(album); $event.stopPropagation()" aria-label="Reproducir álbum">
               <fa-icon icon="play" />
             </button>

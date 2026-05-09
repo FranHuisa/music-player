@@ -31,7 +31,11 @@
       @for (artist of artists(); track trackId(artist)) {
         <div class="artist-card" ngbDropdown data-cy="entityTable">
           <div class="artist-avatar">
-            <fa-icon icon="user" />
+            @if (artist.image) {
+              <img [src]="artist.image | coverImageUrl" [alt]="artist.name ?? 'Artista'" />
+            } @else {
+              <fa-icon icon="user" />
+            }
           </div>
 
           <a [routerLink]="['/artist', artist.id, 'view']" class="artist-name" style="text-decoration: none">

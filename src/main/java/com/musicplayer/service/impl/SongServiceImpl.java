@@ -2,16 +2,20 @@ package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Artist;
 import com.musicplayer.domain.Song;
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.ArtistRepository;
 import com.musicplayer.repository.SongRepository;
+import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.AuthoritiesConstants;
 import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.SongService;
 import com.musicplayer.service.dto.SongDTO;
 import com.musicplayer.service.mapper.SongMapper;
+import com.musicplayer.web.rest.errors.BadRequestAlertException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,25 +33,32 @@ public class SongServiceImpl implements SongService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SongServiceImpl.class);
 
+    private static final String ENTITY_NAME = "song";
+
     private final SongRepository songRepository;
 
     private final SongMapper songMapper;
 
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
 
-    public SongServiceImpl(SongRepository songRepository, SongMapper songMapper, ArtistRepository artistRepository) {
+    public SongServiceImpl(
+        SongRepository songRepository,
+        SongMapper songMapper,
+        ArtistRepository artistRepository,
+        UserRepository userRepository
+    ) {
         this.songRepository = songRepository;
         this.songMapper = songMapper;
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
     public SongDTO save(SongDTO songDTO) {
         Song song = songMapper.toEntity(songDTO);
 
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("No user logged"));
-
-        Artist artist = artistRepository.findByUserLogin(login).orElseThrow(() -> new RuntimeException("Artist not found"));
+        Artist artist = getOrCreateCurrentArtist();
 
         song.setArtist(artist);
 
@@ -113,6 +124,47 @@ public class SongServiceImpl implements SongService {
     public void delete(Long id) {
         LOG.debug("Request to delete Song : {}", id);
         songRepository.deleteById(id);
+    }
+
+    private Artist getOrCreateCurrentArtist() {
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", ENTITY_NAME, "usernotfound")
+        );
+
+        return artistRepository.findByUserLogin(login).orElseGet(() -> createArtistForCurrentEditor(login));
+    }
+
+    private Artist createArtistForCurrentEditor(String login) {
+        if (
+            SecurityUtils.hasCurrentUserNoneOfAuthorities(
+                AuthoritiesConstants.ADMIN,
+                AuthoritiesConstants.EDITOR,
+                AuthoritiesConstants.ARTIST
+            )
+        ) {
+            throw new BadRequestAlertException("Artista no encontrado", ENTITY_NAME, "artistnotfound");
+        }
+
+        User user = userRepository
+            .findOneByLogin(login)
+            .orElseThrow(() -> new BadRequestAlertException("Usuario no encontrado", ENTITY_NAME, "usernotfound"));
+
+        Artist artist = new Artist();
+        artist.setName(buildArtistName(user));
+        artist.setVerified(false);
+        artist.setCreatedAt(Instant.now());
+        artist.setUser(user);
+
+        return artistRepository.save(artist);
+    }
+
+    private String buildArtistName(User user) {
+        String fullName = (
+            (user.getFirstName() == null ? "" : user.getFirstName()) +
+            " " +
+            (user.getLastName() == null ? "" : user.getLastName())
+        ).trim();
+        return fullName.isBlank() ? user.getLogin() : fullName;
     }
 
     @Override

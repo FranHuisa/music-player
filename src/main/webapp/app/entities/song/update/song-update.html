@@ -60,9 +60,11 @@
 
         <input type="number" formControlName="duration" />
 
-        <small *ngIf="editForm.get('duration')?.value">
-          {{ formatDuration(editForm.get('duration')?.value ?? 0) }}
-        </small>
+        @if (editForm.get('duration')?.value) {
+          <small>
+            {{ formatDuration(editForm.get('duration')?.value ?? 0) }}
+          </small>
+        }
       </div>
     </div>
 
@@ -73,7 +75,12 @@
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="previousState()">Cancelar</button>
 
-      <button type="button" class="btn btn-primary" (click)="save()" [disabled]="editForm.invalid || isSaving()">
+      <button
+        type="button"
+        class="btn btn-primary"
+        (click)="save()"
+        [disabled]="editForm.invalid || isSaving() || (!song?.id && !selectedFile && !editForm.get('fileUrl')?.value)"
+      >
         {{ song?.id ? 'Actualizar' : 'Crear' }}
       </button>
     </div>

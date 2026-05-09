@@ -1,10 +1,14 @@
 package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Artist;
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.ArtistRepository;
+import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.ArtistService;
 import com.musicplayer.service.dto.ArtistDTO;
 import com.musicplayer.service.mapper.ArtistMapper;
+import com.musicplayer.web.rest.errors.BadRequestAlertException;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,16 +29,19 @@ public class ArtistServiceImpl implements ArtistService {
     private final ArtistRepository artistRepository;
 
     private final ArtistMapper artistMapper;
+    private final UserRepository userRepository;
 
-    public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+    public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper, UserRepository userRepository) {
         this.artistRepository = artistRepository;
         this.artistMapper = artistMapper;
+        this.userRepository = userRepository;
     }
 
     @Override
     public ArtistDTO save(ArtistDTO artistDTO) {
         LOG.debug("Request to save Artist : {}", artistDTO);
         Artist artist = artistMapper.toEntity(artistDTO);
+        assignUserIfMissing(artist);
         artist = artistRepository.save(artist);
         return artistMapper.toDto(artist);
     }
@@ -43,6 +50,8 @@ public class ArtistServiceImpl implements ArtistService {
     public ArtistDTO update(ArtistDTO artistDTO) {
         LOG.debug("Request to update Artist : {}", artistDTO);
         Artist artist = artistMapper.toEntity(artistDTO);
+        artistRepository.findById(artistDTO.getId()).map(Artist::getUser).ifPresent(artist::setUser);
+        assignUserIfMissing(artist);
         artist = artistRepository.save(artist);
         return artistMapper.toDto(artist);
     }
@@ -87,5 +96,21 @@ public class ArtistServiceImpl implements ArtistService {
     public Optional<ArtistDTO> findByUserLogin(String login) {
         LOG.debug("Request to get Artist by user login : {}", login);
         return artistRepository.findByUserLogin(login).map(artistMapper::toDto);
+    }
+
+    private void assignUserIfMissing(Artist artist) {
+        if (artist.getUser() != null) {
+            return;
+        }
+
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", "artist", "usernotfound")
+        );
+
+        User user = userRepository
+            .findOneByLogin(login)
+            .orElseThrow(() -> new BadRequestAlertException("Usuario no encontrado", "artist", "usernotfound"));
+
+        artist.setUser(user);
     }
 }

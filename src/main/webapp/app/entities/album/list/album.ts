@@ -20,6 +20,7 @@ import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { IAlbum } from '../album.model';
 import { AlbumDeleteDialog } from '../delete/album-delete-dialog';
 import { AlbumService } from '../service/album.service';
@@ -44,6 +45,7 @@ import { AccountService } from 'app/core/auth/account.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatePipe,
+    CoverImageUrlPipe,
     NgbPagination,
     ItemCount,
   ],

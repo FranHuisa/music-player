@@ -116,6 +116,12 @@ export class SongUpdate implements OnInit {
   save(): void {
     this.isSaving.set(true);
 
+    if (!this.song?.id && !this.selectedFile && !this.editForm.get('fileUrl')?.value) {
+      alert('Selecciona un archivo de audio');
+      this.isSaving.set(false);
+      return;
+    }
+
     const uploadCover = (): Observable<{ url: string }> | null => {
       if (this.selectedCover) {
         const formData = new FormData();
@@ -222,14 +228,19 @@ export class SongUpdate implements OnInit {
 
     const file = input.files[0];
     const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/x-mpeg', 'audio/mpeg3'];
-    if (!allowedTypes.includes(file.type)) {
+    const hasAllowedExtension = /\.(mp3|wav)$/i.test(file.name);
+    if (!allowedTypes.includes(file.type) && !hasAllowedExtension) {
       alert('Solo se permiten archivos MP3 o WAV');
+      input.value = '';
+      this.selectedFile = null;
       return;
     }
 
     const maxSize = 15 * 1024 * 1024;
     if (file.size > maxSize) {
       alert('El archivo es demasiado grande (máx 15MB)');
+      input.value = '';
+      this.selectedFile = null;
       return;
     }
 

@@ -113,8 +113,10 @@ export class AlbumService extends AlbumsService {
 
   query(req?: any): Observable<HttpResponse<IAlbum[]>> {
     const options = createRequestOption(req);
+    const isAdmin = this.accountService.hasAnyAuthority(['ROLE_ADMIN']);
+    const targetUrl = isAdmin ? this.adminResourceUrl : this.myResourceUrl;
     return this.http
-      .get<RestAlbum[]>(this.resourceUrl, { params: options, observe: 'response' })
+      .get<RestAlbum[]>(targetUrl, { params: options, observe: 'response' })
       .pipe(map(res => res.clone({ body: res.body?.map(item => this.convertValueFromServer(item)) ?? [] })));
   }
 

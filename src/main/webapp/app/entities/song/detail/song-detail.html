@@ -29,7 +29,11 @@
           </dd>
           <dt><span jhiTranslate="musicPlayerApp.song.coverImage">Cover Image</span></dt>
           <dd>
-            <span>{{ songRef.coverImage }}</span>
+            @if (songRef.coverImage) {
+              <img [src]="songRef.coverImage | coverImageUrl" [alt]="songRef.title ?? 'Portada'" class="song-detail-cover" />
+            } @else {
+              <span>—</span>
+            }
           </dd>
           <dt><span jhiTranslate="musicPlayerApp.song.lyrics">Lyrics</span></dt>
           <dd>

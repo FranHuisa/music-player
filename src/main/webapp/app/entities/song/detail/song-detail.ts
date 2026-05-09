@@ -9,11 +9,13 @@ import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatePipe, FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
+import { CoverImageUrlPipe } from 'app/shared/media';
 import { ISong } from '../song.model';
 
 @Component({
   selector: 'jhi-song-detail',
   templateUrl: './song-detail.html',
+  styleUrl: './song-detail.scss',
   imports: [
     FontAwesomeModule,
     Alert,
@@ -23,6 +25,7 @@ import { ISong } from '../song.model';
     RouterLink,
     FormatMediumDatetimePipe,
     FormatMediumDatePipe,
+    CoverImageUrlPipe,
   ],
 })
 export class SongDetail {
