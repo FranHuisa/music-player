@@ -1,24 +1,37 @@
-<changeSet id="add-artist-to-song" author="tu">
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <addColumn tableName="song">
-        <column name="artist_id" type="BIGINT" />
-    </addColumn>
-    
-    <update tableName="song">
-        <column name="artist_id" valueNumeric="1" />
-        <where>artist_id IS NULL</where>
-    </update>
+    <changeSet id="add-artist-to-song" author="tu">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="song" columnName="artist_id"/>
+            </not>
+        </preConditions>
 
-    <addNotNullConstraint
-        tableName="song"
-        columnName="artist_id"
-        columnDataType="BIGINT" />
+        <addColumn tableName="song">
+            <column name="artist_id" type="BIGINT" />
+        </addColumn>
 
-    <addForeignKeyConstraint
-        baseTableName="song"
-        baseColumnNames="artist_id"
-        constraintName="fk_song_artist"
-        referencedTableName="artist"
-        referencedColumnNames="id" />
+        <update tableName="song">
+            <column name="artist_id" valueNumeric="1" />
+            <where>artist_id IS NULL</where>
+        </update>
 
-</changeSet>
+        <addNotNullConstraint
+            tableName="song"
+            columnName="artist_id"
+            columnDataType="BIGINT" />
+
+        <addForeignKeyConstraint
+            baseTableName="song"
+            baseColumnNames="artist_id"
+            constraintName="fk_song_artist"
+            referencedTableName="artist"
+            referencedColumnNames="id" />
+
+    </changeSet>
+
+</databaseChangeLog>

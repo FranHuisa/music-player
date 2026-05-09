@@ -1,4 +1,4 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -37,6 +37,10 @@ export class ArtistUpdate implements OnInit {
   protected artistFormService = inject(ArtistFormService);
   protected songService = inject(SongService);
   protected activatedRoute = inject(ActivatedRoute);
+  protected http = inject(HttpClient);
+
+  selectedImage: File | null = null;
+  imagePreviewUrl: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: ArtistFormGroup = this.artistFormService.createArtistFormGroup();
@@ -77,12 +81,58 @@ export class ArtistUpdate implements OnInit {
 
   save(): void {
     this.isSaving.set(true);
+
+    if (this.selectedImage) {
+      const formData = new FormData();
+      formData.append('file', this.selectedImage);
+      this.http.post<{ url: string }>('/api/upload/image', formData).subscribe({
+        next: res => {
+          this.editForm.patchValue({ image: res.url });
+          this.saveArtist();
+        },
+        error: () => {
+          alert('Error al subir la imagen');
+          this.isSaving.set(false);
+        },
+      });
+    } else {
+      this.saveArtist();
+    }
+  }
+
+  private saveArtist(): void {
     const artist = this.artistFormService.getArtist(this.editForm);
     if (artist.id === null) {
       this.subscribeToSaveResponse(this.artistService.create(artist));
     } else {
       this.subscribeToSaveResponse(this.artistService.update(artist));
     }
+  }
+
+  onImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      this.selectedImage = null;
+      this.imagePreviewUrl = null;
+      return;
+    }
+
+    const file = input.files[0];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Formato no permitido. Use JPEG, PNG o WebP.');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('Máximo 5MB');
+      return;
+    }
+
+    this.selectedImage = file;
+    this.imagePreviewUrl = URL.createObjectURL(file);
   }
 
   protected subscribeToSaveResponse(result: Observable<IArtist | null>): void {

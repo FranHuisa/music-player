@@ -41,7 +41,20 @@
         @let imageRef = editForm.get('image')!;
         <div class="mb-3">
           <label class="form-label" for="field_image" jhiTranslate="musicPlayerApp.artist.image">Image</label>
-          <input type="text" class="form-control" name="image" id="field_image" data-cy="image" formControlName="image" />
+          @if (imagePreviewUrl) {
+            <div class="mb-2">
+              <img [src]="imagePreviewUrl" alt="Preview" style="max-width: 200px; max-height: 200px; border-radius: 8px" />
+            </div>
+          }
+          <input
+            type="file"
+            class="form-control"
+            name="image"
+            id="field_image"
+            data-cy="image"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+          />
           @if (imageRef.invalid && (imageRef.dirty || imageRef.touched)) {
             <div>
               @if (editForm.get('image')?.errors?.maxlength) {

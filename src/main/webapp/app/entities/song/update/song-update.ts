@@ -116,14 +116,61 @@ export class SongUpdate implements OnInit {
   save(): void {
     this.isSaving.set(true);
 
-    if (this.selectedFile) {
-      // Primero sube el audio, luego guarda
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
+    const uploadCover = (): Observable<{ url: string }> | null => {
+      if (this.selectedCover) {
+        const formData = new FormData();
+        formData.append('file', this.selectedCover);
+        return this.http.post<{ url: string }>('/api/upload/image', formData);
+      }
+      return null;
+    };
 
-      this.http.post<{ url: string; filename: string }>('/api/upload/audio', formData).subscribe({
+    const uploadAudio = (): Observable<{ url: string; filename: string }> | null => {
+      if (this.selectedFile) {
+        const formData = new FormData();
+        formData.append('file', this.selectedFile);
+        return this.http.post<{ url: string; filename: string }>('/api/upload/audio', formData);
+      }
+      return null;
+    };
+
+    const coverObs = uploadCover();
+    const audioObs = uploadAudio();
+
+    if (coverObs && audioObs) {
+      coverObs.subscribe({
         next: res => {
-          // Guarda el filename (UUID) en fileUrl
+          this.editForm.patchValue({ coverImage: res.url });
+          audioObs.subscribe({
+            next: res => {
+              this.editForm.patchValue({ fileUrl: res.filename });
+              this.saveSong();
+            },
+            error: () => {
+              alert('Error al subir el archivo de audio');
+              this.isSaving.set(false);
+            },
+          });
+        },
+        error: () => {
+          alert('Error al subir la portada');
+          this.isSaving.set(false);
+        },
+      });
+    } else if (coverObs) {
+      coverObs.subscribe({
+        next: res => {
+          this.editForm.patchValue({ coverImage: res.url });
+          this.saveSong();
+        },
+        error: () => {
+          alert('Error al subir la portada');
+          this.isSaving.set(false);
+        },
+      });
+    } else if (audioObs) {
+      audioObs.subscribe({
+        next: res => {
           this.editForm.patchValue({ fileUrl: res.filename });
           this.saveSong();
         },
@@ -252,12 +299,6 @@ export class SongUpdate implements OnInit {
   }
 
   protected loadRelationshipsOptions(): void {
-    this.albumService
-      .query()
-      .pipe(map((res: HttpResponse<IAlbum[]>) => res.body ?? []))
-      .pipe(map((albums: IAlbum[]) => this.albumService.addAlbumToCollectionIfMissing<IAlbum>(albums, this.song?.album)))
-      .subscribe((albums: IAlbum[]) => this.albumsSharedCollection.set(albums));
-
     this.genreService
       .query()
       .pipe(map((res: HttpResponse<IGenre[]>) => res.body ?? []))

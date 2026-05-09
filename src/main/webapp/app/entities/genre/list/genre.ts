@@ -62,9 +62,7 @@ export class Genre implements OnInit {
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
         tap(() => {
-          if (this.genres().length === 0) {
-            this.load();
-          }
+          this.load();
         }),
       )
       .subscribe();
