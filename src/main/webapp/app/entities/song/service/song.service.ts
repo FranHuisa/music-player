@@ -26,7 +26,6 @@ export type PartialUpdateRestSong = RestOf<PartialUpdateSong>;
 @Injectable()
 export class SongsService {
   readonly songsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined);
-  readonly isAdmin = signal(false);
 
   readonly songsResource = httpResource<RestSong[]>(() => {
     const params = this.songsParams();
@@ -34,7 +33,7 @@ export class SongsService {
     if (!params) return undefined;
 
     return {
-      url: this.isAdmin() ? this.adminResourceUrl : this.resourceUrl,
+      url: this.publicResourceUrl,
       params,
     };
   });

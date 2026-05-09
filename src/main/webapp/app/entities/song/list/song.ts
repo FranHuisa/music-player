@@ -23,7 +23,6 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { SongDeleteDialog } from '../delete/song-delete-dialog';
 import { SongService } from '../service/song.service';
 import { ISong } from '../song.model';
-import { AccountService } from 'app/core/auth/account.service';
 import { CoverImageUrlPipe } from 'app/shared/media';
 
 @Component({
@@ -69,15 +68,8 @@ export class Song implements OnInit {
   protected readonly sortService = inject(SortService);
   protected dataUtils = inject(DataUtils);
   protected modalService = inject(NgbModal);
-  protected readonly accountService = inject(AccountService);
 
   constructor() {
-    effect(() => {
-      const isAdmin = this.accountService.hasAnyAuthority(['ROLE_ADMIN']);
-
-      this.songService.isAdmin.set(isAdmin);
-    });
-
     effect(() => {
       const headers = this.songService.songsResource.headers();
       if (headers) {
