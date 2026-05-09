@@ -130,17 +130,6 @@
             }
           </div>
 
-          @if (languages && languages.length > 0) {
-            <div class="mb-3">
-              <label for="langKey" jhiTranslate="settings.form.language">Idioma</label>
-              <select class="form-control" id="langKey" name="langKey" formControlName="langKey" data-cy="langKey">
-                @for (language of languages; track $index) {
-                  <option [value]="language">{{ language | findLanguageFromKey }}</option>
-                }
-              </select>
-            </div>
-          }
-
           <button
             type="submit"
             [disabled]="settingsForm.invalid"

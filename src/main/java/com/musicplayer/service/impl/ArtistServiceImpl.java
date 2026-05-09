@@ -1,7 +1,9 @@
 package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Artist;
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.ArtistRepository;
+import com.musicplayer.repository.UserRepository;
 import com.musicplayer.service.ArtistService;
 import com.musicplayer.service.dto.ArtistDTO;
 import com.musicplayer.service.mapper.ArtistMapper;
@@ -23,11 +25,13 @@ public class ArtistServiceImpl implements ArtistService {
     private static final Logger LOG = LoggerFactory.getLogger(ArtistServiceImpl.class);
 
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
 
     private final ArtistMapper artistMapper;
 
-    public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+    public ArtistServiceImpl(ArtistRepository artistRepository, UserRepository userRepository, ArtistMapper artistMapper) {
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
         this.artistMapper = artistMapper;
     }
 
@@ -87,5 +91,16 @@ public class ArtistServiceImpl implements ArtistService {
     public Optional<ArtistDTO> findByUserLogin(String login) {
         LOG.debug("Request to get Artist by user login : {}", login);
         return artistRepository.findByUserLogin(login).map(artistMapper::toDto);
+    }
+
+    @Override
+    public void assignUserToArtist(Long artistId, Long userId) {
+        Artist artist = artistRepository.findById(artistId).orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        artist.setUser(user);
+
+        artistRepository.save(artist);
     }
 }
