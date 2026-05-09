@@ -1,9 +1,11 @@
 package com.musicplayer.service.dto;
 
+import com.musicplayer.service.dto.PlaylistSongDTO;
 import jakarta.persistence.Lob;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -11,6 +13,8 @@ import java.util.Objects;
  */
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class PlaylistDTO implements Serializable {
+
+    private List<PlaylistSongDTO> playlistSongs;
 
     private Long id;
 
@@ -68,6 +72,14 @@ public class PlaylistDTO implements Serializable {
         return coverImage;
     }
 
+    public List<PlaylistSongDTO> getPlaylistSongs() {
+        return playlistSongs;
+    }
+
+    public void setPlaylistSongs(List<PlaylistSongDTO> playlistSongs) {
+        this.playlistSongs = playlistSongs;
+    }
+
     public void setCoverImage(String coverImage) {
         this.coverImage = coverImage;
     }
@@ -121,14 +133,15 @@ public class PlaylistDTO implements Serializable {
     @Override
     public String toString() {
         return "PlaylistDTO{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", isPublic='" + getIsPublic() + "'" +
-            ", coverImage='" + getCoverImage() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            ", userId=" + getUserId() +
-            "}";
+                "id=" + getId() +
+                ", name='" + getName() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", isPublic='" + getIsPublic() + "'" +
+                ", coverImage='" + getCoverImage() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                ", userId=" + getUserId() +
+                ", playlistSongs=" + getPlaylistSongs() +
+                "}";
     }
 }

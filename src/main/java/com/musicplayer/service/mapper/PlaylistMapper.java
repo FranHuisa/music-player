@@ -9,9 +9,10 @@ import org.mapstruct.*;
 /**
  * Mapper for the entity {@link Playlist} and its DTO {@link PlaylistDTO}.
  */
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = { PlaylistSongMapper.class })
 public interface PlaylistMapper extends EntityMapper<PlaylistDTO, Playlist> {
     @Mapping(target = "userId", source = "user.id")
+    @Mapping(target = "playlistSongs", source = "playlistSongs")
     PlaylistDTO toDto(Playlist s);
 
     @Named("userId")

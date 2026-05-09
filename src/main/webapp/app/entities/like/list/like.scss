@@ -61,3 +61,66 @@
 
   transition: all 0.2s ease;
 }
+.btn-play-playlist {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 10px 24px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background: #2563eb;
+    transform: scale(1.03);
+  }
+  &:disabled {
+    background: rgba(255, 255, 255, 0.1);
+    cursor: not-allowed;
+  }
+}
+
+.song-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.song-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  &.play {
+    background: #3b82f6;
+    &:hover {
+      background: #2563eb;
+    }
+  }
+
+  &.danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    &:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+  }
+}
