@@ -166,6 +166,13 @@ public class PlaylistResource {
         );
     }
 
+    @GetMapping("/my")
+    public ResponseEntity<List<PlaylistDTO>> getMyPlaylists() {
+        String login = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<PlaylistDTO> playlists = playlistService.findByUserLogin(login);
+        return ResponseEntity.ok(playlists);
+    }
+
     /**
      * {@code GET  /playlists} : get all the Playlists.
      *
