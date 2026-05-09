@@ -16,11 +16,8 @@
         </div>
 
         <div class="entity-detail-title">
-          <span class="entity-detail-eyebrow"> Playlist </span>
-
-          <h2>
-            {{ playlistRef.name }}
-          </h2>
+          <span class="entity-detail-eyebrow">Playlist</span>
+          <h2>{{ playlistRef.name }}</h2>
 
           <div class="entity-detail-subtitle">
             @if (playlistRef.description) {
@@ -35,6 +32,16 @@
               {{ playlistRef.isPublic ? 'Pública' : 'Privada' }}
             </span>
           </div>
+
+          <button
+            class="btn-play-playlist"
+            (click)="playPlaylist()"
+            [disabled]="!playlistRef.playlistSongs?.length"
+            title="Reproducir playlist"
+          >
+            <fa-icon icon="play" />
+            Reproducir
+          </button>
         </div>
       </div>
 
@@ -47,21 +54,23 @@
           <div class="playlist-song-list">
             @for (playlistSong of playlistRef.playlistSongs; track playlistSong.id) {
               <div class="playlist-song-row">
-                <div class="song-index">
-                  {{ $index + 1 }}
-                </div>
+                <div class="song-index">{{ $index + 1 }}</div>
 
                 <div class="song-info">
-                  <div class="song-title">
-                    {{ playlistSong.song?.title }}
-                  </div>
-
-                  <div class="song-artist">
-                    {{ playlistSong.song?.artistses ?? 'Artista desconocido' }}
-                  </div>
+                  <div class="song-title">{{ playlistSong.song?.title }}</div>
+                  <div class="song-artist">{{ playlistSong.song?.artistses ?? 'Artista desconocido' }}</div>
                 </div>
 
                 <div class="song-duration">{{ playlistSong.song?.duration ?? 0 }}s</div>
+
+                <div class="song-actions">
+                  <button class="like-row-play" (click)="playSong(playlistSong)" title="Reproducir">
+                    <fa-icon icon="play" />
+                  </button>
+                  <button class="like-row-btn danger" (click)="removeSong(playlistSong)" title="Eliminar de playlist">
+                    <fa-icon icon="trash" />
+                  </button>
+                </div>
               </div>
             }
           </div>
@@ -69,12 +78,12 @@
           <div class="playlist-empty">Esta playlist todavía no tiene canciones.</div>
         }
       </div>
+
       <div class="entity-detail-actions">
         <button type="button" (click)="previousState()" class="btn btn-info">
           <fa-icon icon="arrow-left" />
           Volver
         </button>
-
         <button type="button" [routerLink]="['/playlist', playlistRef.id, 'edit']" class="btn btn-primary">
           <fa-icon icon="pencil-alt" />
           Editar

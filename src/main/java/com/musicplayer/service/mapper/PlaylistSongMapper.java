@@ -9,7 +9,8 @@ import com.musicplayer.service.dto.SongDTO;
 import org.mapstruct.*;
 
 /**
- * Mapper for the entity {@link PlaylistSong} and its DTO {@link PlaylistSongDTO}.
+ * Mapper for the entity {@link PlaylistSong} and its DTO
+ * {@link PlaylistSongDTO}.
  */
 @Mapper(componentModel = "spring")
 public interface PlaylistSongMapper extends EntityMapper<PlaylistSongDTO, PlaylistSong> {
@@ -25,5 +26,9 @@ public interface PlaylistSongMapper extends EntityMapper<PlaylistSongDTO, Playli
     @Named("songId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "title", source = "title")
+    @Mapping(target = "duration", source = "duration")
+    @Mapping(target = "fileUrl", source = "fileUrl")
+    @Mapping(target = "coverImage", source = "coverImage")
     SongDTO toDtoSongId(Song song);
 }
