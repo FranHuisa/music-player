@@ -27,9 +27,8 @@ public class ArtistServiceImpl implements ArtistService {
     private static final Logger LOG = LoggerFactory.getLogger(ArtistServiceImpl.class);
 
     private final ArtistRepository artistRepository;
-
-    private final ArtistMapper artistMapper;
     private final UserRepository userRepository;
+    private final ArtistMapper artistMapper;
 
     public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper, UserRepository userRepository) {
         this.artistRepository = artistRepository;
@@ -96,6 +95,19 @@ public class ArtistServiceImpl implements ArtistService {
     public Optional<ArtistDTO> findByUserLogin(String login) {
         LOG.debug("Request to get Artist by user login : {}", login);
         return artistRepository.findByUserLogin(login).map(artistMapper::toDto);
+    }
+
+    @Override
+    public void assignUserToArtist(Long artistId, Long userId) {
+        Artist artist = artistRepository
+            .findById(artistId)
+            .orElseThrow(() -> new BadRequestAlertException("Artist not found", "artist", "idnotfound"));
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new BadRequestAlertException("User not found", "user", "idnotfound"));
+
+        artist.setUser(user);
+
+        artistRepository.save(artist);
     }
 
     private void assignUserIfMissing(Artist artist) {

@@ -196,4 +196,11 @@ public class ArtistResource {
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
     }
+
+    @PutMapping("/{artistId}/assign-user/{userId}")
+    public ResponseEntity<Void> assignUserToArtist(@PathVariable Long artistId, @PathVariable Long userId) {
+        artistService.assignUserToArtist(artistId, userId);
+
+        return ResponseEntity.ok().build();
+    }
 }
