@@ -30,5 +30,6 @@ public interface PlaylistSongMapper extends EntityMapper<PlaylistSongDTO, Playli
     @Mapping(target = "duration", source = "duration")
     @Mapping(target = "fileUrl", source = "fileUrl")
     @Mapping(target = "coverImage", source = "coverImage")
+    @Mapping(target = "artistses", source = "artistses")
     SongDTO toDtoSongId(Song song);
 }

@@ -6,7 +6,9 @@
     </div>
     <div class="player-song-info">
       <span class="player-song-name">{{ player.currentSong()?.title ?? 'No hay canción' }}</span>
-      <span class="player-artist-name">Selecciona una canción</span>
+      <span class="player-artist-name">
+        {{ $any(player.currentSong())?.artist?.name ?? 'Selecciona una canción' }}
+      </span>
     </div>
   </div>
 

@@ -20,5 +20,6 @@ public interface LikeMapper extends EntityMapper<LikeDTO, Like> {
     @Mapping(target = "fileUrl", source = "fileUrl")
     @Mapping(target = "coverImage", source = "coverImage")
     @Mapping(target = "duration", source = "duration")
+    @Mapping(target = "artistses", source = "artistses")
     SongDTO toDtoSongId(Song song);
 }

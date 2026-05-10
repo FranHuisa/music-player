@@ -16,7 +16,8 @@ export interface ISong {
   active?: boolean | null;
   album?: Pick<IAlbum, 'id'> | null;
   genre?: Pick<IGenre, 'id'> | null;
-  artistses?: Pick<IArtist, 'id'>[] | null;
+  artistses?: Pick<IArtist, 'id' | 'name'>[] | null;
+  artist?: Pick<IArtist, 'id' | 'name'> | null;
 }
 
 export type NewSong = Omit<ISong, 'id'> & { id: null };

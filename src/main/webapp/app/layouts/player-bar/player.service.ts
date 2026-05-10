@@ -106,6 +106,7 @@ export class PlayerService {
   }
 
   private loadAndPlay(song: ISong): void {
+    console.log('SONG COMPLETA:', JSON.stringify(song));
     this.currentSong.set(song);
     const fileUrl = song.fileUrl ?? '';
     // Si ya es una ruta completa, úsala; si no, construye la URL de stream
