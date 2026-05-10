@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -142,7 +143,13 @@ public class AlbumServiceImpl implements AlbumService {
         artist.setCreatedAt(Instant.now());
         artist.setUser(user);
 
-        return artistRepository.save(artist);
+        try {
+            return artistRepository.save(artist);
+        } catch (DataIntegrityViolationException ex) {
+            return artistRepository
+                .findByUserLogin(login)
+                .orElseThrow(() -> new BadRequestAlertException("Artista no encontrado", ENTITY_NAME, "artistnotfound"));
+        }
     }
 
     private String buildArtistName(User user) {
