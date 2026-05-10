@@ -1,5 +1,6 @@
 package com.musicplayer.web.rest;
 
+import com.musicplayer.security.AuthoritiesConstants;
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.Map;
@@ -12,6 +13,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +27,17 @@ public class FileUploadResource {
     private String uploadDir;
 
     @PostMapping("/image")
+    @PreAuthorize(
+        "hasAnyAuthority(\"" +
+            AuthoritiesConstants.ADMIN +
+            "\", \"" +
+            AuthoritiesConstants.EDITOR +
+            "\", \"" +
+            AuthoritiesConstants.ARTIST +
+            "\", \"" +
+            AuthoritiesConstants.USER +
+            "\")"
+    )
     public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
         try {
             String contentType = file.getContentType();
@@ -55,6 +68,15 @@ public class FileUploadResource {
     }
 
     @PostMapping("/audio")
+    @PreAuthorize(
+        "hasAnyAuthority(\"" +
+            AuthoritiesConstants.ADMIN +
+            "\", \"" +
+            AuthoritiesConstants.EDITOR +
+            "\", \"" +
+            AuthoritiesConstants.ARTIST +
+            "\")"
+    )
     public ResponseEntity<Map<String, String>> uploadAudio(@RequestParam("file") MultipartFile file) {
         try {
             String contentType = file.getContentType();
@@ -89,11 +111,9 @@ public class FileUploadResource {
         Path uploadPath = Path.of(uploadDir).toAbsolutePath().normalize();
         Path filePath = uploadPath.resolve(filename).normalize();
 
-        System.out.println("UPLOAD PATH: " + uploadPath);
-        System.out.println("FILE PATH: " + filePath);
-        System.out.println("EXISTS: " + Files.exists(filePath));
+        LOG.debug("Stream request — uploadPath={} filePath={} exists={}", uploadPath, filePath, Files.exists(filePath));
 
-        // Seguridad
+        // Seguridad: prevenir path traversal
         if (!filePath.startsWith(uploadPath)) {
             return ResponseEntity.badRequest().build();
         }
