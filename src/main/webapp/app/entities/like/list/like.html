@@ -12,6 +12,7 @@
       <span class="entity-list-hero-count">{{ likes().length }} canciones</span>
     </div>
   </div>
+
   <div class="entity-list-actions">
     <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
       <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
@@ -34,15 +35,15 @@
           <div class="like-row-info">
             @if (like.song) {
               <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song" style="text-decoration: none">
-                Canción #{{ like.song.id }}
+                #{{ like.song.title }}
               </a>
             } @else {
               <span class="like-row-song">Canción desconocida</span>
             }
 
-            @if (like.createdAt) {
-              <span class="like-row-date"> Guardada el {{ like.createdAt | formatMediumDatetime }} </span>
-            }
+            <span class="like-row-artist">
+              {{ like.song?.artist?.name ?? like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
+            </span>
           </div>
 
           <button class="like-row-play" (click)="playSong(like); $event.stopPropagation()">
@@ -51,7 +52,6 @@
           <button class="like-row-btn" title="Añadir a playlist" (click)="openAddToPlaylist(like); $event.stopPropagation()">
             <fa-icon icon="plus"></fa-icon>
           </button>
-
           <button class="like-row-btn danger" (click)="delete(like); $event.stopPropagation()" title="Eliminar">
             <fa-icon icon="trash"></fa-icon>
           </button>

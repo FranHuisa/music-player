@@ -7,7 +7,7 @@ export interface ILike {
   id: number;
   createdAt?: dayjs.Dayjs | null;
   user?: Pick<IUser, 'id'> | null;
-  song?: Pick<ISong, 'id' | 'title' | 'fileUrl' | 'coverImage' | 'duration'> | null;
+  song?: Pick<ISong, 'id' | 'title' | 'fileUrl' | 'coverImage' | 'duration' | 'artist' | 'artistses'> | null;
 }
 
 export type NewLike = Omit<ILike, 'id'> & { id: null };

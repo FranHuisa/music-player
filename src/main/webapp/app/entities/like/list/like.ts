@@ -1,6 +1,7 @@
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -39,6 +40,7 @@ import { AddToPlaylistService } from 'app/entities/playlist/service/add-to-playl
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
+    DatePipe,
   ],
 })
 export class Like implements OnInit {
