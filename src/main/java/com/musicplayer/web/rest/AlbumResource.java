@@ -161,6 +161,19 @@ public class AlbumResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list
      *         of Albums in body.
      */
+    @GetMapping("")
+    public ResponseEntity<List<AlbumDTO>> getAllAlbums(Pageable pageable) {
+        LOG.debug("REST request to get Albums (role-based)");
+
+        boolean isAdmin = SecurityUtils.hasCurrentUserThisAuthority("ROLE_ADMIN");
+        boolean isEditor = SecurityUtils.hasCurrentUserThisAuthority("ROLE_EDITOR");
+
+        Page<AlbumDTO> page = (isAdmin || isEditor) ? albumService.findAll(pageable) : albumService.findPublicAlbums(pageable);
+
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
+        return ResponseEntity.ok().headers(headers).body(page.getContent());
+    }
+
     @GetMapping("/admin")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<AlbumDTO>> getAllAlbumsAdmin(Pageable pageable) {
