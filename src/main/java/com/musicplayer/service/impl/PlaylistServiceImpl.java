@@ -8,9 +8,12 @@ import com.musicplayer.repository.PlaylistRepository;
 import com.musicplayer.repository.PlaylistSongRepository;
 import com.musicplayer.repository.SongRepository;
 import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.AuthoritiesConstants;
+import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.PlaylistService;
 import com.musicplayer.service.dto.PlaylistDTO;
 import com.musicplayer.service.mapper.PlaylistMapper;
+import com.musicplayer.web.rest.errors.BadRequestAlertException;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -71,10 +73,14 @@ public class PlaylistServiceImpl implements PlaylistService {
     public PlaylistDTO update(PlaylistDTO playlistDTO) {
         LOG.debug("Request to update Playlist : {}", playlistDTO);
 
-        Playlist playlist = playlistMapper.toEntity(playlistDTO);
+        Playlist existing = playlistRepository
+            .findById(playlistDTO.getId())
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", "playlist", "idnotfound"));
 
-        User user = getCurrentUser();
-        playlist.setUser(user);
+        assertOwnerOrAdmin(existing);
+
+        Playlist playlist = playlistMapper.toEntity(playlistDTO);
+        playlist.setUser(existing.getUser());
 
         playlist = playlistRepository.save(playlist);
 
@@ -88,12 +94,25 @@ public class PlaylistServiceImpl implements PlaylistService {
         return playlistRepository
             .findById(playlistDTO.getId())
             .map(existingPlaylist -> {
+                assertOwnerOrAdmin(existingPlaylist);
                 playlistMapper.partialUpdate(existingPlaylist, playlistDTO);
 
                 return existingPlaylist;
             })
             .map(playlistRepository::save)
             .map(playlistMapper::toDto);
+    }
+
+    private void assertOwnerOrAdmin(Playlist playlist) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", "playlist", "usernotfound")
+        );
+        if (playlist.getUser() == null || !login.equals(playlist.getUser().getLogin())) {
+            throw new BadRequestAlertException("Forbidden", "playlist", "forbidden");
+        }
     }
 
     private User getCurrentUser() {
@@ -121,7 +140,12 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete Playlist : {}", id);
-        playlistRepository.deleteById(id);
+        playlistRepository
+            .findById(id)
+            .ifPresent(p -> {
+                assertOwnerOrAdmin(p);
+                playlistRepository.deleteById(id);
+            });
     }
 
     @Override

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -50,6 +51,7 @@ public class GenreResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GenreDTO> createGenre(@Valid @RequestBody GenreDTO genreDTO) throws URISyntaxException {
         LOG.debug("REST request to save Genre : {}", genreDTO);
         if (genreDTO.getId() != null) {
@@ -72,6 +74,7 @@ public class GenreResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GenreDTO> updateGenre(
         @PathVariable(value = "id", required = false) final Long id,
         @Valid @RequestBody GenreDTO genreDTO
@@ -106,6 +109,7 @@ public class GenreResource {
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GenreDTO> partialUpdateGenre(
         @PathVariable(value = "id", required = false) final Long id,
         @NotNull @RequestBody GenreDTO genreDTO
@@ -161,6 +165,7 @@ public class GenreResource {
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteGenre(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Genre : {}", id);
         genreService.delete(id);

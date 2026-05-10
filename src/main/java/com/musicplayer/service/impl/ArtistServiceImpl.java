@@ -4,6 +4,7 @@ import com.musicplayer.domain.Artist;
 import com.musicplayer.domain.User;
 import com.musicplayer.repository.ArtistRepository;
 import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.AuthoritiesConstants;
 import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.ArtistService;
 import com.musicplayer.service.dto.ArtistDTO;
@@ -48,8 +49,15 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public ArtistDTO update(ArtistDTO artistDTO) {
         LOG.debug("Request to update Artist : {}", artistDTO);
+
+        Artist existing = artistRepository
+            .findById(artistDTO.getId())
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", "artist", "idnotfound"));
+
+        assertOwnerOrAdmin(existing);
+
         Artist artist = artistMapper.toEntity(artistDTO);
-        artistRepository.findById(artistDTO.getId()).map(Artist::getUser).ifPresent(artist::setUser);
+        artist.setUser(existing.getUser());
         assignUserIfMissing(artist);
         artist = artistRepository.save(artist);
         return artistMapper.toDto(artist);
@@ -87,7 +95,24 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete Artist : {}", id);
-        artistRepository.deleteById(id);
+        artistRepository
+            .findById(id)
+            .ifPresent(a -> {
+                assertOwnerOrAdmin(a);
+                artistRepository.deleteById(id);
+            });
+    }
+
+    private void assertOwnerOrAdmin(Artist artist) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", "artist", "usernotfound")
+        );
+        if (artist.getUser() == null || !login.equals(artist.getUser().getLogin())) {
+            throw new BadRequestAlertException("Forbidden", "artist", "forbidden");
+        }
     }
 
     @Override
