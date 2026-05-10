@@ -16,6 +16,10 @@ export class AddToPlaylistService {
     return this.appConfig.getEndpointFor('api/playlists');
   }
 
+  private escapeHtml(value: string): string {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
   openDialog(songId: number): void {
     this.http.get<IPlaylist[]>(`${this.playlistUrl}/my`).subscribe({
       next: playlists => this.showDialog(songId, playlists),
@@ -49,20 +53,22 @@ export class AddToPlaylistService {
     }
 
     const listHtml = playlists
-      .map(
-        p => `
+      .map(p => {
+        const safeId = Number(p.id);
+        const safeName = this.escapeHtml(p.name ?? 'Sin nombre');
+        return `
         <button
           class="swal-playlist-item"
-          data-id="${p.id}"
+          data-id="${safeId}"
           onclick="
-            document.querySelectorAll('.swal-playlist-item').forEach(b => b.classList.remove('selected'));
+            document.querySelectorAll('.swal-playlist-item').forEach(b =&gt; b.classList.remove('selected'));
             this.classList.add('selected');
-            document.getElementById('swal-selected-id').value='${p.id}'
+            document.getElementById('swal-selected-id').value='${safeId}'
           ">
           <span class="swal-playlist-icon">🎵</span>
-          <span class="swal-playlist-name">${p.name ?? 'Sin nombre'}</span>
-        </button>`,
-      )
+          <span class="swal-playlist-name">${safeName}</span>
+        </button>`;
+      })
       .join('');
 
     Swal.fire({
