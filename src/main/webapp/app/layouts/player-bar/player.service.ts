@@ -111,6 +111,8 @@ export class PlayerService {
     // Si ya es una ruta completa, úsala; si no, construye la URL de stream
     this.audio.src = fileUrl.startsWith('/') ? fileUrl : `/api/upload/stream/${encodeURIComponent(fileUrl)}`;
     this.audio.load();
-    this.audio.play().catch(console.error);
+    this.audio.play().catch(() => {
+      /* playback blocked or aborted — surfaced via audio element error events */
+    });
   }
 }

@@ -77,23 +77,30 @@ export class ArtistUpdate implements OnInit {
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
       alert('Formato no permitido');
+      input.value = '';
       return;
     }
-    const maxSize = 5 * 1024 * 1024;
+    const maxSize = 15 * 1024 * 1024;
     if (file.size > maxSize) {
-      alert('Máximo 5MB');
+      alert('Máximo 15MB');
+      input.value = '';
       return;
     }
     const img = new Image();
     img.onload = () => {
       if (img.width < 300 || img.height < 300) {
         alert('Resolución mínima 300x300');
+        input.value = '';
         return;
       }
       this.selectedCover = file;
       this.coverPreviewUrl = URL.createObjectURL(file);
     };
     img.src = URL.createObjectURL(file);
+  }
+
+  private escapeHtml(value: string): string {
+    return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   save(): void {
@@ -120,16 +127,18 @@ export class ArtistUpdate implements OnInit {
 
   private showAssignDialog(artistId: number, users: IUser[]): void {
     const listHtml = users
-      .map(
-        u => `
-        <button class="swal-user-item" data-id="${u.id}"
-          onclick="document.querySelectorAll('.swal-user-item').forEach(b => b.classList.remove('selected'));
+      .map(u => {
+        const safeId = Number(u.id);
+        const safeLogin = this.escapeHtml(u.login ?? '');
+        return `
+        <button class="swal-user-item" data-id="${safeId}"
+          onclick="document.querySelectorAll('.swal-user-item').forEach(b =&gt; b.classList.remove('selected'));
                    this.classList.add('selected');
-                   document.getElementById('swal-selected-user-id').value='${u.id}'">
+                   document.getElementById('swal-selected-user-id').value='${safeId}'">
           <span class="swal-user-icon">👤</span>
-          <span class="swal-user-login">${u.login}</span>
-        </button>`,
-      )
+          <span class="swal-user-login">${safeLogin}</span>
+        </button>`;
+      })
       .join('');
 
     Swal.fire({
