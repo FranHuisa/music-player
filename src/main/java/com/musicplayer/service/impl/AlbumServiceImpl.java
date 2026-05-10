@@ -74,7 +74,26 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public AlbumDTO update(AlbumDTO albumDTO) {
         LOG.debug("Request to update Album : {}", albumDTO);
+
+        Album existing = albumRepository
+            .findById(albumDTO.getId())
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
+
+        if (!SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+                new BadRequestAlertException("Usuario no autenticado", ENTITY_NAME, "usernotfound")
+            );
+            if (
+                existing.getArtist() == null ||
+                existing.getArtist().getUser() == null ||
+                !login.equals(existing.getArtist().getUser().getLogin())
+            ) {
+                throw new BadRequestAlertException("Forbidden", ENTITY_NAME, "forbidden");
+            }
+        }
+
         Album album = albumMapper.toEntity(albumDTO);
+        album.setArtist(existing.getArtist());
         album = albumRepository.save(album);
         return albumMapper.toDto(album);
     }
