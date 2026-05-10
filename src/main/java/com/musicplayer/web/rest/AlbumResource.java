@@ -237,4 +237,16 @@ public class AlbumResource {
 
         return ResponseEntity.ok(albumService.findUpcomingAlbums());
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<AlbumDTO>> searchAlbums(@RequestParam(required = false) String title, Pageable pageable) {
+        Page<AlbumDTO> page = albumService.findAll(pageable);
+        List<AlbumDTO> filtered = page
+            .getContent()
+            .stream()
+            .filter(a -> a.getActive() != null && a.getActive())
+            .filter(a -> title == null || a.getTitle().toLowerCase().contains(title.toLowerCase()))
+            .toList();
+        return ResponseEntity.ok(filtered);
+    }
 }

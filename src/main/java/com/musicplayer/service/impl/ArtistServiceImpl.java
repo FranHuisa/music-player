@@ -103,4 +103,11 @@ public class ArtistServiceImpl implements ArtistService {
 
         artistRepository.save(artist);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ArtistDTO> findByName(String name, Pageable pageable) {
+        LOG.debug("Request to get Artists by name : {}", name);
+        return artistRepository.findByNameContainingIgnoreCase(name, pageable).map(artistMapper::toDto);
+    }
 }

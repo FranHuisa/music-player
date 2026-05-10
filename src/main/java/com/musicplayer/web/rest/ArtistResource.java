@@ -153,9 +153,16 @@ public class ArtistResource {
      *         of Artists in body.
      */
     @GetMapping("")
-    public ResponseEntity<List<ArtistDTO>> getAllArtists(@org.springdoc.core.annotations.ParameterObject Pageable pageable) {
-        LOG.debug("REST request to get a page of Artists");
-        Page<ArtistDTO> page = artistService.findAll(pageable);
+    public ResponseEntity<List<ArtistDTO>> getAllArtists(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable,
+        @RequestParam(name = "name.contains", required = false) String name
+    ) {
+        Page<ArtistDTO> page;
+        if (name != null && !name.isBlank()) {
+            page = artistService.findByName(name, pageable);
+        } else {
+            page = artistService.findAll(pageable);
+        }
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(ServletUriComponentsBuilder.fromCurrentRequest(), page);
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }

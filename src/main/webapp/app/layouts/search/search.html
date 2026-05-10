@@ -10,44 +10,97 @@
       <fa-icon icon="spinner" class="state-icon spinning"></fa-icon>
       <p>Buscando...</p>
     </div>
-  } @else if (songs().length === 0 && query().length > 0) {
+  } @else if (!hasResults() && query().length > 0) {
     <div class="search-state">
       <fa-icon icon="music" class="state-icon"></fa-icon>
       <p>
-        No se encontraron canciones para <strong>"{{ query() }}"</strong>
+        No se encontraron resultados para <strong>"{{ query() }}"</strong>
       </p>
     </div>
   } @else {
-    <p class="results-count">{{ songs().length }} canciones encontradas</p>
-
-    <div class="songs-list">
-      @for (song of songs(); track song.id; let i = $index) {
-        <div class="song-row">
-          <span class="song-index">{{ i + 1 }}</span>
-
-          <div class="song-cover">
-            @if (song.coverImage) {
-              <img [src]="song.coverImage" alt="Cover" />
-            } @else {
-              <fa-icon icon="music"></fa-icon>
-            }
-          </div>
-
-          <div class="song-info">
-            <span class="song-title">{{ song.title }}</span>
-            <span class="song-artist">{{ song.releaseDate?.year() }}</span>
-          </div>
-
-          <span class="song-duration">{{ song.duration }}s</span>
-
-          <button class="play-btn" (click)="playSong(song)" aria-label="Reproducir">
-            <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>
-          </button>
-          <button class="like-btn" (click)="toggleLike(song)">
-            <fa-icon icon="heart" [class.text-danger]="likedSongs().includes(song.id)"></fa-icon>
-          </button>
+    <!-- ARTISTAS -->
+    @if (artists().length > 0) {
+      <section class="search-section">
+        <h3 class="section-title"><fa-icon icon="user"></fa-icon> Artistas</h3>
+        <div class="artists-grid">
+          @for (artist of artists(); track artist.id) {
+            <a [routerLink]="['/artist', artist.id, 'view']" class="artist-card">
+              <div class="artist-avatar">
+                @if (artist.image) {
+                  <img [src]="artist.image" [alt]="artist.name" />
+                } @else {
+                  <fa-icon icon="user"></fa-icon>
+                }
+              </div>
+              <span class="artist-name">{{ artist.name }}</span>
+              @if (artist.verified) {
+                <fa-icon icon="check-circle" class="verified-icon"></fa-icon>
+              }
+            </a>
+          }
         </div>
-      }
-    </div>
+      </section>
+    }
+
+    <!-- ÁLBUMES -->
+    @if (albums().length > 0) {
+      <section class="search-section">
+        <h3 class="section-title"><fa-icon icon="record-vinyl"></fa-icon> Álbumes</h3>
+        <div class="albums-grid">
+          @for (album of albums(); track album.id) {
+            <a [routerLink]="['/album', album.id, 'view']" class="album-card">
+              <div class="album-cover">
+                @if (album.coverImage) {
+                  <img [src]="album.coverImage" [alt]="album.title" />
+                } @else {
+                  <fa-icon icon="record-vinyl"></fa-icon>
+                }
+              </div>
+              <span class="album-title">{{ album.title }}</span>
+              <span class="album-year">{{ album.releaseDate }}</span>
+            </a>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- CANCIONES -->
+    @if (songs().length > 0) {
+      <section class="search-section">
+        <h3 class="section-title">
+          <fa-icon icon="music"></fa-icon> Canciones
+          <span class="results-count">{{ songs().length }} encontradas</span>
+        </h3>
+        <div class="songs-list">
+          @for (song of songs(); track song.id; let i = $index) {
+            <div class="song-row">
+              <span class="song-index">{{ i + 1 }}</span>
+
+              <div class="song-cover">
+                @if (song.coverImage) {
+                  <img [src]="song.coverImage" alt="Cover" />
+                } @else {
+                  <fa-icon icon="music"></fa-icon>
+                }
+              </div>
+
+              <div class="song-info">
+                <span class="song-title">{{ song.title }}</span>
+                <span class="song-artist">{{ song.releaseDate?.year() }}</span>
+              </div>
+
+              <span class="song-duration">{{ song.duration }}s</span>
+
+              <button class="play-btn" (click)="playSong(song)" aria-label="Reproducir">
+                <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>
+              </button>
+              <button class="like-btn" (click)="toggleLike(song)">
+                <fa-icon icon="heart" [class.text-danger]="likedSongs().includes(song.id)"></fa-icon>
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    }
   }
 </div>

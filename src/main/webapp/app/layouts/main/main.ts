@@ -58,7 +58,7 @@ export default class Main implements OnInit {
       return false;
     }
 
-    return userAccount.authorities.includes(Authority.USER);
+    return userAccount.authorities.includes(Authority.USER) || userAccount.authorities.includes(Authority.EDITOR);
   });
 
   constructor() {

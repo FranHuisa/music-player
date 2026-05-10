@@ -60,4 +60,6 @@ public interface ArtistService {
     void delete(Long id);
 
     void assignUserToArtist(Long artistId, Long userId);
+
+    Page<ArtistDTO> findByName(String name, Pageable pageable);
 }
