@@ -76,6 +76,8 @@ public class SongServiceImpl implements SongService {
             .findById(songDTO.getId())
             .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
 
+        assertOwnerOrAdmin(existingSong);
+
         existingSong.setAlbum(songDTO.getAlbum() != null ? songMapper.toEntity(songDTO).getAlbum() : null);
 
         existingSong.setTitle(songDTO.getTitle());
@@ -97,6 +99,7 @@ public class SongServiceImpl implements SongService {
         return songRepository
             .findById(songDTO.getId())
             .map(existingSong -> {
+                assertOwnerOrAdmin(existingSong);
                 songMapper.partialUpdate(existingSong, songDTO);
 
                 return existingSong;
@@ -126,7 +129,24 @@ public class SongServiceImpl implements SongService {
     @Override
     public void delete(Long id) {
         LOG.debug("Request to delete Song : {}", id);
-        songRepository.deleteById(id);
+        songRepository
+            .findById(id)
+            .ifPresent(song -> {
+                assertOwnerOrAdmin(song);
+                songRepository.deleteById(id);
+            });
+    }
+
+    private void assertOwnerOrAdmin(Song song) {
+        if (SecurityUtils.hasCurrentUserThisAuthority(AuthoritiesConstants.ADMIN)) {
+            return;
+        }
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", ENTITY_NAME, "usernotfound")
+        );
+        if (song.getArtist() == null || song.getArtist().getUser() == null || !login.equals(song.getArtist().getUser().getLogin())) {
+            throw new BadRequestAlertException("Forbidden", ENTITY_NAME, "forbidden");
+        }
     }
 
     private Artist getOrCreateCurrentArtist() {
@@ -207,6 +227,7 @@ public class SongServiceImpl implements SongService {
         return songRepository
             .findById(id)
             .map(song -> {
+                assertOwnerOrAdmin(song);
                 song.setActive(!Boolean.TRUE.equals(song.getActive()));
                 return songRepository.save(song);
             })
