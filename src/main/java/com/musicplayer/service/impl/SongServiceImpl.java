@@ -71,7 +71,9 @@ public class SongServiceImpl implements SongService {
     public SongDTO update(SongDTO songDTO) {
         LOG.debug("Request to update Song : {}", songDTO);
 
-        Song existingSong = songRepository.findById(songDTO.getId()).orElseThrow(() -> new RuntimeException("Song not found"));
+        Song existingSong = songRepository
+            .findById(songDTO.getId())
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
 
         existingSong.setAlbum(songDTO.getAlbum() != null ? songMapper.toEntity(songDTO).getAlbum() : null);
 
@@ -202,13 +204,15 @@ public class SongServiceImpl implements SongService {
                 return songRepository.save(song);
             })
             .map(songMapper::toDto)
-            .orElseThrow(() -> new RuntimeException("Song not found: " + id));
+            .orElseThrow(() -> new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound"));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<SongDTO> findMySongs(Pageable pageable) {
-        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() -> new RuntimeException("No user logged"));
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", ENTITY_NAME, "usernotfound")
+        );
 
         return songRepository.findByArtistLogin(login, pageable).map(songMapper::toDto);
     }
