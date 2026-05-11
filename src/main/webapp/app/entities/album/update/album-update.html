@@ -6,71 +6,81 @@
       Nuevo álbum
     }
   </h2>
+  <p>
+    @if (editForm.controls.id.value !== null) {
+      Modifica la información y portada del álbum.
+    } @else {
+      Completa los datos para añadir un nuevo álbum al catálogo.
+    }
+  </p>
 </div>
 
 <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="album-editor">
-  <div class="album-editor-card">
-    @if (editForm.controls.id.value !== null) {
-      <div class="section">
-        <h3>Identificador</h3>
+  <!-- COLUMNA IZQUIERDA: portada -->
+  <div class="album-editor-left">
+    <div class="cover-box">
+      @if (coverPreviewUrl) {
+        <img [src]="coverPreviewUrl" />
+      } @else {
+        <div class="cover-placeholder">Sin portada</div>
+      }
+    </div>
 
-        <div class="field">
-          <label>ID</label>
-          <input type="number" formControlName="id" readonly />
-        </div>
+    <div class="file-upload">
+      <label>Portada</label>
+      <div class="file-upload-box">
+        <button type="button" class="btn-upload" (click)="coverInput.click()">Seleccionar archivo</button>
+        <span class="file-name">{{ selectedCover?.name ?? 'Ningún archivo seleccionado' }}</span>
+        <input #coverInput type="file" hidden (change)="onCoverSelected($event)" accept="image/png,image/jpeg,image/webp" />
+      </div>
+    </div>
+  </div>
+
+  <!-- COLUMNA DERECHA: campos -->
+  <div class="album-editor-main">
+    @if (editForm.controls.id.value !== null) {
+      <div class="field">
+        <label>ID</label>
+        <input type="number" formControlName="id" readonly />
       </div>
     }
 
-    <div class="section">
-      <div class="cover-preview">
-        @if (coverPreviewUrl) {
-          <img [src]="coverPreviewUrl" />
-        } @else {
-          <div class="cover-placeholder">Sin portada</div>
+    <div class="field">
+      <label>Título *</label>
+      <input type="text" formControlName="title" placeholder="Título del álbum" />
+      @if (editForm.get('title')?.invalid && (editForm.get('title')?.dirty || editForm.get('title')?.touched)) {
+        @if (editForm.get('title')?.errors?.required) {
+          <small class="field-error">El título es obligatorio</small>
         }
-      </div>
-
-      <div class="file-upload">
-        <label>Cover</label>
-
-        <div class="file-upload-box">
-          <button type="button" class="btn-upload" (click)="coverInput.click()">Seleccionar archivo</button>
-
-          <span class="file-name">
-            {{ selectedCover?.name ?? 'Ningún archivo seleccionado' }}
-          </span>
-
-          <input #coverInput type="file" hidden (change)="onCoverSelected($event)" accept="image/png,image/jpeg,image/webp" />
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Título</label>
-        <input type="text" formControlName="title" />
-      </div>
-      <div class="field">
-        <label>Género</label>
-        <select formControlName="genre">
-          <option [ngValue]="null"></option>
-          @for (genreOption of genresSharedCollection(); track $index) {
-            <option [ngValue]="genreOption">{{ genreOption.name ?? genreOption.id }}</option>
-          }
-        </select>
-      </div>
-      <div class="field">
-        <label>Tipo de álbum</label>
-        <select formControlName="albumType">
-          <option [ngValue]="null"></option>
-          @for (albumTypeOption of albumTypeValues; track $index) {
-            <option [ngValue]="albumTypeOption">{{ albumTypeOption }}</option>
-          }
-        </select>
-      </div>
+        @if (editForm.get('title')?.errors?.maxlength) {
+          <small class="field-error">Máximo 150 caracteres</small>
+        }
+      }
     </div>
-    <div class="form-actions">
-      <button type="button" class="btn btn-secondary" (click)="previousState()">Cancelar</button>
 
-      <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || isSaving()">Guardar</button>
+    <div class="field">
+      <label>Género</label>
+      <select formControlName="genre" [compareWith]="compareGenre">
+        <option [ngValue]="null">Sin género</option>
+        @for (genreOption of genresSharedCollection(); track $index) {
+          <option [ngValue]="genreOption">{{ genreOption.name ?? genreOption.id }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="field">
+      <label>Tipo de álbum</label>
+      <select formControlName="albumType">
+        <option [ngValue]="null">Sin tipo</option>
+        @for (albumTypeOption of albumTypeValues; track $index) {
+          <option [ngValue]="albumTypeOption">{{ albumTypeOption }}</option>
+        }
+      </select>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="previousState()"><fa-icon icon="ban" /> Cancelar</button>
+      <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || isSaving()"><fa-icon icon="save" /> Guardar</button>
     </div>
   </div>
 </form>

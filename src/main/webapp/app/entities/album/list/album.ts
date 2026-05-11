@@ -24,6 +24,7 @@ import { IAlbum } from '../album.model';
 import { AlbumDeleteDialog } from '../delete/album-delete-dialog';
 import { AlbumService } from '../service/album.service';
 import { AccountService } from 'app/core/auth/account.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
 
 @Component({
   selector: 'jhi-album',
@@ -56,6 +57,7 @@ export class Album implements OnInit {
   isAdmin = signal(false);
 
   sortState = sortStateSignal({});
+  readonly searchTerm = signal('');
 
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
@@ -77,6 +79,7 @@ export class Album implements OnInit {
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected readonly accountService = inject(AccountService);
+  protected readonly player = inject(PlayerService);
 
   constructor() {
     effect(() => {
@@ -100,7 +103,18 @@ export class Album implements OnInit {
   }
 
   trackId = (item: IAlbum): number => this.albumService.getAlbumIdentifier(item);
-
+  readonly filteredAlbums = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.visibleAlbums();
+    return this.visibleAlbums().filter(a => a.title?.toLowerCase().includes(term));
+  });
+  toggleActive(album: IAlbum): void {
+    this.albumService.toggleActive(album.id).subscribe({
+      next: updated => {
+        this.albums.update(list => list.map(a => (a.id === updated.id ? updated : a)));
+      },
+    });
+  }
   ngOnInit(): void {
     this.albumService.myAlbumsResource.reload();
     this.accountService.identity().subscribe(account => {

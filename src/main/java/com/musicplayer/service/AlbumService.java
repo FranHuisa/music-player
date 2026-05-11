@@ -62,4 +62,6 @@ public interface AlbumService {
     Page<AlbumDTO> findPublicAlbums(Pageable pageable);
 
     List<AlbumDTO> findUpcomingAlbums();
+
+    AlbumDTO toggleActive(Long id);
 }

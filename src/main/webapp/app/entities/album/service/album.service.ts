@@ -161,4 +161,7 @@ export class AlbumService extends AlbumsService {
       observe: 'response',
     });
   }
+  toggleActive(id: number): Observable<IAlbum> {
+    return this.http.patch<IAlbum>(`${this.resourceUrl}/${encodeURIComponent(id)}/toggle-active`, {});
+  }
 }

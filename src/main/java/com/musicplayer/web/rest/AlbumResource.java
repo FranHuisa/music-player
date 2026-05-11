@@ -249,4 +249,10 @@ public class AlbumResource {
             .toList();
         return ResponseEntity.ok(filtered);
     }
+
+    @PatchMapping("/{id}/toggle-active")
+    public ResponseEntity<AlbumDTO> toggleActive(@PathVariable Long id) {
+        AlbumDTO result = albumService.toggleActive(id);
+        return ResponseEntity.ok(result);
+    }
 }

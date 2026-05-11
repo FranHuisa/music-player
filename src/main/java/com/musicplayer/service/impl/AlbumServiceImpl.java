@@ -135,4 +135,11 @@ public class AlbumServiceImpl implements AlbumService {
 
         return albumRepository.findUpcomingAlbums(login).stream().map(albumMapper::toDto).toList();
     }
+
+    @Override
+    public AlbumDTO toggleActive(Long id) {
+        Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
+        album.setActive(!Boolean.TRUE.equals(album.getActive()));
+        return albumMapper.toDto(albumRepository.save(album));
+    }
 }
