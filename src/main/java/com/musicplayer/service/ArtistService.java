@@ -4,6 +4,7 @@ import com.musicplayer.service.dto.ArtistDTO;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Interface for managing {@link com.musicplayer.domain.Artist}.
@@ -62,4 +63,5 @@ public interface ArtistService {
     void assignUserToArtist(Long artistId, Long userId);
 
     Page<ArtistDTO> findByName(String name, Pageable pageable);
+    ArtistDTO uploadImage(Long artistId, MultipartFile file) throws Exception;
 }

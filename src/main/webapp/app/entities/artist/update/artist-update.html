@@ -12,7 +12,9 @@
 <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="artist-editor">
   <div class="artist-editor-left">
     <div class="cover-box">
-      @if (editForm.get('image')?.value) {
+      @if (coverPreviewUrl) {
+        <img [src]="coverPreviewUrl" alt="Preview artista" />
+      } @else if (editForm.get('image')?.value) {
         <img [src]="editForm.get('image')?.value" alt="Imagen del artista" />
       } @else {
         <div class="cover-placeholder">

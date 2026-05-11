@@ -167,7 +167,6 @@ export class ArtistUpdate implements OnInit {
       if (result.isConfirmed && result.value) {
         this.assignUser(artistId, result.value as number);
       } else {
-        // Omitió la asignación — navegar atrás igualmente
         this.previousState();
       }
     });
@@ -191,7 +190,6 @@ export class ArtistUpdate implements OnInit {
     });
   }
 
-  // ── CAMBIADO: recibe isNew para saber si abrir el dialog ──
   protected subscribeToSaveResponse(result: Observable<IArtist | null>, isNew: boolean): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: saved => this.onSaveSuccess(saved, isNew),
@@ -199,9 +197,35 @@ export class ArtistUpdate implements OnInit {
     });
   }
 
-  // ── CAMBIADO: si es nuevo, actualiza el form con el id devuelto y abre el dialog ──
   protected onSaveSuccess(saved?: IArtist | null, isNew = false): void {
-    if (isNew && saved?.id) {
+    if (!saved?.id) {
+      this.previousState();
+      return;
+    }
+
+    if (this.selectedCover) {
+      this.artistService.uploadImage(saved.id, this.selectedCover).subscribe({
+        next: () => {
+          if (isNew) {
+            this.artistFormService.resetForm(this.editForm, saved);
+            this.openAssignUserDialog();
+          } else {
+            this.previousState();
+          }
+        },
+        error: () => {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'No se pudo subir la imagen',
+          });
+        },
+      });
+
+      return;
+    }
+
+    if (isNew) {
       this.artistFormService.resetForm(this.editForm, saved);
       this.openAssignUserDialog();
     } else {

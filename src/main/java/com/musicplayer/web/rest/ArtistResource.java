@@ -20,6 +20,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -209,5 +210,12 @@ public class ArtistResource {
         artistService.assignUserToArtist(artistId, userId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(value = "/{id}/upload-image", consumes = "multipart/form-data")
+    public ResponseEntity<ArtistDTO> uploadArtistImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+        ArtistDTO artist = artistService.uploadImage(id, file);
+
+        return ResponseEntity.ok(artist);
     }
 }

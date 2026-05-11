@@ -131,4 +131,11 @@ export class ArtistService extends ArtistsService {
   protected convertResponseArrayFromServer(res: RestArtist[]): IArtist[] {
     return res.map(item => this.convertValueFromServer(item));
   }
+  uploadImage(id: number, file: File): Observable<IArtist> {
+    const formData = new FormData();
+
+    formData.append('file', file);
+
+    return this.http.post<IArtist>(`${this.resourceUrl}/${id}/upload-image`, formData);
+  }
 }
