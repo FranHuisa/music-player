@@ -424,3 +424,37 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     display: none;
   }
 }
+.song-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .song-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #6a6a6a;
+    font-size: 0.85rem;
+  }
+
+  .song-search-input {
+    width: 300px;
+    padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    &::placeholder {
+      color: #6a6a6a;
+    }
+  }
+}

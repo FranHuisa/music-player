@@ -2,6 +2,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -51,7 +52,9 @@ import { AccountService } from 'app/core/auth/account.service';
 })
 export class Song implements OnInit {
   subscription: Subscription | null = null;
+
   readonly songs = signal<ISong[]>([]);
+  readonly searchTerm = signal('');
 
   sortState = sortStateSignal({});
 
@@ -59,10 +62,14 @@ export class Song implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  protected readonly player = inject(PlayerService);
+
   readonly router = inject(Router);
   protected readonly songService = inject(SongService);
+
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.songService.songsResource.isLoading;
+
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected dataUtils = inject(DataUtils);
@@ -78,6 +85,7 @@ export class Song implements OnInit {
 
     effect(() => {
       const headers = this.songService.songsResource.headers();
+
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
@@ -87,13 +95,16 @@ export class Song implements OnInit {
       this.songs.set(this.fillComponentAttributesFromResponseBody([...this.songService.songs()]));
     });
   }
+
   trackId = (item: ISong): number => this.songService.getSongIdentifier(item);
 
   formatDuration(seconds: number | null | undefined): string {
     if (!seconds) return '—';
+
     const s = Math.abs(Math.round(seconds));
     const m = Math.floor(s / 60);
     const sec = s % 60;
+
     return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 
@@ -115,8 +126,13 @@ export class Song implements OnInit {
   }
 
   delete(song: ISong): void {
-    const modalRef = this.modalService.open(SongDeleteDialog, { size: 'lg', backdrop: 'static' });
+    const modalRef = this.modalService.open(SongDeleteDialog, {
+      size: 'lg',
+      backdrop: 'static',
+    });
+
     modalRef.componentInstance.song = song;
+
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -139,7 +155,9 @@ export class Song implements OnInit {
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
+
     this.page.set(+(page ?? 1));
+
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
   }
 
@@ -163,6 +181,29 @@ export class Song implements OnInit {
 
     this.songService.songsParams.set(queryObject);
   }
+
+  playSong(song: ISong): void {
+    this.player.playSong(song, this.songs());
+  }
+
+  toggleActive(song: ISong): void {
+    this.songService.toggleActive(song.id).subscribe({
+      next: updated => {
+        this.songs.update(list => list.map(s => (s.id === updated.id ? updated : s)));
+      },
+    });
+  }
+
+  filteredSongs(): ISong[] {
+    const term = this.searchTerm().toLowerCase();
+
+    if (!term) {
+      return this.songs();
+    }
+
+    return this.songs().filter(s => (s.title ?? '').toLowerCase().includes(term));
+  }
+
   protected handleNavigation(page: number, sortState: SortState): void {
     const queryParamsObj = {
       page,
