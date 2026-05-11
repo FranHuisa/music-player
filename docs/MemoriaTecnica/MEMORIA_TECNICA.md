@@ -259,6 +259,400 @@ Diferencias clave entre perfiles:
 
 ---
 
+### 3.10 Patrón de propiedad en la capa de servicio (Ownership Pattern)
+
+Uno de los requisitos funcionales clave del proyecto es que cada usuario solo pueda crear y modificar contenido que le pertenezca: un artista no puede editar canciones de otro artista, y un oyente no puede acceder a las playlists privadas de otro usuario. Este requisito se implementa mediante un **patrón de propiedad** aplicado consistentemente en la capa de servicio, no en los controladores REST.
+
+La decisión de centralizar la verificación de propiedad en los servicios (en lugar de los controladores) sigue el principio de responsabilidad única: los controladores se limitan a recibir peticiones HTTP y devolver respuestas, mientras que la lógica de negocio —incluyendo quién puede hacer qué— reside en los servicios.
+
+#### 3.10.1 Asignación automática de artista en SongServiceImpl
+
+Cuando un usuario con perfil de artista crea una canción, no se le pide que indique explícitamente qué artista es: el sistema lo determina automáticamente a partir del usuario autenticado.
+
+```java
+@Override
+public SongDTO save(SongDTO songDTO) {
+    Song song = songMapper.toEntity(songDTO);
+
+    // Obtener login del usuario autenticado desde el contexto de seguridad
+    String login = SecurityUtils.getCurrentUserLogin()
+        .orElseThrow(() -> new RuntimeException("No user logged"));
+
+    // Buscar el perfil de artista asociado a ese login
+    Artist artist = artistRepository.findByUserLogin(login)
+        .orElseThrow(() -> new RuntimeException("Artist not found"));
+
+    // Asignar el artista automáticamente antes de persistir
+    song.setArtist(artist);
+    song = songRepository.save(song);
+
+    return songMapper.toDto(song);
+}
+```
+
+`SecurityUtils.getCurrentUserLogin()` extrae el nombre de usuario del `SecurityContext` de Spring Security, que se puebla automáticamente en cada petición autenticada mediante el filtro JWT. El resultado es un `Optional<String>` que falla explícitamente si no hay sesión activa.
+
+El método `ArtistRepository.findByUserLogin(login)` ejecuta una consulta JPQL personalizada:
+
+```java
+@Query("SELECT a FROM Artist a WHERE a.user.login = :login")
+Optional<Artist> findByUserLogin(@Param("login") String login);
+```
+
+Esta consulta realiza un `JOIN` implícito entre la entidad `Artist` y su relación `@ManyToOne` con `User`, filtrando por el campo `login` del usuario vinculado. El resultado es un `Optional<Artist>` que permite manejar elegantemente el caso de un usuario sin perfil de artista.
+
+#### 3.10.2 Ownership en AlbumServiceImpl con BadRequestAlertException
+
+`AlbumServiceImpl` aplica el mismo patrón pero usa `BadRequestAlertException` en lugar de `RuntimeException`, lo que produce una respuesta HTTP 400 estructurada con campos de diagnóstico:
+
+```java
+@Override
+public AlbumDTO save(AlbumDTO albumDTO) {
+    Album album = albumMapper.toEntity(albumDTO);
+
+    String login = SecurityUtils.getCurrentUserLogin()
+        .orElseThrow(() ->
+            new BadRequestAlertException("Usuario no autenticado", "album", "usernotfound"));
+
+    Artist artist = artistRepository.findByUserLogin(login)
+        .orElseThrow(() ->
+            new BadRequestAlertException("Artista no encontrado", "album", "artistnotfound"));
+
+    album.setArtist(artist);
+    album.setActive(false); // Los álbumes nuevos se crean inactivos hasta que el admin los active
+    album = albumRepository.save(album);
+
+    return albumMapper.toDto(album);
+}
+```
+
+El detalle de `album.setActive(false)` garantiza que ningún álbum recién creado sea visible públicamente sin una revisión previa por parte de un administrador o editor. Este flujo de moderación protege el catálogo de contenido inapropiado o incompleto.
+
+`BadRequestAlertException` extiende `RuntimeException` y es capturada por `ExceptionTranslator` (`@ControllerAdvice`), que la transforma en una respuesta JSON con el estándar RFC 7807 Problem Details:
+
+```json
+{
+  "type": "https://www.jhipster.tech/problem/constraint-violation",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "Artista no encontrado",
+  "entityName": "album",
+  "errorKey": "artistnotfound"
+}
+```
+
+#### 3.10.3 Asignación de usuario propietario en PlaylistServiceImpl
+
+Las playlists no están vinculadas a un perfil de artista, sino directamente a cualquier usuario autenticado. `PlaylistServiceImpl` usa `SecurityContextHolder` para obtener la identidad del usuario actual:
+
+```java
+private User getCurrentUser() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    String login = authentication.getName(); // nombre del principal autenticado
+    return userRepository.findOneByLogin(login)
+        .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+}
+
+@Override
+public PlaylistDTO save(PlaylistDTO playlistDTO) {
+    Playlist playlist = playlistMapper.toEntity(playlistDTO);
+    User user = getCurrentUser();
+    playlist.setUser(user);
+    playlist = playlistRepository.save(playlist);
+    return playlistMapper.toDto(playlist);
+}
+
+@Override
+public PlaylistDTO update(PlaylistDTO playlistDTO) {
+    Playlist playlist = playlistMapper.toEntity(playlistDTO);
+    User user = getCurrentUser();
+    playlist.setUser(user); // Re-asignar en cada actualización
+    playlist = playlistRepository.save(playlist);
+    return playlistMapper.toDto(playlist);
+}
+```
+
+El método `getCurrentUser()` se extrae como método privado reutilizable para evitar duplicación entre `save()` y `update()`. La re-asignación del usuario en `update()` previene que una petición maliciosa pueda transferir la propiedad de una playlist a otro usuario mediante manipulación del DTO.
+
+#### 3.10.4 Adición de canciones a una playlist
+
+El método `addSongToPlaylist` implementa lógica adicional: verifica que la relación no exista antes de crearla, evitando duplicados en la tabla `playlist_song`:
+
+```java
+@Override
+public void addSongToPlaylist(Long playlistId, Long songId) {
+    Playlist playlist = playlistRepository.findById(playlistId)
+        .orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
+    Song song = songRepository.findById(songId)
+        .orElseThrow(() -> new RuntimeException("Canción no encontrada"));
+
+    // Comprobar si la canción ya está en la playlist
+    boolean exists = playlistSongRepository
+        .findByPlaylistIdAndSongId(playlistId, songId).isPresent();
+    if (exists) return; // Idempotente: no lanza error si ya existe
+
+    PlaylistSong ps = new PlaylistSong();
+    ps.setPlaylist(playlist);
+    ps.setSong(song);
+    ps.setAddedAt(Instant.now()); // Marca temporal de adición
+    playlistSongRepository.save(ps);
+}
+```
+
+La operación es **idempotente**: si la canción ya está en la playlist, el método retorna silenciosamente sin lanzar error ni crear duplicados. Este diseño simplifica el cliente, que puede llamar al endpoint varias veces sin efectos colaterales.
+
+---
+
+### 3.11 Sistema de subida y streaming de ficheros
+
+El controlador `FileUploadResource` (`@RestController @RequestMapping("/api/upload")`) centraliza todas las operaciones de subida y entrega de ficheros. Se diseñó para separar completamente la gestión de ficheros binarios de los controladores de entidades, manteniendo limpia la API REST principal.
+
+#### 3.11.1 Subida de imágenes de portada (POST /api/upload/image)
+
+```
+POST /api/upload/image
+Content-Type: multipart/form-data
+Authorization: Bearer <token>
+
+file: [fichero binario]
+```
+
+Proceso interno:
+1. **Validación de tipo**: se verifica que `Content-Type` comience por `image/`. Si no es una imagen, se devuelve HTTP 400 con `{"error": "Solo se permiten imágenes"}`.
+2. **Creación del directorio**: `Files.createDirectories(uploadPath)` crea el directorio `uploads/` si no existe, de forma recursiva.
+3. **Nombre único**: se genera `UUID.randomUUID().toString() + extensión`, donde la extensión se extrae del nombre de fichero original (`originalFilename.lastIndexOf(".")`). El UUID garantiza que dos subidas simultáneas del mismo fichero nunca colisionen.
+4. **Escritura a disco**: `Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING)` transfiere el contenido en streaming, sin cargar el fichero entero en memoria.
+5. **Respuesta**: `{"url": "/uploads/{uuid}.{ext}"}`. El frontend almacena esta URL en el campo `coverImage` de la entidad correspondiente (Song, Album, Artist).
+
+```java
+@PostMapping("/image")
+public ResponseEntity<Map<String, String>> uploadImage(@RequestParam("file") MultipartFile file) {
+    String contentType = file.getContentType();
+    if (contentType == null || !contentType.startsWith("image/")) {
+        return ResponseEntity.badRequest().body(Map.of("error", "Solo se permiten imágenes"));
+    }
+    Path uploadPath = Path.of(uploadDir);
+    if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+    String extension = file.getOriginalFilename() != null
+        ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."))
+        : ".jpg";
+    String filename = UUID.randomUUID().toString() + extension;
+    Files.copy(file.getInputStream(), uploadPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+
+    return ResponseEntity.ok(Map.of("url", "/uploads/" + filename));
+}
+```
+
+El límite de tamaño máximo por fichero se configura en `application.yml`:
+
+```yaml
+spring:
+  servlet:
+    multipart:
+      max-file-size: 15MB
+      max-request-size: 15MB
+```
+
+Si el cliente supera este límite, Spring Boot rechaza la petición antes de llegar al controlador con HTTP 413 `Payload Too Large`.
+
+#### 3.11.2 Subida de ficheros de audio (POST /api/upload/audio)
+
+El endpoint de audio sigue el mismo patrón que el de imagen, pero valida `content-type.startsWith("audio/")` y devuelve adicionalmente el campo `filename` para permitir referencias directas al fichero:
+
+```json
+{"url": "/uploads/{uuid}.mp3", "filename": "{uuid}.mp3"}
+```
+
+La extensión por defecto cuando el nombre original no está disponible es `.mp3`. El frontend almacena la URL devuelta en el campo `fileUrl` de la entidad `Song`.
+
+#### 3.11.3 Streaming de audio con soporte de rangos HTTP (GET /api/upload/stream/{filename})
+
+El endpoint de streaming permite reproducción directa desde el navegador con soporte de búsqueda en la línea de tiempo (scrubbing). Se devuelve la cabecera `Accept-Ranges: bytes`, que informa al cliente de que el servidor acepta peticiones de rango parcial (RFC 7233):
+
+```java
+@GetMapping("/stream/{filename}")
+public ResponseEntity<Resource> streamAudio(@PathVariable String filename) throws IOException {
+    Path uploadPath = Path.of(uploadDir).toAbsolutePath().normalize();
+    Path filePath = uploadPath.resolve(filename).normalize();
+
+    // Protección contra path traversal: el fichero resuelto debe estar dentro del directorio de uploads
+    if (!filePath.startsWith(uploadPath)) {
+        return ResponseEntity.badRequest().build();
+    }
+
+    Resource resource = new UrlResource(filePath.toUri());
+    if (!resource.exists() || !resource.isReadable()) {
+        return ResponseEntity.notFound().build();
+    }
+
+    String contentType = Files.probeContentType(filePath);
+    if (contentType == null) contentType = "audio/mpeg"; // Fallback para MP3
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(contentType))
+        .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + filename + "\"")
+        .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+        .body(resource);
+}
+```
+
+La protección contra **path traversal** es crítica: sin ella, un atacante podría solicitar `/api/upload/stream/../../application.yml` para leer ficheros de configuración del servidor. La comprobación `filePath.startsWith(uploadPath)` garantiza que la ruta resuelta esté contenida dentro del directorio `uploads/`.
+
+`Files.probeContentType(filePath)` detecta el tipo MIME real del fichero examinando su contenido (no solo la extensión), evitando que se sirvan ficheros con extensión incorrecta con un Content-Type equivocado.
+
+La cabecera `Content-Disposition: inline` instruye al navegador para renderizar el audio en el reproductor HTML5 en lugar de descargarlo.
+
+#### 3.11.4 Integración frontend ↔ backend de subida
+
+El formulario de creación de canciones en Angular llama secuencialmente a los endpoints de subida antes de enviar el DTO de la canción:
+
+```
+1. POST /api/upload/image → {url: "/uploads/uuid.jpg"} → coverImageUrl
+2. POST /api/upload/audio → {url: "/uploads/uuid.mp3"} → fileUrl
+3. POST /api/songs {title, ..., coverImage: coverImageUrl, fileUrl: fileUrl}
+```
+
+Este diseño garantiza que los ficheros binarios y los metadatos de la canción se gestionan mediante flujos HTTP independientes, evitando peticiones multipart excesivamente grandes que incluyan tanto el JSON como los ficheros.
+
+---
+
+### 3.12 Repositorios personalizados y consultas JPQL
+
+Spring Data JPA genera automáticamente las operaciones CRUD básicas a partir de las interfaces de repositorio. Sin embargo, varios requisitos del dominio requieren consultas específicas que se implementan mediante anotaciones `@Query` con JPQL (Java Persistence Query Language).
+
+#### ArtistRepository
+
+```java
+@Repository
+public interface ArtistRepository extends JpaRepository<Artist, Long> {
+
+    // Buscar el perfil de artista vinculado a un login de usuario
+    @Query("SELECT a FROM Artist a WHERE a.user.login = :login")
+    Optional<Artist> findByUserLogin(@Param("login") String login);
+
+    // Búsqueda de artistas por nombre (insensible a mayúsculas, paginado)
+    Page<Artist> findByNameContainingIgnoreCase(String name, Pageable pageable);
+}
+```
+
+La primera consulta es fundamental para el patrón de ownership: dado el login del usuario autenticado, obtiene el `Artist` correspondiente para asignarlo automáticamente a canciones y álbumes. La relación entre `User` y `Artist` es `@OneToOne` bidireccional; la consulta JPQL navega por ella mediante notación de punto (`a.user.login`).
+
+#### SongRepository (métodos clave)
+
+```java
+@Repository
+public interface SongRepository extends JpaRepository<Song, Long>,
+    SongRepositoryWithBagRelationships {
+
+    // Canciones de un artista específico (para "mis canciones")
+    Page<Song> findByArtistLogin(String login, Pageable pageable);
+
+    // Búsqueda en tiempo real por título
+    Page<Song> findByTitleContainingIgnoreCaseAndActiveTrue(String title, Pageable pageable);
+
+    // Canciones públicas (activas y con fecha de lanzamiento <= hoy)
+    @Query("SELECT s FROM Song s WHERE s.active = true AND s.releaseDate <= :today")
+    List<Song> findPublicSongs(@Param("today") LocalDate today);
+
+    // Canciones públicas de un álbum concreto
+    @Query("SELECT s FROM Song s WHERE s.album.id = :albumId AND s.active = true AND s.releaseDate <= :today")
+    List<Song> findPublicSongsByAlbumId(@Param("albumId") Long albumId, @Param("today") LocalDate today);
+
+    // Canciones activas (paginadas)
+    Page<Song> findByActiveTrue(Pageable pageable);
+}
+```
+
+El método `findByTitleContainingIgnoreCaseAndActiveTrue` es generado automáticamente por Spring Data JPA a partir del nombre del método mediante su convención de nomenclatura: `ContainingIgnoreCase` genera un `LIKE '%?%'` en SQL insensible a mayúsculas, y `AndActiveTrue` añade `AND active = 1`. Esto proporciona búsqueda en tiempo real sin escribir SQL manual.
+
+#### PlaylistRepository
+
+```java
+@Repository
+public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
+
+    // Playlists de un usuario (para "mis playlists")
+    List<Playlist> findByUserLogin(String login);
+
+    // Playlists públicas
+    List<Playlist> findByIsPublicTrue();
+}
+```
+
+`findByUserLogin` navega la relación `@ManyToOne` de `Playlist` con `User` para filtrar por el login del propietario. Spring Data JPA genera la consulta JPQL `SELECT p FROM Playlist p WHERE p.user.login = :login` automáticamente.
+
+#### SongRepositoryWithBagRelationships
+
+La interfaz `SongRepositoryWithBagRelationships` resuelve el problema del producto cartesiano de Hibernate al cargar relaciones `ManyToMany` en colecciones de tipo _bag_ (no ordenadas). Se implementa en `SongRepositoryWithBagRelationshipsImpl`:
+
+```java
+// Cargar todas las canciones y luego los artistas en una segunda consulta
+@Override
+public Page<Song> findAllWithEagerRelationships(Pageable pageable) {
+    List<Long> ids = songRepository.findAllIds(pageable); // 1ª consulta: IDs
+    List<Song> songs = songRepository.findSongsByIds(ids); // 2ª consulta: entidades + artistas
+    return PageImpl<>(songs, pageable, songRepository.count());
+}
+```
+
+Separar en dos consultas evita que Hibernate genere un `CROSS JOIN` que multiplica las filas (una por cada artista asociado), lo que habría producido resultados duplicados en la paginación.
+
+---
+
+### 3.13 Servicio de búsqueda y filtrado
+
+La búsqueda de canciones por título se implementa en `SongServiceImpl` mediante el repositorio personalizado:
+
+```java
+@Override
+public Page<SongDTO> findByTitleContaining(String title, Pageable pageable) {
+    return songRepository
+        .findByTitleContainingIgnoreCaseAndActiveTrue(title, pageable)
+        .map(songMapper::toDto);
+}
+```
+
+El controlador `SongResource` expone este método como un endpoint GET con parámetro opcional:
+
+```
+GET /api/songs/search?title=bohemian&page=0&size=10
+```
+
+En el frontend, el componente de búsqueda usa `debounceTime(300)` de RxJS para evitar peticiones en cada pulsación de tecla: la búsqueda se lanza solo 300 ms después de que el usuario deja de escribir. Esta técnica reduce significativamente la carga del backend sin perjudicar la experiencia de usuario.
+
+---
+
+### 3.14 Control de acceso por rol en endpoints REST
+
+Los controladores de recursos aplican restricciones de acceso mediante `@PreAuthorize` a nivel de método, combinando granularidad fina con declaratividad. Ejemplos representativos:
+
+```java
+// AlbumResource: solo ROLE_ADMIN y ROLE_ARTIST pueden crear álbumes
+@PostMapping("")
+@PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_ARTIST')")
+public ResponseEntity<AlbumDTO> createAlbum(@Valid @RequestBody AlbumDTO albumDTO) { ... }
+
+// AlbumResource: solo ROLE_ADMIN puede eliminar álbumes
+@DeleteMapping("/{id}")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+public ResponseEntity<Void> deleteAlbum(@PathVariable Long id) { ... }
+
+// GenreResource: CRUD de géneros solo para administradores
+@PostMapping("")
+@PreAuthorize("hasAuthority('ROLE_ADMIN')")
+public ResponseEntity<GenreDTO> createGenre(@Valid @RequestBody GenreDTO genreDTO) { ... }
+```
+
+La anotación `@PreAuthorize` es evaluada por Spring Security AOP antes de ejecutar el método. Si el usuario no tiene el rol requerido, Spring Security lanza `AccessDeniedException`, que `ExceptionTranslator` convierte en HTTP 403 Forbidden.
+
+Esta estrategia es preferible a gestionar la autorización dentro de la lógica del controlador porque:
+- Es declarativa y legible: el rol requerido es visible sin leer el cuerpo del método.
+- Es consistente: Spring Security aplica la misma política tanto a peticiones HTTP como a llamadas internas entre servicios.
+- Reduce el riesgo de errores de omisión: si se añade un nuevo endpoint, el desarrollador recibe un acceso denegado por defecto hasta que configure el permiso explícitamente.
+
+---
+
 ## 4. Tecnologías del frontend
 
 ### 4.1 Angular 21
@@ -390,19 +784,186 @@ El reproductor visual está implementado pero la reproducción de audio real dep
 
 La relación `Song ↔ Artist` es ManyToMany. Hibernate genera un producto cartesiano si se usa una única consulta JPQL con `JOIN FETCH`. Se resolvió implementando `SongRepositoryWithBagRelationships`, que separa la carga en dos consultas distintas: una para las canciones y otra para sus artistas, evitando duplicados y mejorando el rendimiento.
 
+### 8.5 Streaming de audio y soporte de rangos HTTP
+
+La reproducción de audio en el navegador mediante el elemento `<audio>` de HTML5 requiere que el servidor soporte peticiones de rango parcial (cabecera `Range: bytes=X-Y`). Sin esta capacidad, el navegador no puede saltar a una posición arbitraria del fichero (scrubbing) sin descargar el contenido completo hasta ese punto.
+
+El problema se detectó durante las pruebas de integración: al intentar avanzar en la canción desde el reproductor, el navegador enviaba peticiones de rango que el servidor rechazaba por no incluir la cabecera `Accept-Ranges: bytes` en la respuesta.
+
+La solución fue añadir `HttpHeaders.ACCEPT_RANGES` en la respuesta del endpoint `/api/upload/stream/{filename}` y retornar un `UrlResource` que Spring convierte en una respuesta parcial cuando recibe la cabecera `Range`. Spring Boot gestiona automáticamente las respuestas `206 Partial Content` cuando el cliente solicita un rango y el recurso está envuelto en una `UrlResource`.
+
+### 8.6 Colisión de nombres de fichero en subidas concurrentes
+
+En una primera versión del endpoint de subida se usaba el nombre original del fichero del cliente para guardar en disco. Esto generaba dos problemas:
+
+1. **Colisión**: si dos usuarios subían un fichero con el mismo nombre (por ejemplo, `portada.jpg`), el segundo sobrescribía al primero.
+2. **Caracteres peligrosos**: nombres con espacios, tildes o caracteres especiales podían causar problemas al construir la URL de descarga.
+
+La solución fue generar un nombre completamente nuevo con `UUID.randomUUID().toString()` concatenado a la extensión original del fichero. Los UUIDs son identificadores de 128 bits generados de forma pseudoaleatoria con una probabilidad de colisión despreciable (1 en 2^122). La extensión se preserva para que el servidor pueda detectar el tipo MIME correctamente.
+
+### 8.7 Vulnerabilidad de path traversal en el endpoint de streaming
+
+Al implementar el endpoint `GET /api/upload/stream/{filename}`, se identificó un riesgo de seguridad potencial: si un atacante enviaba un nombre de fichero como `../config/application.yml`, la ruta resuelta podría salir del directorio `uploads/` y acceder a ficheros sensibles del servidor.
+
+La mitigación se implementó en dos pasos:
+
+```java
+Path uploadPath = Path.of(uploadDir).toAbsolutePath().normalize();
+Path filePath = uploadPath.resolve(filename).normalize();
+
+// Verificar que el fichero resuelto está dentro del directorio permitido
+if (!filePath.startsWith(uploadPath)) {
+    return ResponseEntity.badRequest().build();
+}
+```
+
+`normalize()` elimina los segmentos `..` y `.` de la ruta antes de la comprobación. `toAbsolutePath()` convierte la ruta relativa a absoluta para que `startsWith()` funcione correctamente. Este es el patrón canónico recomendado por OWASP para prevenir path traversal en Java.
+
+### 8.8 Orden de changelogs en master.xml de Liquibase
+
+Durante el desarrollo en ramas paralelas, el fichero `master.xml` que orquesta la ejecución de los changelogs sufrió conflictos de merge. En un commit, los changelogs quedaron ordenados de forma incorrecta: `Like` antes que `Song`, cuando `Like` tiene una clave foránea hacia `Song`.
+
+El resultado fue que Liquibase fallaba al arrancar el backend con un error de clave foránea referenciando una tabla inexistente. La solución requirió reordenar manualmente los includes en `master.xml` para respetar el orden de dependencias: primero las entidades sin dependencias externas (`Genre`, `Artist`), luego las que dependen de ellas (`Album`, `Song`), y finalmente las tablas de relación (`PlaylistSong`, `Like`, `Play`).
+
+### 8.9 Configuración del secreto JWT mediante variable de entorno
+
+La configuración inicial de JHipster incluía el secreto JWT directamente en `application.yml` como una cadena Base64 hardcodeada:
+
+```yaml
+jhipster:
+  security:
+    authentication:
+      jwt:
+        base64-secret: "mi-secreto-hardcodeado-base64..."
+```
+
+Incluir secretos criptográficos en el repositorio de control de versiones es una vulnerabilidad grave: cualquier persona con acceso al repositorio puede obtener el secreto y forjar tokens JWT arbitrarios.
+
+La solución fue reemplazar el valor por una referencia a variable de entorno:
+
+```yaml
+jhipster:
+  security:
+    authentication:
+      jwt:
+        base64-secret: "${JWT_SECRET}"
+```
+
+En el entorno de desarrollo, `JWT_SECRET` se define en un fichero `.env` local (excluido del repositorio mediante `.gitignore`). En producción, se configura como variable de entorno del servidor o en el sistema de secrets del orquestador de contenedores.
+
+### 8.10 Endpoint raíz GET /api/albums retornaba 405 Method Not Allowed
+
+Durante la integración frontend-backend, el componente de álbumes realizaba una petición `GET /api/albums` al cargar la lista. El backend retornaba 405 `Method Not Allowed` porque `AlbumResource` no declaraba un método `@GetMapping("")` en la ruta raíz: solo tenía rutas con parámetros (`/{id}`) o con `@RequestMapping` de subpath.
+
+La solución fue añadir el método explícito:
+
+```java
+@GetMapping("")
+@PermitAll
+public ResponseEntity<List<AlbumDTO>> getAllAlbums(
+        @org.springdoc.core.annotations.ParameterObject Pageable pageable) {
+    Page<AlbumDTO> page;
+    String login = SecurityUtils.getCurrentUserLogin().orElse(null);
+    if (login != null && accountService.hasAnyAuthority(AuthoritiesConstants.ARTIST, AuthoritiesConstants.ADMIN)) {
+        page = albumService.findAll(pageable);
+    } else {
+        page = albumService.findPublicAlbums(pageable);
+    }
+    HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(
+        ServletUriComponentsBuilder.fromCurrentRequest(), page);
+    return ResponseEntity.ok().headers(headers).body(page.getContent());
+}
+```
+
+La lógica de filtrado por rol en el propio endpoint permite que los usuarios anónimos y oyentes vean solo álbumes activos, mientras que artistas y administradores ven todo el catálogo.
+
 ---
 
 ## 9. Conclusiones y trabajo futuro
 
 ### 9.1 Conclusiones
 
-El proyecto ha permitido aplicar en un caso real los conocimientos adquiridos durante el grado: arquitectura cliente-servidor, patrones de diseño de interfaces, seguridad basada en tokens y consumo de APIs externas. La elección de JHipster como base generó una estructura sólida que permitió centrarse en la personalización del frontend y la lógica de negocio desde el primer día. Angular 21 con señales y componentes standalone resultó en un código más conciso y predecible comparado con versiones anteriores del framework.
+El proyecto MusicPlayer ha permitido aplicar en un caso real los conocimientos adquiridos durante el grado, cubriendo las principales dimensiones del desarrollo de software moderno: arquitectura cliente-servidor, seguridad basada en tokens, diseño de interfaz de usuario orientado a la experiencia, persistencia relacional versionada y consumo de APIs externas.
+
+#### Arquitectura y tecnología base
+
+La elección de JHipster 9.0.0 como generador de código base fue acertada para el contexto del proyecto. En lugar de dedicar semanas a configurar Spring Security, Liquibase, MapStruct y la estructura de paquetes, el equipo dispuso de una base funcional desde el primer día, y pudo centrarse en las contribuciones de valor diferencial: el diseño visual, la lógica de propiedad, la subida de ficheros y las funcionalidades de usuario final.
+
+La separación de responsabilidades en tres capas bien delimitadas (controlador REST, servicio, repositorio) facilitó el trabajo en paralelo: el desarrollador de frontend podía consumir los endpoints mientras el desarrollador de backend refinaba la lógica de negocio, con mínimas dependencias entre ramas de trabajo.
+
+#### Frontend: Angular 21 con señales
+
+La adopción de las señales reactivas (`signal`, `computed`) de Angular 16+ para la gestión de estado del reproductor demostró ser una elección sólida. Comparado con alternativas como NgRx (Redux pattern) o BehaviorSubjects de RxJS, las señales ofrecen:
+
+- **Menor superficie de código**: el estado del reproductor se define en 8 líneas de `signal()` y `computed()` frente a las 4 clases (actions, reducer, effects, selectors) que requeriría NgRx.
+- **Reactividad de grano fino**: Angular re-renderiza solo los elementos del template que leen una señal que cambió, sin necesidad de `ChangeDetectionStrategy.OnPush` manual.
+- **Sin dependencias externas**: NgRx añade ~400KB gzipped al bundle; las señales son parte del core de Angular.
+
+La arquitectura de componentes standalone eliminó los módulos NgModule, reduciendo el boilerplate y mejorando la legibilidad de las importaciones. El lazy loading por ruta se configuró directamente en el array de rutas.
+
+#### Backend: patrón de propiedad y seguridad
+
+La implementación del patrón de ownership en la capa de servicio (sección 3.10) resolvió un requisito de seguridad no trivial de forma elegante. Al extraer el usuario autenticado directamente del `SecurityContext` de Spring en los métodos de servicio, se garantiza que la identidad del propietario no puede ser suplantada mediante manipulación del cuerpo de la petición HTTP. Este patrón es preferible a validar la propiedad en el controlador porque mantiene la lógica de negocio separada de la capa de presentación.
+
+La gestión de errores centralizada mediante `ExceptionTranslator` y `BadRequestAlertException` proporcionó respuestas HTTP estructuradas y predecibles que el frontend puede manejar de forma uniforme, sin necesidad de lógica de parsing de errores específica por endpoint.
+
+#### Subida y streaming de ficheros
+
+El módulo `FileUploadResource` cubrió un caso de uso fundamental para la funcionalidad de la plataforma: la subida de portadas y canciones sin intermediarios. El diseño en tres endpoints separados (imagen, audio, streaming) mantuvo cada operación simple y testeable de forma independiente. La protección contra path traversal aplicada en el endpoint de streaming es un ejemplo práctico de cómo las consideraciones de seguridad deben ser parte del diseño inicial, no una corrección posterior.
+
+#### Pruebas E2E con Playwright
+
+La suite de pruebas E2E desarrollada con Playwright cubre los flujos críticos de usuario de forma automatizada y reproducible. A diferencia de las pruebas unitarias que verifican lógica aislada, las pruebas E2E validan que el sistema completo (frontend + backend + base de datos) funciona correctamente desde la perspectiva del usuario. La cobertura de flujos de ownership (intentar editar el recurso de otro usuario) es especialmente valiosa porque estos errores son difíciles de detectar con pruebas unitarias.
+
+#### Trabajo en equipo y control de versiones
+
+El trabajo en ramas paralelas (`RamaAlex-detalles` para frontend y `RamaFran-Flujo/Back` para backend) permitió un desarrollo independiente con merges periódicos de integración. Los principales puntos de fricción fueron los ficheros de configuración compartidos (`application.yml`, `master.xml` de Liquibase) y los componentes Angular que llaman a endpoints nuevos antes de que existan. Para proyectos futuros, un entorno de integración continua (CI) que ejecute automáticamente el build completo en cada merge habría detectado estos conflictos de forma inmediata.
 
 ### 9.2 Trabajo futuro
 
-- Reproducción de audio real integrando un servicio de almacenamiento de ficheros (S3, Cloudinary).
-- Letras sincronizadas con la reproducción (formato LRC) mediante `lrclib.net`.
-- Sistema de recomendación de canciones basado en el historial de reproducciones.
-- Aplicación móvil nativa con el mismo backend (Ionic o React Native).
-- Despliegue en producción con CI/CD automatizado (GitHub Actions + Docker).
-- Implementación de tests de integración con Testcontainers para el backend.
+Las siguientes líneas de trabajo ampliarían significativamente las capacidades del sistema en un hipotético paso a producción:
+
+#### Infraestructura y almacenamiento
+
+- **Almacenamiento persistente en la nube**: reemplazar el directorio `uploads/` local por Amazon S3, Google Cloud Storage o equivalente. El endpoint `/api/upload` solo requeriría cambiar la implementación de escritura/lectura; la API externa (URLs devueltas al frontend) no cambiaría.
+- **CDN para assets estáticos**: servir portadas de álbumes e imágenes de artistas desde una red de distribución de contenido para reducir latencia global y carga del servidor backend.
+- **Despliegue con Docker Compose en producción**: el proyecto ya incluye `docker-compose.yml` para el entorno de desarrollo; completar el archivo para producción con variables de entorno seguras, healthchecks y reinicio automático.
+- **CI/CD con GitHub Actions**: pipeline que ejecute el build Maven, las pruebas JUnit, el build Angular y los tests Playwright en cada Pull Request, bloqueando merges que rompan la suite de pruebas.
+
+#### Funcionalidades de usuario final
+
+- **Reproducción de audio real**: el campo `fileUrl` de `Song` ya almacena la URL del fichero; conectar el `<audio>` del reproductor Angular a `GET /api/upload/stream/{filename}` completaría la reproducción sin cambios en el backend.
+- **Letras sincronizadas (formato LRC)**: en lugar de mostrar la letra como bloque de texto estático, resaltar el verso actual en sincronía con el tiempo de reproducción usando el formato LRC (timestamps por línea). La API `lrclib.net` proporciona letras en este formato para muchas canciones.
+- **Sistema de recomendación**: el historial de reproducciones almacenado en la tabla `Play` proporciona datos suficientes para implementar un motor de recomendación colaborativo básico que sugiera canciones basándose en los patrones de escucha del usuario.
+- **Modo offline con Service Worker**: registrar un Service Worker en Angular para cachear el catálogo y permitir reproducción sin conexión de las canciones previamente descargadas.
+- **Notificaciones en tiempo real**: integrar WebSocket (STOMP sobre SockJS, ya soportado por JHipster) para notificar al usuario cuando un artista que sigue publica contenido nuevo.
+
+#### Calidad y mantenimiento
+
+- **Pruebas unitarias Jest para servicios Angular**: los servicios críticos (`LyricsService`, `PlayerService`, `AccountService`) merecen una suite de pruebas unitarias que verifique su comportamiento con mocks de `HttpClient`, reduciendo la dependencia de pruebas E2E para validar lógica de frontend.
+- **Pruebas de integración con Testcontainers**: reemplazar la base de datos H2 en memoria de las pruebas de integración del backend por una instancia real de MySQL levantada por Testcontainers. Esto garantiza que las consultas JPQL, los tipos de datos y los índices se comportan exactamente igual que en producción.
+- **Análisis estático de seguridad**: integrar herramientas como OWASP Dependency-Check (para detectar dependencias con vulnerabilidades conocidas) y SonarQube (para análisis de código estático) en el pipeline de CI.
+- **Documentación interactiva de la API**: generar automáticamente la documentación OpenAPI 3 con SpringDoc y exponerla en `/swagger-ui.html` para facilitar el consumo de la API por terceros o por el equipo de frontend sin necesidad de consultar el código fuente.
+
+---
+
+## 10. Glosario de términos técnicos
+
+| Término | Definición |
+|---------|------------|
+| **JWT** (JSON Web Token) | Estándar abierto (RFC 7519) para transmitir información de forma compacta y verificable entre partes mediante una firma digital. |
+| **JHipster** | Generador de código que crea aplicaciones Spring Boot + Angular/React/Vue con configuración de seguridad, testing y CI preintegrada. |
+| **Liquibase** | Herramienta de migración de esquemas de base de datos basada en changelogs versionados; garantiza reproducibilidad entre entornos. |
+| **MapStruct** | Procesador de anotaciones Java que genera código de conversión entre entidades JPA y DTOs en tiempo de compilación. |
+| **DTO** (Data Transfer Object) | Objeto plano que encapsula datos para transferirlos entre capas, desacoplando el modelo de dominio de la API REST. |
+| **JPQL** | Java Persistence Query Language; lenguaje de consulta orientado a objetos para JPA, independiente del motor de base de datos. |
+| **UUID** | Identificador Único Universal de 128 bits; probabilidad de colisión despreciable en la práctica (~1 en 2^122). |
+| **CORS** | Cross-Origin Resource Sharing; mecanismo HTTP que controla qué orígenes pueden acceder a los recursos de un servidor. |
+| **Signal** (Angular) | Primitiva reactiva de Angular 16+ que notifica automáticamente al framework de cambios de estado, habilitando re-renderizado de grano fino. |
+| **Path traversal** | Vulnerabilidad de seguridad donde un atacante usa secuencias `../` para acceder a ficheros fuera del directorio permitido. |
+| **RFC 7233** | Estándar HTTP que define el mecanismo de peticiones de rango parcial (`Range: bytes=X-Y`), usado para streaming de audio/vídeo. |
+| **HikariCP** | Pool de conexiones JDBC de alto rendimiento; gestiona un conjunto de conexiones abiertas a la base de datos para reutilizarlas. |
+| **AOP** (Aspect-Oriented Programming) | Paradigma que permite separar preocupaciones transversales (logging, seguridad) del código de negocio mediante aspectos. |
+| **E2E** (End-to-End) | Tipo de prueba que verifica un flujo completo del sistema desde la perspectiva del usuario final, incluyendo frontend, backend y base de datos. |
+| **Playwright** | Framework de automatización de navegadores desarrollado por Microsoft; permite escribir tests E2E en TypeScript/JavaScript. |
+| **OWASP** | Open Web Application Security Project; organización que publica guías y herramientas de seguridad web, incluyendo el Top 10 de vulnerabilidades. |

@@ -190,3 +190,287 @@ flowchart TD
     H -- Sí --> G
     H -- No --> I[Redirigir a /accessdenied]
 ```
+
+---
+
+## 7. Flujo de subida de ficheros (imagen y audio)
+
+```mermaid
+flowchart TD
+    A([Usuario en formulario de canción/álbum]) --> B[Selecciona fichero en input type=file]
+    B --> C{¿Tipo de fichero?}
+    C -- Imagen --> D[POST /api/upload/image]
+    C -- Audio --> E[POST /api/upload/audio]
+
+    D --> F{¿Content-Type empieza por image/?}
+    F -- No --> G[Respuesta 400: Solo se permiten imágenes]
+    G --> B
+    F -- Sí --> H{¿Tamaño <= 15 MB?}
+    H -- No --> I[Spring rechaza con 413 Payload Too Large]
+    I --> B
+    H -- Sí --> J[Generar UUID + extensión original]
+    J --> K[Files.copy al directorio uploads/]
+    K --> L[Responder con url: /uploads/uuid.ext]
+    L --> M[Frontend guarda URL en campo coverImage]
+
+    E --> N{¿Content-Type empieza por audio/?}
+    N -- No --> O[Respuesta 400: Solo se permiten archivos de audio]
+    O --> B
+    N -- Sí --> P{¿Tamaño <= 15 MB?}
+    P -- No --> I
+    P -- Sí --> Q[Generar UUID + extensión original]
+    Q --> R[Files.copy al directorio uploads/]
+    R --> S[Responder con url y filename]
+    S --> T[Frontend guarda URL en campo fileUrl]
+
+    M --> U[POST /api/songs con coverImage + fileUrl]
+    T --> U
+    U --> V[Canción creada con URLs de fichero]
+```
+
+---
+
+## 8. Flujo de streaming de audio con rangos HTTP
+
+```mermaid
+sequenceDiagram
+    participant C as Navegador (HTML5 audio)
+    participant F as Frontend Angular
+    participant B as Backend Spring Boot
+    participant D as Disco (uploads/)
+
+    F->>F: currentSong.fileUrl = /uploads/abc.mp3
+    F->>C: <audio src="/api/upload/stream/abc.mp3">
+    C->>B: GET /api/upload/stream/abc.mp3
+    B->>B: Verificar que ruta no sale del directorio uploads/
+    B->>D: UrlResource(filePath.toUri())
+    D-->>B: Fichero encontrado y legible
+    B->>B: Files.probeContentType → audio/mpeg
+    B-->>C: 200 OK, Content-Type: audio/mpeg, Accept-Ranges: bytes
+
+    Note over C,B: El usuario arrastra el slider de reproducción
+    C->>B: GET /api/upload/stream/abc.mp3 (Range: bytes=1048576-)
+    B-->>C: 206 Partial Content, bytes 1048576-... / total
+    C->>C: Reproduce desde el punto solicitado
+```
+
+---
+
+## 9. Patrón de propiedad en la capa de servicio (Ownership)
+
+```mermaid
+flowchart TD
+    A([POST /api/songs - SongDTO]) --> B[SongResource.createSong]
+    B --> C[SongService.save llamado]
+    C --> D[SecurityUtils.getCurrentUserLogin]
+    D --> E{¿Usuario autenticado?}
+    E -- No --> F[RuntimeException: No user logged]
+    F --> G[HTTP 500 Error interno]
+    E -- Sí --> H[ArtistRepository.findByUserLogin - login]
+    H --> I{¿Tiene perfil de artista?}
+    I -- No --> J[RuntimeException: Artist not found]
+    J --> G
+    I -- Sí --> K[song.setArtist - artist]
+    K --> L[SongRepository.save - song]
+    L --> M[SongMapper.toDto]
+    M --> N[HTTP 201 Created - SongDTO]
+
+    style D fill:#4a9eff,color:#fff
+    style H fill:#4a9eff,color:#fff
+    style K fill:#22c55e,color:#fff
+```
+
+---
+
+## 10. Flujo de búsqueda de canciones en tiempo real
+
+```mermaid
+flowchart TD
+    A([Usuario en barra de búsqueda]) --> B[Escribe en el input]
+    B --> C[Observable del campo de texto]
+    C --> D[debounceTime - 300ms]
+    D --> E{¿Han pasado 300ms sin nueva pulsación?}
+    E -- No --> B
+    E -- Sí --> F[SongService.findByTitleContaining - texto]
+    F --> G[GET /api/songs/search?title=...&page=0&size=20]
+    G --> H[SongRepository.findByTitleContainingIgnoreCaseAndActiveTrue]
+    H --> I{¿Hay resultados?}
+    I -- Sí --> J[Devolver lista paginada de SongDTO]
+    J --> K[Frontend renderiza tarjetas de canciones]
+    I -- No --> L[Lista vacía]
+    L --> M[Frontend muestra: No se encontraron canciones]
+    K --> N{¿Usuario limpia el campo?}
+    M --> N
+    N -- Sí --> O[Mostrar catálogo completo]
+    N -- No --> B
+```
+
+---
+
+## 11. Flujo de canciones favoritas (Likes)
+
+```mermaid
+flowchart TD
+    A([Usuario ve lista de canciones]) --> B[Pulsa icono de corazón en una canción]
+    B --> C[LikeService - verificar estado actual]
+    C --> D{¿Ya existe Like para este usuario+canción?}
+    D -- Sí - quitar like --> E[DELETE /api/likes - id]
+    E --> F[LikeRepository.delete]
+    F --> G[Icono corazón vacío]
+    D -- No - dar like --> H[POST /api/likes]
+    H --> I[Obtener usuario autenticado del contexto]
+    I --> J[Like.setUser - currentUser]
+    J --> K[Like.setSong - song]
+    K --> L[LikeRepository.save]
+    L --> M[Icono corazón relleno - activo]
+    G --> N([Estado actualizado en UI])
+    M --> N
+    N --> O{¿Usuario navega a Favoritos?}
+    O -- Sí --> P[GET /api/likes?userId=currentUser]
+    P --> Q[Lista de canciones favoritas]
+    O -- No --> A
+```
+
+---
+
+## 12. Diagrama de secuencia — Ciclo completo de creación de canción
+
+```mermaid
+sequenceDiagram
+    participant U as Usuario (Artista)
+    participant A as Angular Frontend
+    participant S as Spring Boot Backend
+    participant DB as MySQL
+
+    U->>A: Navegar a /song/new
+    A->>A: Mostrar formulario de creación
+
+    U->>A: Seleccionar imagen de portada
+    A->>S: POST /api/upload/image (multipart)
+    S->>S: Validar Content-Type image/*
+    S->>S: UUID + guardar en uploads/
+    S-->>A: {"url": "/uploads/uuid.jpg"}
+    A->>A: coverImageUrl = /uploads/uuid.jpg
+
+    U->>A: Seleccionar fichero de audio
+    A->>S: POST /api/upload/audio (multipart)
+    S->>S: Validar Content-Type audio/*
+    S->>S: UUID + guardar en uploads/
+    S-->>A: {"url": "/uploads/uuid.mp3", "filename": "uuid.mp3"}
+    A->>A: fileUrl = /uploads/uuid.mp3
+
+    U->>A: Rellenar título, duración, género, álbum
+    U->>A: Pulsar Guardar
+
+    A->>S: POST /api/songs {title, duration, fileUrl, coverImage, ...}
+    Note right of S: Authorization: Bearer <token>
+    S->>S: SecurityUtils.getCurrentUserLogin()
+    S->>DB: ArtistRepository.findByUserLogin(login)
+    DB-->>S: Artist entity
+    S->>S: song.setArtist(artist)
+    S->>DB: SongRepository.save(song)
+    DB-->>S: Song con ID generado
+    S->>S: SongMapper.toDto(song)
+    S-->>A: 201 Created {id, title, fileUrl, coverImage, artist...}
+
+    A->>A: Redirigir a /song/{id} (vista detalle)
+    A-->>U: Canción visible en catálogo
+```
+
+---
+
+## 13. Diagrama de componentes Backend — Capa de servicio
+
+```mermaid
+graph TD
+    subgraph "Controladores REST (web.rest)"
+        SR[SongResource]
+        AR[AlbumResource]
+        ATR[ArtistResource]
+        PR[PlaylistResource]
+        FU[FileUploadResource]
+        GR[GenreResource]
+    end
+
+    subgraph "Servicios (service.impl)"
+        SS[SongServiceImpl]
+        AS[AlbumServiceImpl]
+        ATS[ArtistServiceImpl]
+        PS[PlaylistServiceImpl]
+        LS[LikeService]
+    end
+
+    subgraph "Repositorios (repository)"
+        SRepo[SongRepository]
+        ARepo[AlbumRepository]
+        ATRepo[ArtistRepository]
+        PRepo[PlaylistRepository]
+        URepo[UserRepository]
+        LRepo[LikeRepository]
+    end
+
+    subgraph "Seguridad"
+        SEC[SecurityUtils]
+        SCH[SecurityContextHolder]
+    end
+
+    SR --> SS
+    AR --> AS
+    ATR --> ATS
+    PR --> PS
+
+    SS --> SRepo
+    SS --> ATRepo
+    SS --> SEC
+    AS --> ARepo
+    AS --> ATRepo
+    AS --> SEC
+    PS --> PRepo
+    PS --> URepo
+    PS --> SCH
+    ATS --> ATRepo
+
+    FU --> |"Files.copy / UrlResource"| DISK[(uploads/)]
+
+    style FU fill:#f59e0b,color:#000
+    style SEC fill:#3b82f6,color:#fff
+    style SCH fill:#3b82f6,color:#fff
+    style DISK fill:#6b7280,color:#fff
+```
+
+---
+
+## 14. Diagrama de estados del reproductor Angular
+
+```mermaid
+stateDiagram-v2
+    [*] --> Detenido : App cargada
+
+    Detenido --> Reproduciendo : click Play / seleccionar canción
+    Reproduciendo --> Pausado : click Pause
+    Pausado --> Reproduciendo : click Play
+    Reproduciendo --> Detenido : click Stop / canción termina (no repeat)
+    Reproduciendo --> Reproduciendo : canción termina + repeat ON
+
+    Reproduciendo --> Silenciado : click Mute (isMuted = true)
+    Silenciado --> Reproduciendo : click Mute (isMuted = false)
+
+    Reproduciendo --> MostrandoLetras : click Botón Letras
+    MostrandoLetras --> Reproduciendo : click Botón Letras (toggle off)
+
+    state MostrandoLetras {
+        [*] --> CargandoLetras
+        CargandoLetras --> LetrasDisponibles : API retorna letra
+        CargandoLetras --> LetrasNoEncontradas : API retorna error / vacío
+    }
+
+    note right of Reproduciendo
+        isPlaying = true
+        signal Angular activa
+    end note
+
+    note right of Pausado
+        isPlaying = false
+        audio.pause() llamado
+    end note
+```
