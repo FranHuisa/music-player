@@ -116,18 +116,6 @@
           <span jhiTranslate="userManagement.activated">Activado</span>
         </label>
       </div>
-
-      @if (languages && languages.length > 0) {
-        <div class="mb-3">
-          <label class="form-label" for="langKey" jhiTranslate="userManagement.langKey">Idioma</label>
-          <select class="form-control" id="langKey" name="langKey" formControlName="langKey" data-cy="langKey">
-            @for (language of languages; track $index) {
-              <option [value]="language">{{ language | findLanguageFromKey }}</option>
-            }
-          </select>
-        </div>
-      }
-
       <div class="mb-3">
         <label class="form-label" for="field_authority" jhiTranslate="userManagement.profiles">Perfiles</label>
         <select class="form-control" id="field_authority" multiple name="authority" formControlName="authorities">

@@ -32,7 +32,7 @@ const routes: Routes = [
     loadComponent: () => import('./home/dashboard-editor/dashboard-editor').then(m => m.default),
     canActivate: [UserRouteAccessService],
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
   },
 

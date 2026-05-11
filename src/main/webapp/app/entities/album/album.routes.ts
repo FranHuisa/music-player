@@ -20,7 +20,7 @@ const albumRoute: Routes = [
     path: 'coming',
     loadComponent: () => import('./coming/album-coming').then(m => m.AlbumUpcoming),
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -39,7 +39,7 @@ const albumRoute: Routes = [
       album: AlbumResolve,
     },
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -50,7 +50,7 @@ const albumRoute: Routes = [
       album: AlbumResolve,
     },
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
