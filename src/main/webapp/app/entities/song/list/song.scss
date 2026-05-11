@@ -458,3 +458,17 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     }
   }
 }
+.col-hidden {
+  width: 100px;
+  text-align: center;
+}
+
+.song-visible {
+  color: #1db954;
+  font-weight: 600;
+}
+
+.song-hidden {
+  color: #ff4d4f;
+  font-weight: 600;
+}

@@ -55,6 +55,9 @@
         <div class="col-album" jhiSortBy="album.id">ÁLBUM <fa-icon class="sort-icon" icon="sort" /></div>
         <div class="col-genre" jhiSortBy="genre.id">GÉNERO <fa-icon class="sort-icon" icon="sort" /></div>
         <div class="col-date" jhiSortBy="releaseDate">FECHA <fa-icon class="sort-icon" icon="sort" /></div>
+
+        <div class="col-hidden">ESTADO</div>
+
         <div class="col-duration">DURACIÓN</div>
         <div class="col-actions"></div>
       </div>
@@ -119,6 +122,14 @@
               {{ song.releaseDate | formatMediumDate }}
             } @else {
               <span class="track-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-hidden">
+            @if (song.active) {
+              <span class="song-visible">Visible</span>
+            } @else {
+              <span class="song-hidden">Oculta</span>
             }
           </div>
 
