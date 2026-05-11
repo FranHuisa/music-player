@@ -2,6 +2,7 @@ package com.musicplayer.repository;
 
 import com.musicplayer.domain.Album;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,10 +23,10 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
         """
             SELECT a FROM Album a
             WHERE a.active = true
-            AND (a.releaseDate IS NULL OR a.releaseDate <= :today)
+            AND (a.releaseDate IS NULL OR a.releaseDate <= :now)
         """
     )
-    Page<Album> findPublicAlbums(@Param("today") LocalDate today, Pageable pageable);
+    Page<Album> findPublicAlbums(@Param("now") LocalDateTime now, Pageable pageable);
 
     @Query(
         """
@@ -37,7 +38,7 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     )
     List<Album> findUpcomingAlbums(@Param("login") String login);
 
-    List<Album> findByArtistUserLoginAndActiveTrueAndReleaseDateAfter(String login, LocalDate date);
+    List<Album> findByArtistUserLoginAndActiveTrueAndReleaseDateAfter(String login, LocalDateTime date);
 
-    List<Album> findByActiveFalseAndReleaseDateLessThanEqual(LocalDate date);
+    List<Album> findByActiveFalseAndReleaseDateLessThanEqual(LocalDateTime date);
 }

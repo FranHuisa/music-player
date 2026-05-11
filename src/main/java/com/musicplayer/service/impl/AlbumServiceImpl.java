@@ -11,6 +11,7 @@ import com.musicplayer.service.mapper.AlbumMapper;
 import com.musicplayer.web.rest.AlbumResource;
 import com.musicplayer.web.rest.errors.BadRequestAlertException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -118,7 +119,7 @@ public class AlbumServiceImpl implements AlbumService {
     public Page<AlbumDTO> findPublicAlbums(Pageable pageable) {
         LOG.debug("Request to get public Albums");
 
-        LocalDate today = LocalDate.now();
+        LocalDateTime today = LocalDateTime.now();
 
         return albumRepository.findPublicAlbums(today, pageable).map(albumMapper::toDto);
     }

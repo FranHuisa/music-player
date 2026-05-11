@@ -49,4 +49,8 @@ public interface SongRepository extends SongRepositoryWithBagRelationships, JpaR
     Page<Song> findByTitleContainingIgnoreCaseAndActiveTrue(String title, Pageable pageable);
 
     Page<Song> findByActiveTrue(Pageable pageable);
+
+    @Modifying
+    @Query("UPDATE Song s SET s.active = true WHERE s.album.id = :albumId")
+    void activateByAlbumId(@Param("albumId") Long albumId);
 }

@@ -68,7 +68,7 @@ export class AlbumsService {
   protected convertValueFromClient<T extends IAlbum | NewAlbum | PartialUpdateAlbum>(album: T): RestOf<T> {
     return {
       ...album,
-      releaseDate: album.releaseDate ? dayjs(album.releaseDate).toISOString() : null,
+      releaseDate: album.releaseDate ? dayjs(album.releaseDate).format('YYYY-MM-DDTHH:mm:ss') : null,
     };
   }
 

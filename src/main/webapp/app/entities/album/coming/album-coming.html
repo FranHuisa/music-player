@@ -50,17 +50,21 @@
 
                   @if (editingAlbumId() === album.id) {
                     <div class="date-picker-inline">
-                      <input
-                        type="text"
-                        class="date-input"
-                        placeholder="dd/mm/aaaa"
-                        ngbDatepicker
-                        #dp="ngbDatepicker"
-                        [(ngModel)]="selectedDateModel"
-                        (click)="dp.open()"
-                        container="body"
-                        readonly
-                      />
+                      <div class="date-time-row">
+                        <input
+                          type="text"
+                          class="date-input"
+                          placeholder="dd/mm/aaaa"
+                          ngbDatepicker
+                          #dp="ngbDatepicker"
+                          [(ngModel)]="selectedDateModel"
+                          (click)="dp.open()"
+                          container="body"
+                          readonly
+                        />
+
+                        <input type="time" class="time-input" [(ngModel)]="selectedTime" />
+                      </div>
                       <div class="date-picker-actions">
                         <button class="btn-save-date" (click)="saveReleaseDate(album)"><fa-icon icon="check" /> Guardar</button>
                         <button class="btn-cancel-date" (click)="cancelEditing()"><fa-icon icon="times" /> Cancelar</button>
@@ -69,8 +73,11 @@
                   } @else {
                     <div class="upcoming-card-date">
                       <fa-icon icon="calendar" />
-                      <span>{{ album.releaseDate }}</span>
-                      <span class="days-badge">en {{ album.releaseDate ? daysUntil(album.releaseDate) : 0 }} días</span>
+                      <span>{{ album.releaseDate | formatMediumDate }}</span>
+                      @if (album.releaseDate) {
+                        <span>{{ album.releaseDate | date: 'HH:mm' }}</span>
+                      }
+                      <span class="days-badge">{{ timeUntil(album.releaseDate) }}</span>
                     </div>
                   }
                 </div>
@@ -127,19 +134,20 @@
                 <div class="date-picker-panel">
                   <span class="date-picker-label">Fecha de lanzamiento para "{{ album.title }}"</span>
 
-                  <input
-                    type="text"
-                    class="date-input"
-                    placeholder="Selecciona una fecha"
-                    ngbDatepicker
-                    #dp3="ngbDatepicker"
-                    [(ngModel)]="selectedDateModel"
-                    (ngModelChange)="onDateChange($event)"
-                    (click)="dp3.open()"
-                    container="body"
-                    readonly
-                  />
-
+                  <div class="date-time-row">
+                    <input
+                      type="text"
+                      class="date-input"
+                      placeholder="dd/mm/aaaa"
+                      ngbDatepicker
+                      #dp="ngbDatepicker"
+                      [(ngModel)]="selectedDateModel"
+                      (click)="dp.open()"
+                      container="body"
+                      readonly
+                    />
+                    <input type="time" class="time-input" [(ngModel)]="selectedTime" />
+                  </div>
                   <div class="date-picker-actions">
                     <button class="btn-save-date" (click)="saveReleaseDate(album)"><fa-icon icon="check" /> Confirmar fecha</button>
                     <button class="btn-cancel-date" (click)="cancelEditing()">Cancelar</button>

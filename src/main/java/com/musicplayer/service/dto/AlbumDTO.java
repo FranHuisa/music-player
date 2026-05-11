@@ -4,6 +4,7 @@ import com.musicplayer.domain.enumeration.AlbumType;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -21,7 +22,7 @@ public class AlbumDTO implements Serializable {
     @Size(max = 255)
     private String coverImage;
 
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     private AlbumType albumType;
 
@@ -54,11 +55,11 @@ public class AlbumDTO implements Serializable {
         this.coverImage = coverImage;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 

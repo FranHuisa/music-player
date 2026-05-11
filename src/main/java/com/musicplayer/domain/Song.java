@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
@@ -51,7 +52,7 @@ public class Song implements Serializable {
     private String lyrics;
 
     @Column(name = "release_date")
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -160,16 +161,16 @@ public class Song implements Serializable {
         this.lyrics = lyrics;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return this.releaseDate;
     }
 
-    public Song releaseDate(LocalDate releaseDate) {
+    public Song releaseDate(LocalDateTime releaseDate) {
         this.setReleaseDate(releaseDate);
         return this;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 

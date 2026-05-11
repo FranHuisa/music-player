@@ -7,6 +7,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -37,7 +38,7 @@ public class Album implements Serializable {
     private String coverImage;
 
     @Column(name = "release_date")
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "album_type")
@@ -95,16 +96,16 @@ public class Album implements Serializable {
         this.coverImage = coverImage;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return this.releaseDate;
     }
 
-    public Album releaseDate(LocalDate releaseDate) {
+    public Album releaseDate(LocalDateTime releaseDate) {
         this.setReleaseDate(releaseDate);
         return this;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 
