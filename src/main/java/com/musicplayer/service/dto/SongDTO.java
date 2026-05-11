@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -34,7 +35,7 @@ public class SongDTO implements Serializable {
     @Lob
     private String lyrics;
 
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     private Instant createdAt;
 
@@ -104,11 +105,11 @@ public class SongDTO implements Serializable {
         this.lyrics = lyrics;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 
