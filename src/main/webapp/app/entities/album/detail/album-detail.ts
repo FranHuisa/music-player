@@ -12,12 +12,24 @@ import { ApplicationConfigService } from 'app/core/config/application-config.ser
 import { IAlbum } from '../album.model';
 import { ISong } from 'app/entities/song/song.model';
 import { SongService } from 'app/entities/song/service/song.service';
+import { AccountService } from 'app/core/auth/account.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 
 @Component({
   selector: 'jhi-album-detail',
   templateUrl: './album-detail.html',
   styleUrls: ['./album-detail.scss'],
-  imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatePipe],
+  imports: [
+    FontAwesomeModule,
+    Alert,
+    AlertError,
+    TranslateDirective,
+    TranslateModule,
+    RouterLink,
+    FormatMediumDatePipe,
+    HasAnyAuthorityDirective,
+  ],
 })
 export class AlbumDetail implements OnInit {
   readonly album = input<IAlbum | null>(null);
@@ -35,10 +47,11 @@ export class AlbumDetail implements OnInit {
       s => !albumSongIds.has(s.id) && (!s.album || !s.album.id) && (!term || s.title?.toLowerCase().includes(term)),
     );
   });
-
+  protected readonly accountService = inject(AccountService);
   private readonly http = inject(HttpClient);
   private readonly songService = inject(SongService);
   private readonly appConfig = inject(ApplicationConfigService);
+  protected readonly player = inject(PlayerService);
 
   ngOnInit(): void {
     const album = this.album();
@@ -59,13 +72,21 @@ export class AlbumDetail implements OnInit {
   onSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
   }
+  isOnlyUser(): boolean {
+    return this.accountService.hasAnyAuthority(['ROLE_USER']) && !this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_EDITOR']);
+  }
 
+  isEditorOrAdmin(): boolean {
+    return this.accountService.hasAnyAuthority(['ROLE_ADMIN', 'ROLE_EDITOR']);
+  }
   formatDuration(seconds: number): string {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
-
+  playSong(song: any): void {
+    this.player.playSong(song, this.albumSongs());
+  }
   addSongToAlbum(song: ISong): void {
     const album = this.album();
     if (!album) return;

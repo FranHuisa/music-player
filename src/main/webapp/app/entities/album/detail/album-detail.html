@@ -3,6 +3,7 @@
   <jhi-alert />
 
   @if (album()) {
+    <!-- ================= HERO ================= -->
     <div class="album-detail-hero">
       <div class="album-detail-cover">
         @if (album()!.coverImage) {
@@ -15,34 +16,48 @@
       </div>
 
       <div class="album-detail-info">
-        <span class="album-detail-type">{{ album()!.albumType ?? 'ALBUM' }}</span>
-        <h1 class="album-detail-title">{{ album()!.title }}</h1>
+        <span class="album-detail-type">
+          {{ album()!.albumType ?? 'ALBUM' }}
+        </span>
+
+        <h1 class="album-detail-title">
+          {{ album()!.title }}
+        </h1>
 
         @if (album()!.releaseDate) {
-          <span class="album-detail-date">{{ album()!.releaseDate | formatMediumDate }}</span>
+          <span class="album-detail-date">
+            {{ album()!.releaseDate | formatMediumDate }}
+          </span>
         }
 
         <div class="album-detail-actions">
           <button class="btn-back" (click)="previousState()"><fa-icon icon="arrow-left" /> Volver</button>
 
-          <a class="btn-edit" [routerLink]="['/album', album()!.id, 'edit']"> <fa-icon icon="pencil-alt" /> Editar álbum </a>
+          <a *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']" class="btn-edit" [routerLink]="['/album', album()!.id, 'edit']">
+            <fa-icon icon="pencil-alt" /> Editar álbum
+          </a>
         </div>
       </div>
     </div>
 
+    <!-- ================= SONGS ================= -->
     <div class="album-detail-songs">
       <div class="album-detail-songs-header">
         <h2>Canciones</h2>
-        <button class="btn-add-song" (click)="toggleAddPanel()"><fa-icon icon="plus" /> Añadir canción</button>
+
+        <button *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']" class="btn-add-song" (click)="toggleAddPanel()">
+          <fa-icon icon="plus" /> Añadir canción
+        </button>
       </div>
 
+      <!-- ================= ADD PANEL ================= -->
       @if (showAddPanel()) {
         <div class="add-song-panel">
           <input type="text" class="search-input" placeholder="Buscar canciones..." [value]="searchTerm()" (input)="onSearch($event)" />
 
           <div class="available-songs-list">
             @if (availableSongs().length === 0) {
-              <p class="no-songs">No hay canciones disponibles para añadir</p>
+              <p class="no-songs">No hay canciones disponibles</p>
             } @else {
               @for (song of availableSongs(); track song.id) {
                 <div class="available-song-item">
@@ -50,7 +65,9 @@
                     <span class="available-song-title">{{ song.title }}</span>
 
                     @if (song.duration) {
-                      <span class="available-song-duration">{{ formatDuration(song.duration) }}</span>
+                      <span class="available-song-duration">
+                        {{ formatDuration(song.duration) }}
+                      </span>
                     }
                   </div>
 
@@ -64,38 +81,58 @@
         </div>
       }
 
+      <!-- ================= EMPTY STATE ================= -->
       @if (albumSongs().length === 0) {
         <div class="no-songs-message">
           <fa-icon icon="music" />
           <p>Este álbum no tiene canciones todavía</p>
         </div>
-      } @else {
+      }
+
+      <!-- ================= SONG LIST ================= -->
+      @else {
         <div class="songs-list">
           @for (song of albumSongs(); track song.id; let i = $index) {
-            <div class="song-row" [class.song-inactive]="!song.active">
+            <div class="song-row" (click)="playSong(song)">
+              <!-- INDEX -->
               <span class="song-number">{{ i + 1 }}</span>
 
+              <!-- INFO -->
               <div class="song-info">
-                <span class="song-title">{{ song.title }}</span>
+                <div class="song-title-row">
+                  <span class="song-title">{{ song.title }}</span>
 
-                @if (!song.active) {
-                  <span class="song-hidden-badge">Oculta</span>
-                }
+                  @if (!song.active) {
+                    <span class="song-badge song-badge-hidden">Oculta</span>
+                  } @else {
+                    <span class="song-badge song-badge-active">Pública</span>
+                  }
+                </div>
 
-                @if (song.duration) {
-                  <span class="song-duration">{{ formatDuration(song.duration) }}</span>
-                }
+                <div class="song-meta">
+                  @if (song.artistses && song.artistses.length > 0) {
+                    <span class="song-artist">
+                      {{ song.artistses[0].name ?? 'Artista #' + song.artistses[0].id }}
+                    </span>
+                  }
+
+                  @if (song.duration) {
+                    <span class="song-duration">
+                      {{ formatDuration(song.duration) }}
+                    </span>
+                  }
+                </div>
               </div>
 
-              <div class="song-actions">
-                <button
-                  class="btn-toggle-active"
-                  [class.btn-active]="song.active"
-                  [class.btn-inactive]="!song.active"
-                  (click)="toggleSongActive(song)"
-                  [title]="song.active ? 'Ocultar canción' : 'Publicar canción'"
-                >
-                  <fa-icon [icon]="song.active ? 'eye' : 'eye-slash'" />
+              <!-- PLAY -->
+              <div class="song-play">
+                <fa-icon icon="play" />
+              </div>
+
+              <!-- ACTIONS (ADMIN / EDITOR ONLY) -->
+              <div class="song-actions" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']" (click)="$event.stopPropagation()">
+                <button class="btn-toggle-active" (click)="toggleSongActive(song)" [title]="song.active ? 'Ocultar' : 'Publicar'">
+                  <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" />
                 </button>
 
                 <button class="btn-remove-song" (click)="removeSongFromAlbum(song)" title="Quitar del álbum">
