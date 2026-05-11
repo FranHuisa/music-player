@@ -58,11 +58,9 @@
       <div class="duration-field">
         <label>Duración</label>
 
-        <input type="number" formControlName="duration" />
-
-        <small *ngIf="editForm.get('duration')?.value">
+        <div class="duration-display">
           {{ formatDuration(editForm.get('duration')?.value ?? 0) }}
-        </small>
+        </div>
       </div>
     </div>
 
