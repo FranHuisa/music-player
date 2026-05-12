@@ -50,14 +50,13 @@
   } @else {
     <div class="track-list" id="entities">
       <div class="track-list-header" jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-        <div class="col-num">#</div>
+        <div class="col-num">▶</div>
+        <div class="col-cover"></div>
         <div class="col-title" jhiSortBy="title">TÍTULO <fa-icon class="sort-icon" icon="sort" /></div>
         <div class="col-album" jhiSortBy="album.id">ÁLBUM <fa-icon class="sort-icon" icon="sort" /></div>
         <div class="col-genre" jhiSortBy="genre.id">GÉNERO <fa-icon class="sort-icon" icon="sort" /></div>
         <div class="col-date" jhiSortBy="releaseDate">FECHA <fa-icon class="sort-icon" icon="sort" /></div>
-
         <div class="col-hidden">ESTADO</div>
-
         <div class="col-duration">DURACIÓN</div>
         <div class="col-actions"></div>
       </div>
@@ -65,32 +64,32 @@
 
       @for (song of filteredSongs(); track trackId(song); let i = $index) {
         <div class="track-row" [class.inactive]="!song.active" data-cy="entityTable">
+          <!-- PLAY -->
           <div class="col-num">
             <span class="track-num">{{ i + 1 }}</span>
-            <button
-              class="track-play-btn"
-              title="Reproducir"
-              aria-label="Reproducir"
-              (click)="playSong(song); $event.stopPropagation()"
-            ></button>
+            <button class="track-play-btn" title="Reproducir" aria-label="Reproducir" (click)="playSong(song); $event.stopPropagation()">
+              <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'" />
+            </button>
           </div>
 
-          <div class="col-title">
-            <div class="track-cover" (click)="playSong(song)">
+          <!-- COVER (solo foto, sin click) -->
+          <div class="col-cover">
+            <div class="track-cover">
               @if (song.coverImage) {
                 <img [src]="song.coverImage" class="track-cover-img" alt="{{ song.title }}" />
               } @else {
                 <fa-icon icon="music" class="track-cover-placeholder" />
               }
-              <button class="track-cover-play" aria-label="Reproducir">
-                <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'" />
-              </button>
             </div>
+          </div>
+
+          <!-- TÍTULO + ARTISTA -->
+          <div class="col-title">
             <div class="track-info">
               <span class="track-title">
                 {{ song.title }}
                 @if (!song.active) {
-                  <span class="track-hidden-badge">Oculta</span>
+                  <span class="track-hidden-badge">- Oculta</span>
                 }
               </span>
               @if (song.artistses && song.artistses.length > 0) {
@@ -138,31 +137,25 @@
           </div>
 
           <div class="col-actions">
-            <div ngbDropdown display="dynamic" placement="bottom-end">
-              <button class="track-more-btn" ngbDropdownToggle [id]="'song-actions-' + song.id" aria-label="Más acciones">
+            <div class="song-menu">
+              <button class="track-more-btn" (click)="$event.stopPropagation()">
                 <span class="dots">•••</span>
               </button>
-              <ul ngbDropdownMenu [attr.aria-labelledby]="'song-actions-' + song.id">
+              <ul class="song-menu-list">
                 <li>
-                  <a class="dropdown-item" [routerLink]="['/song', song.id, 'view']">
-                    <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles
-                  </a>
+                  <a [routerLink]="['/song', song.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles </a>
                 </li>
                 <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']">
-                  <button class="dropdown-item" (click)="toggleActive(song)">
+                  <button (click)="toggleActive(song)">
                     <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" [fixedWidth]="true" />
                     {{ song.active ? 'Ocultar' : 'Publicar' }}
                   </button>
                 </li>
                 <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
-                  <a class="dropdown-item" [routerLink]="['/song', song.id, 'edit']">
-                    <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
-                  </a>
+                  <a [routerLink]="['/song', song.id, 'edit']"> <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar </a>
                 </li>
                 <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
-                  <button class="dropdown-item text-danger" (click)="delete(song)">
-                    <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
-                  </button>
+                  <button class="danger" (click)="delete(song)"><fa-icon icon="times" [fixedWidth]="true" /> Eliminar</button>
                 </li>
               </ul>
             </div>

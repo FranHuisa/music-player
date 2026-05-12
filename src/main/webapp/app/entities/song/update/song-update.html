@@ -42,7 +42,8 @@
 
     <div class="field">
       <label>Género</label>
-      <select formControlName="genre">
+      <select formControlName="genre" [compareWith]="compareGenre">
+        <option [ngValue]="null">Sin género</option>
         @for (g of genresSharedCollection(); track $index) {
           <option [ngValue]="g">{{ g.name ?? g.id }}</option>
         }

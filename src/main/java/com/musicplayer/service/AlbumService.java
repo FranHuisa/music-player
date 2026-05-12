@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Interface for managing {@link com.musicplayer.domain.Album}.
@@ -64,4 +65,6 @@ public interface AlbumService {
     List<AlbumDTO> findUpcomingAlbums();
 
     AlbumDTO toggleActive(Long id);
+
+    AlbumDTO uploadImage(Long id, MultipartFile file) throws Exception;
 }

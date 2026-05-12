@@ -225,6 +225,11 @@ export class SongUpdate implements OnInit {
     this.song = song;
     this.songFormService.resetForm(this.editForm, song);
 
+    // Mostrar portada existente
+    if (song.coverImage) {
+      this.coverPreviewUrl = song.coverImage;
+    }
+
     this.albumsSharedCollection.update(albums => this.albumService.addAlbumToCollectionIfMissing<IAlbum>(albums, song.album));
     this.genresSharedCollection.update(genres => this.genreService.addGenreToCollectionIfMissing<IGenre>(genres, song.genre));
     this.artistsSharedCollection.update(artists =>

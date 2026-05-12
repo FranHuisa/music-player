@@ -10,16 +10,22 @@ import com.musicplayer.service.dto.AlbumDTO;
 import com.musicplayer.service.mapper.AlbumMapper;
 import com.musicplayer.web.rest.AlbumResource;
 import com.musicplayer.web.rest.errors.BadRequestAlertException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Implementation for managing {@link com.musicplayer.domain.Album}.
@@ -140,6 +146,25 @@ public class AlbumServiceImpl implements AlbumService {
     public AlbumDTO toggleActive(Long id) {
         Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
         album.setActive(!Boolean.TRUE.equals(album.getActive()));
+        return albumMapper.toDto(albumRepository.save(album));
+    }
+
+    @Value("${app.upload.dir:uploads}")
+    private String uploadDir;
+
+    @Override
+    public AlbumDTO uploadImage(Long id, MultipartFile file) throws Exception {
+        Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
+
+        Path uploadPath = Path.of(uploadDir, "album");
+        if (!Files.exists(uploadPath)) Files.createDirectories(uploadPath);
+
+        String extension =
+            file.getOriginalFilename() != null ? file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf(".")) : ".jpg";
+        String filename = UUID.randomUUID().toString() + extension;
+        Files.copy(file.getInputStream(), uploadPath.resolve(filename), StandardCopyOption.REPLACE_EXISTING);
+
+        album.setCoverImage("/uploads/album/" + filename);
         return albumMapper.toDto(albumRepository.save(album));
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.PaginationUtil;
@@ -254,5 +255,11 @@ public class AlbumResource {
     public ResponseEntity<AlbumDTO> toggleActive(@PathVariable Long id) {
         AlbumDTO result = albumService.toggleActive(id);
         return ResponseEntity.ok(result);
+    }
+
+    @PostMapping(value = "/{id}/upload-image", consumes = "multipart/form-data")
+    public ResponseEntity<AlbumDTO> uploadAlbumImage(@PathVariable Long id, @RequestParam("file") MultipartFile file) throws Exception {
+        AlbumDTO album = albumService.uploadImage(id, file);
+        return ResponseEntity.ok(album);
     }
 }

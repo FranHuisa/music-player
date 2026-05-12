@@ -1,4 +1,4 @@
-import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
@@ -18,30 +18,26 @@ type RestOf<T extends ISong | NewSong> = Omit<T, 'releaseDate' | 'createdAt'> & 
 };
 
 export type RestSong = RestOf<ISong>;
-
 export type NewRestSong = RestOf<NewSong>;
-
 export type PartialUpdateRestSong = RestOf<PartialUpdateSong>;
 
+// ── Mantener SongsService vacío para no romper otros componentes que lo usen ──
 @Injectable()
 export class SongsService {
   readonly songsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined);
   readonly isAdmin = signal(false);
+  readonly roleReady = signal(false);
 
-  readonly songsResource = httpResource<RestSong[]>(() => {
-    const params = this.songsParams();
+  // Signals para que el componente pueda leer canciones y estado de carga
+  readonly songs = signal<ISong[]>([]);
+  readonly isLoading = signal(false);
+  readonly lastHeaders = signal<HttpHeaders | null>(null);
 
-    if (!params) return undefined;
-
-    return {
-      url: this.isAdmin() ? this.adminResourceUrl : this.resourceUrl,
-      params,
-    };
-  });
-
-  readonly songs = computed(() =>
-    (this.songsResource.hasValue() ? this.songsResource.value() : []).map(item => this.convertValueFromServer(item)),
-  );
+  // Mantener songsResource como stub para no romper referencias en el componente
+  readonly songsResource = {
+    isLoading: this.isLoading,
+    headers: this.lastHeaders,
+  };
 
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly publicResourceUrl = this.applicationConfigService.getEndpointFor('api/songs');
@@ -60,6 +56,24 @@ export class SongsService {
 @Injectable({ providedIn: 'root' })
 export class SongService extends SongsService {
   protected readonly http = inject(HttpClient);
+
+  loadSongs(params: Record<string, any>, isAdmin: boolean, isEditor = false): void {
+    this.isLoading.set(true);
+    const url = isAdmin ? this.adminResourceUrl : this.resourceUrl;
+
+    const options = createRequestOption(params);
+    this.http.get<RestSong[]>(url, { params: options, observe: 'response' }).subscribe({
+      next: res => {
+        this.lastHeaders.set(res.headers);
+        this.songs.set((res.body ?? []).map(item => this.convertValueFromServer(item)));
+        this.isLoading.set(false);
+      },
+      error: () => {
+        this.songs.set([]);
+        this.isLoading.set(false);
+      },
+    });
+  }
 
   create(song: NewSong): Observable<ISong> {
     const copy = this.convertValueFromClient(song);
@@ -92,13 +106,14 @@ export class SongService extends SongsService {
       .get<RestSong[]>(this.publicResourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body!) })));
   }
+
   queryMySongs(req?: any): Observable<HttpResponse<ISong[]>> {
     const options = createRequestOption(req);
-
     return this.http
       .get<RestSong[]>(this.resourceUrl, { params: options, observe: 'response' })
       .pipe(map(res => res.clone({ body: this.convertResponseArrayFromServer(res.body ?? []) })));
   }
+
   delete(id: number): Observable<undefined> {
     return this.http.delete<undefined>(`${this.resourceUrl.replace('/my-songs', '')}/${encodeURIComponent(id)}`);
   }
@@ -116,22 +131,16 @@ export class SongService extends SongsService {
     ...songsToCheck: (Type | null | undefined)[]
   ): Type[] {
     const songs: Type[] = songsToCheck.filter(isPresent);
-
     if (songs.length > 0) {
       const songCollectionIdentifiers = songCollection.map(songItem => this.getSongIdentifier(songItem));
-
       const songsToAdd = songs.filter(songItem => {
         const songIdentifier = this.getSongIdentifier(songItem);
-        if (songCollectionIdentifiers.includes(songIdentifier)) {
-          return false;
-        }
+        if (songCollectionIdentifiers.includes(songIdentifier)) return false;
         songCollectionIdentifiers.push(songIdentifier);
         return true;
       });
-
       return [...songsToAdd, ...songCollection];
     }
-
     return songCollection;
   }
 
@@ -156,13 +165,4 @@ export class SongService extends SongsService {
   protected convertResponseArrayFromServer(res: RestSong[]): ISong[] {
     return res.map(item => this.convertValueFromServer(item));
   }
-  readonly adminSongsResource = httpResource<RestSong[]>(() => {
-    const params = this.songsParams();
-    if (!params) return undefined;
-    return { url: this.adminResourceUrl, params };
-  });
-
-  readonly adminSongs = computed(() =>
-    (this.adminSongsResource.hasValue() ? this.adminSongsResource.value() : []).map(item => this.convertValueFromServer(item)),
-  );
 }

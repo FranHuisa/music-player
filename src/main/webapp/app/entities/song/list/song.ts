@@ -63,13 +63,9 @@ export class Song implements OnInit {
   readonly page = signal(1);
 
   protected readonly player = inject(PlayerService);
-
   readonly router = inject(Router);
   protected readonly songService = inject(SongService);
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly isLoading = this.songService.songsResource.isLoading;
-
+  readonly isLoading = this.songService.isLoading; // ← usa el signal directo
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected dataUtils = inject(DataUtils);
@@ -78,21 +74,16 @@ export class Song implements OnInit {
 
   constructor() {
     effect(() => {
-      const isAdmin = this.accountService.hasAnyAuthority(['ROLE_ADMIN']);
-
-      this.songService.isAdmin.set(isAdmin);
+      const songs = this.songService.songs();
+      if (songs.length > 0) console.log('PRIMERA SONG coverImage:', songs[0].coverImage);
+      this.songs.set(this.fillComponentAttributesFromResponseBody([...songs]));
     });
 
     effect(() => {
-      const headers = this.songService.songsResource.headers();
-
+      const headers = this.songService.lastHeaders();
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
-    });
-
-    effect(() => {
-      this.songs.set(this.fillComponentAttributesFromResponseBody([...this.songService.songs()]));
     });
   }
 
@@ -100,11 +91,9 @@ export class Song implements OnInit {
 
   formatDuration(seconds: number | null | undefined): string {
     if (!seconds) return '—';
-
     const s = Math.abs(Math.round(seconds));
     const m = Math.floor(s / 60);
     const sec = s % 60;
-
     return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 
@@ -126,13 +115,8 @@ export class Song implements OnInit {
   }
 
   delete(song: ISong): void {
-    const modalRef = this.modalService.open(SongDeleteDialog, {
-      size: 'lg',
-      backdrop: 'static',
-    });
-
+    const modalRef = this.modalService.open(SongDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.song = song;
-
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -155,9 +139,7 @@ export class Song implements OnInit {
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
-
     this.page.set(+(page ?? 1));
-
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
   }
 
@@ -170,16 +152,23 @@ export class Song implements OnInit {
   }
 
   protected queryBackend(): void {
-    const pageToLoad: number = this.page();
+    this.accountService.identity().subscribe(account => {
+      if (!account) return;
 
-    const queryObject: any = {
-      page: pageToLoad - 1,
-      size: this.itemsPerPage(),
-      eagerload: true,
-      sort: this.sortService.buildSortParam(this.sortState()),
-    };
+      const isAdmin = account.authorities?.includes('ROLE_ADMIN') ?? false;
+      const isEditor = account.authorities?.includes('ROLE_EDITOR') ?? false;
 
-    this.songService.songsParams.set(queryObject);
+      this.songService.loadSongs(
+        {
+          page: this.page() - 1,
+          size: this.itemsPerPage(),
+          eagerload: true,
+          sort: this.sortService.buildSortParam(this.sortState()),
+        },
+        isAdmin,
+        isEditor,
+      );
+    });
   }
 
   playSong(song: ISong): void {
@@ -196,11 +185,7 @@ export class Song implements OnInit {
 
   filteredSongs(): ISong[] {
     const term = this.searchTerm().toLowerCase();
-
-    if (!term) {
-      return this.songs();
-    }
-
+    if (!term) return this.songs();
     return this.songs().filter(s => (s.title ?? '').toLowerCase().includes(term));
   }
 
@@ -210,7 +195,6 @@ export class Song implements OnInit {
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(sortState),
     };
-
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,
       queryParams: queryParamsObj,

@@ -1,4 +1,4 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -41,6 +41,7 @@ export class AlbumUpdate implements OnInit {
   protected artistService = inject(ArtistService);
   protected genreService = inject(GenreService);
   protected activatedRoute = inject(ActivatedRoute);
+  private readonly http = inject(HttpClient);
   selectedCover: File | null = null;
   coverPreviewUrl: string | null = null;
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -105,33 +106,25 @@ export class AlbumUpdate implements OnInit {
   }
   save(): void {
     this.isSaving.set(true);
+    const album = this.albumFormService.getAlbum(this.editForm);
 
-    if (this.selectedCover) {
-      const formData = new FormData();
-      formData.append('file', this.selectedCover);
+    const saveAlbum = album.id === null ? this.albumService.create(album) : this.albumService.update(album);
 
-      this.albumService.uploadImage(formData).subscribe({
-        next: response => {
-          this.editForm.patchValue({ coverImage: response.url });
-          const album = this.albumFormService.getAlbum(this.editForm);
-          if (album.id === null) {
-            this.subscribeToSaveResponse(this.albumService.create(album));
-          } else {
-            this.subscribeToSaveResponse(this.albumService.update(album));
-          }
-        },
-        error: () => {
-          this.isSaving.set(false);
-        },
-      });
-    } else {
-      const album = this.albumFormService.getAlbum(this.editForm);
-      if (album.id === null) {
-        this.subscribeToSaveResponse(this.albumService.create(album));
-      } else {
-        this.subscribeToSaveResponse(this.albumService.update(album));
-      }
-    }
+    saveAlbum.pipe(finalize(() => this.onSaveFinalize())).subscribe({
+      next: saved => {
+        if (this.selectedCover && saved?.id) {
+          const formData = new FormData();
+          formData.append('file', this.selectedCover);
+          this.http.post(`/api/albums/${saved.id}/upload-image`, formData).subscribe({
+            next: () => this.onSaveSuccess(),
+            error: () => this.onSaveSuccess(),
+          });
+        } else {
+          this.onSaveSuccess();
+        }
+      },
+      error: () => this.onSaveError(),
+    });
   }
 
   protected subscribeToSaveResponse(result: Observable<IAlbum | null>): void {
