@@ -1,8 +1,19 @@
 <div class="player-bar">
-  <!-- Left: Now Playing -->
   <div class="player-now-playing">
     <div class="player-cover">
-      <fa-icon icon="music" class="player-cover-placeholder"></fa-icon>
+      @if (player.currentSong()?.coverImage) {
+        <img
+          [src]="
+            player.currentSong()?.coverImage?.startsWith('http')
+              ? player.currentSong()?.coverImage
+              : 'http://localhost:8080' + player.currentSong()?.coverImage
+          "
+          class="player-cover-img"
+          alt="cover"
+        />
+      } @else {
+        <fa-icon icon="music" class="player-cover-placeholder"></fa-icon>
+      }
     </div>
     <div class="player-song-info">
       <span class="player-song-name">{{ player.currentSong()?.title ?? 'No hay canción' }}</span>
@@ -12,7 +23,6 @@
     </div>
   </div>
 
-  <!-- Center: Controls -->
   <div class="player-controls">
     <div class="player-buttons">
       <button
