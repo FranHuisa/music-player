@@ -98,13 +98,11 @@ export class SongUpdate implements OnInit {
     this.isSaving.set(true);
 
     if (this.selectedFile) {
-      // Primero sube el audio, luego guarda
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
       this.http.post<{ url: string; filename: string }>('/api/upload/audio', formData).subscribe({
         next: res => {
-          // Guarda el filename (UUID) en fileUrl
           this.editForm.patchValue({ fileUrl: res.filename });
           this.saveSong();
         },
@@ -119,6 +117,18 @@ export class SongUpdate implements OnInit {
   }
   private saveSong(): void {
     const song = this.songFormService.getSong(this.editForm);
+
+    const artistsText = this.editForm.get('artistsText')?.value ?? '';
+
+    song.artistses = artistsText
+      .split(',')
+      .map((name: string) => name.trim())
+      .filter((name: string) => name.length > 0)
+      .map((name: string, index: number) => ({
+        id: index + 1,
+        name,
+      }));
+
     if (song.id === null) {
       this.subscribeToSaveResponse(this.songService.create(song));
     } else {
@@ -225,7 +235,6 @@ export class SongUpdate implements OnInit {
     this.song = song;
     this.songFormService.resetForm(this.editForm, song);
 
-    // Mostrar portada existente
     if (song.coverImage) {
       this.coverPreviewUrl = song.coverImage;
     }

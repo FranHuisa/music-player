@@ -56,7 +56,7 @@ export class SongFormService {
     });
 
     return new FormGroup<SongFormGroupContent>({
-      artistsText: new FormControl(''),
+      artistsText: new FormControl(songRawValue.artistses?.map(a => a.name).join(', ') ?? ''),
 
       id: new FormControl(
         { value: songRawValue.id, disabled: true },
@@ -108,6 +108,7 @@ export class SongFormService {
 
     form.reset({
       ...songRawValue,
+      artistsText: song.artistses?.map(a => a.name).join(', ') ?? '',
       id: { value: songRawValue.id, disabled: true },
     });
   }
