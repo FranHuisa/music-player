@@ -65,7 +65,7 @@ export class Song implements OnInit {
   protected readonly player = inject(PlayerService);
   readonly router = inject(Router);
   protected readonly songService = inject(SongService);
-  readonly isLoading = this.songService.isLoading; // ← usa el signal directo
+  readonly isLoading = this.songService.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected dataUtils = inject(DataUtils);

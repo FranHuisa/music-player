@@ -21,6 +21,7 @@ import { LikeService } from '../service/like.service';
 import { PlayerService } from 'app/layouts/player-bar/player.service';
 import { ISong } from 'app/entities/song/song.model';
 import { AddToPlaylistService } from 'app/entities/playlist/service/add-to-playlists.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 
 @Component({
   selector: 'jhi-like',
@@ -54,6 +55,8 @@ export class Like implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.likeService.likesResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly appConfig = inject(ApplicationConfigService);
+
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
   protected readonly player = inject(PlayerService);
@@ -93,7 +96,13 @@ export class Like implements OnInit {
       )
       .subscribe();
   }
-
+  getCoverUrl(song: ISong | null | undefined): string {
+    if (!song?.coverImage) return '';
+    if (song.coverImage.startsWith('http')) return song.coverImage;
+    const path = song.coverImage.replace(/^\/uploads\//, '');
+    const base = window.location.port === '4200' ? 'http://localhost:8080' : window.location.origin;
+    return `${base}/uploads/${path}`;
+  }
   load(): void {
     this.queryBackend();
   }

@@ -6,6 +6,7 @@
     <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #450af5, #e8115b)">
       <fa-icon icon="heart" />
     </div>
+
     <div class="entity-list-hero-info">
       <span class="entity-list-hero-type">Tu Biblioteca</span>
       <h1>Me gusta</h1>
@@ -14,7 +15,7 @@
   </div>
 
   <div class="entity-list-actions">
-    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar">
       <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
     </button>
   </div>
@@ -27,32 +28,38 @@
   } @else {
     <div id="entities">
       @for (like of likes(); track trackId(like)) {
-        <div class="like-row" ngbDropdown data-cy="entityTable">
+        <div class="like-row">
           <div class="like-row-icon">
-            <fa-icon icon="heart" />
+            @if (like.song?.coverImage) {
+              <img [src]="getCoverUrl(like.song)" class="like-row-cover" [alt]="like.song?.title ?? ''" />
+            } @else {
+              <fa-icon icon="music"></fa-icon>
+            }
           </div>
 
           <div class="like-row-info">
             @if (like.song) {
-              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song" style="text-decoration: none">
-                #{{ like.song.title }}
+              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song">
+                {{ like.song.title }}
               </a>
             } @else {
               <span class="like-row-song">Canción desconocida</span>
             }
 
             <span class="like-row-artist">
-              {{ like.song?.artist?.name ?? like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
+              {{ like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
             </span>
           </div>
 
-          <button class="like-row-play" (click)="playSong(like); $event.stopPropagation()">
+          <button class="like-row-play" (click)="playSong(like)">
             <fa-icon icon="play" />
           </button>
-          <button class="like-row-btn" title="Añadir a playlist" (click)="openAddToPlaylist(like); $event.stopPropagation()">
+
+          <button class="like-row-btn" (click)="openAddToPlaylist(like)">
             <fa-icon icon="plus"></fa-icon>
           </button>
-          <button class="like-row-btn danger" (click)="delete(like); $event.stopPropagation()" title="Eliminar">
+
+          <button class="like-row-btn danger" (click)="delete(like)">
             <fa-icon icon="trash"></fa-icon>
           </button>
         </div>
