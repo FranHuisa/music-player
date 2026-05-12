@@ -110,7 +110,22 @@ export class AlbumService extends AlbumsService {
   uploadImage(formData: FormData): Observable<{ url: string }> {
     return this.http.post<{ url: string }>('/api/upload/image', formData);
   }
+  queryMySongs(req?: any): Observable<HttpResponse<IAlbum[]>> {
+    const options = createRequestOption(req);
 
+    return this.http
+      .get<RestAlbum[]>(this.myResourceUrl, {
+        params: options,
+        observe: 'response',
+      })
+      .pipe(
+        map(res =>
+          res.clone({
+            body: res.body?.map(item => this.convertValueFromServer(item)) ?? [],
+          }),
+        ),
+      );
+  }
   query(req?: any): Observable<HttpResponse<IAlbum[]>> {
     const options = createRequestOption(req);
     return this.http
@@ -161,6 +176,7 @@ export class AlbumService extends AlbumsService {
       observe: 'response',
     });
   }
+
   toggleActive(id: number): Observable<IAlbum> {
     return this.http.patch<IAlbum>(`${this.resourceUrl}/${encodeURIComponent(id)}/toggle-active`, {});
   }

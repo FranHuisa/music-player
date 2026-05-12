@@ -58,22 +58,22 @@ public class SongServiceImpl implements SongService {
 
     @Override
     public SongDTO update(SongDTO songDTO) {
-        LOG.debug("Request to update Song : {}", songDTO);
+        Song song = songRepository.findById(songDTO.getId()).orElseThrow(() -> new RuntimeException("Song not found"));
 
-        Song existingSong = songRepository.findById(songDTO.getId()).orElseThrow(() -> new RuntimeException("Song not found"));
+        song.setTitle(songDTO.getTitle());
+        song.setDuration(songDTO.getDuration());
+        song.setFileUrl(songDTO.getFileUrl());
+        song.setCoverImage(songDTO.getCoverImage());
+        song.setLyrics(songDTO.getLyrics());
+        song.setReleaseDate(songDTO.getReleaseDate());
+        song.setActive(songDTO.getActive());
+        song.setAlbum(songMapper.toEntity(songDTO).getAlbum());
+        song.setGenre(songMapper.toEntity(songDTO).getGenre());
+        song.setArtistses(songMapper.toEntity(songDTO).getArtistses());
 
-        existingSong.setAlbum(songDTO.getAlbum() != null ? songMapper.toEntity(songDTO).getAlbum() : null);
+        song = songRepository.save(song);
 
-        existingSong.setTitle(songDTO.getTitle());
-        existingSong.setDuration(songDTO.getDuration());
-        existingSong.setFileUrl(songDTO.getFileUrl());
-        existingSong.setCoverImage(songDTO.getCoverImage());
-        existingSong.setReleaseDate(songDTO.getReleaseDate());
-        existingSong.setActive(songDTO.getActive());
-
-        existingSong = songRepository.save(existingSong);
-
-        return songMapper.toDto(existingSong);
+        return songMapper.toDto(song);
     }
 
     @Override

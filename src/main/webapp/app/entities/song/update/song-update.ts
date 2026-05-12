@@ -207,7 +207,6 @@ export class SongUpdate implements OnInit {
 
     const maxSize = 5 * 1024 * 1024;
 
-    //CAMBIAR POR DIALOG DE SWEETALERT2
     if (file.size > maxSize) {
       alert('Máximo 5MB');
       return;
@@ -223,6 +222,20 @@ export class SongUpdate implements OnInit {
 
       this.selectedCover = file;
       this.coverPreviewUrl = URL.createObjectURL(file);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      this.songService.uploadImage(formData).subscribe({
+        next: res => {
+          this.editForm.patchValue({
+            coverImage: res.url,
+          });
+        },
+        error: () => {
+          alert('Error subiendo imagen');
+        },
+      });
     };
 
     img.src = URL.createObjectURL(file);
@@ -247,24 +260,23 @@ export class SongUpdate implements OnInit {
   }
 
   protected loadRelationshipsOptions(): void {
-    this.albumService
-      .query()
-      .pipe(map((res: HttpResponse<IAlbum[]>) => res.body ?? []))
-      .pipe(map((albums: IAlbum[]) => this.albumService.addAlbumToCollectionIfMissing<IAlbum>(albums, this.song?.album)))
-      .subscribe((albums: IAlbum[]) => this.albumsSharedCollection.set(albums));
+    this.http.get<any[]>('/api/albums/my').subscribe({
+      next: albums => {
+        this.albumsSharedCollection.set(this.albumService.addAlbumToCollectionIfMissing(albums, this.song?.album));
+      },
+      error: () => this.albumsSharedCollection.set([]),
+    });
 
     this.genreService
       .query()
       .pipe(map((res: HttpResponse<IGenre[]>) => res.body ?? []))
-      .pipe(map((genres: IGenre[]) => this.genreService.addGenreToCollectionIfMissing<IGenre>(genres, this.song?.genre)))
-      .subscribe((genres: IGenre[]) => this.genresSharedCollection.set(genres));
+      .pipe(map(genres => this.genreService.addGenreToCollectionIfMissing(genres, this.song?.genre)))
+      .subscribe(genres => this.genresSharedCollection.set(genres));
 
     this.artistService
       .query()
       .pipe(map((res: HttpResponse<IArtist[]>) => res.body ?? []))
-      .pipe(
-        map((artists: IArtist[]) => this.artistService.addArtistToCollectionIfMissing<IArtist>(artists, ...(this.song?.artistses ?? []))),
-      )
-      .subscribe((artists: IArtist[]) => this.artistsSharedCollection.set(artists));
+      .pipe(map(artists => this.artistService.addArtistToCollectionIfMissing(artists, ...(this.song?.artistses ?? []))))
+      .subscribe(artists => this.artistsSharedCollection.set(artists));
   }
 }

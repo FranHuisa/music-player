@@ -74,7 +74,9 @@ export class SongService extends SongsService {
       },
     });
   }
-
+  uploadImage(formData: FormData): Observable<{ url: string }> {
+    return this.http.post<{ url: string }>('/api/upload/image', formData);
+  }
   create(song: NewSong): Observable<ISong> {
     const copy = this.convertValueFromClient(song);
     return this.http.post<RestSong>(this.resourceUrl.replace('/my-songs', ''), copy).pipe(map(res => this.convertResponseFromServer(res)));

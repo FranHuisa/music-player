@@ -15,11 +15,12 @@ import org.mapstruct.*;
 @Mapper(componentModel = "spring")
 public interface SongMapper extends EntityMapper<SongDTO, Song> {
     @Mapping(target = "album", source = "album")
+    @Mapping(target = "coverImage", source = "coverImage")
     @Mapping(target = "genre", source = "genre")
     @Mapping(target = "artistses", source = "artistses")
     SongDTO toDto(Song song);
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "artist", ignore = true) // 🔥 IMPORTANTE
+    @Mapping(target = "artist", ignore = true)
     Song toEntity(SongDTO songDTO);
 }
