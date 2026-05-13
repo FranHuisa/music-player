@@ -439,32 +439,34 @@ const logicalDbSvg = `
 </svg>`;
 
 const classSvg = `
-<svg viewBox="0 0 920 560" role="img" aria-label="Diagrama de clases simplificado">
+<svg viewBox="0 0 960 620" role="img" aria-label="Diagrama de clases simplificado">
   <defs>
     <marker id="arrow2" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
       <path d="M0,0 L0,6 L9,3 z" fill="#475569" />
     </marker>
   </defs>
-  ${classBox(40, 30, 'Genre', ['id: Long', 'name: String'], '#ecfdf5')}
-  ${classBox(350, 30, 'Artist', ['id: Long', 'name: String', 'country: String', 'verified: Boolean'], '#eff6ff')}
-  ${classBox(660, 30, 'Album', ['id: Long', 'title: String', 'releaseDate: LocalDate', 'albumType: AlbumType'], '#fff7ed')}
-  ${classBox(350, 210, 'Song', ['id: Long', 'title: String', 'duration: Integer', 'fileUrl: String', 'lyrics: TextBlob'], '#f8fafc')}
-  ${classBox(40, 390, 'Playlist', ['id: Long', 'name: String', 'isPublic: Boolean', 'createdAt: Instant'], '#fef2f2')}
-  ${classBox(350, 390, 'PlaylistSong', ['id: Long', 'position: Integer', 'addedAt: Instant'], '#fdf4ff')}
-  ${classBox(660, 300, 'Play', ['id: Long', 'playedAt: Instant', 'durationListened: Integer'], '#f1f5f9')}
-  ${classBox(660, 430, 'Like', ['id: Long', 'createdAt: Instant'], '#f1f5f9')}
-  <line x1="570" y1="100" x2="660" y2="100" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <text x="615" y="88" text-anchor="middle" font-family="Arial" font-size="12">1..N</text>
-  <line x1="460" y1="160" x2="460" y2="210" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <text x="492" y="190" font-family="Arial" font-size="12">N..M</text>
-  <line x1="660" y1="140" x2="570" y2="250" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <text x="615" y="220" font-family="Arial" font-size="12">1..N</text>
-  <line x1="240" y1="95" x2="350" y2="250" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <line x1="240" y1="95" x2="660" y2="95" stroke="#475569" stroke-width="1.5" marker-end="url(#arrow2)"/>
-  <line x1="350" y1="440" x2="240" y2="440" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <line x1="510" y1="390" x2="510" y2="340" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <line x1="660" y1="345" x2="570" y2="300" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
-  <line x1="660" y1="465" x2="570" y2="310" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  ${classBox(40, 40, 'Genre', ['id: Long', 'name: String'], '#ecfdf5')}
+  ${classBox(360, 40, 'Artist', ['id: Long', 'name: String', 'country: String', 'verified: Boolean'], '#eff6ff')}
+  ${classBox(680, 40, 'Album', ['id: Long', 'title: String', 'releaseDate: LocalDate', 'albumType: AlbumType'], '#fff7ed')}
+  ${classBox(360, 240, 'Song', ['id: Long', 'title: String', 'duration: Integer', 'fileUrl: String', 'lyrics: TextBlob'], '#f8fafc')}
+  ${classBox(40, 430, 'Playlist', ['id: Long', 'name: String', 'isPublic: Boolean', 'createdAt: Instant'], '#fef2f2')}
+  ${classBox(360, 440, 'PlaylistSong', ['id: Long', 'position: Integer', 'addedAt: Instant'], '#fdf4ff')}
+  ${classBox(680, 290, 'Play', ['id: Long', 'playedAt: Instant', 'durationListened: Integer'], '#f1f5f9')}
+  ${classBox(680, 450, 'Like', ['id: Long', 'createdAt: Instant'], '#f1f5f9')}
+  <polyline points="240,98 300,98 300,285 360,285" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="306" y="272" font-family="Arial" font-size="12">1..N</text>
+  <polyline points="240,70 240,20 780,20 780,40" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="505" y="16" text-anchor="middle" font-family="Arial" font-size="12">1..N</text>
+  <line x1="560" y1="110" x2="680" y2="110" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="620" y="98" text-anchor="middle" font-family="Arial" font-size="12">1..N</text>
+  <line x1="460" y1="200" x2="460" y2="240" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="492" y="225" font-family="Arial" font-size="12">N..M</text>
+  <polyline points="680,170 620,170 620,285 560,285" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="635" y="272" font-family="Arial" font-size="12">1..N</text>
+  <line x1="360" y1="510" x2="240" y2="510" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="460" y1="440" x2="460" y2="422" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <polyline points="680,359 620,359 620,330 560,330" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
+  <polyline points="680,497 620,497 620,360 560,360" fill="none" stroke="#475569" stroke-width="2" marker-end="url(#arrow2)"/>
 </svg>`;
 
 function classBox(x, y, title, attrs, fill) {
@@ -503,51 +505,53 @@ function dbTable(x, y, title, rows, width = 220) {
 }
 
 const loginActivitySvg = `
-<svg viewBox="0 0 720 520" role="img" aria-label="Actividad de autenticación">
-  <defs><marker id="arr3" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
-  ${flowNode(260, 25, 'Inicio', true)}
-  ${flowNode(215, 95, 'Introducir credenciales')}
-  ${flowNode(215, 165, 'POST /api/authenticate')}
-  ${diamond(300, 260, '¿Válidas?')}
-  ${flowNode(70, 350, 'Mostrar error')}
-  ${flowNode(390, 350, 'Guardar JWT')}
-  ${flowNode(390, 420, 'Redirigir por rol')}
-  ${flowNode(260, 485, 'Fin', true)}
-  ${arrow(360, 65, 360, 95)}
-  ${arrow(360, 135, 360, 165)}
-  ${arrow(360, 205, 360, 236)}
-  ${arrow(285, 285, 190, 350)}
-  ${arrow(170, 390, 250, 115)}
-  ${arrow(435, 285, 480, 350)}
-  ${arrow(480, 390, 480, 420)}
-  ${arrow(480, 460, 360, 485)}
-  <text x="235" y="316" font-family="Arial" font-size="12">No</text>
-  <text x="440" y="316" font-family="Arial" font-size="12">Sí</text>
+<svg viewBox="0 0 760 560" role="img" aria-label="Actividad de autenticación">
+  <defs><marker id="arrLogin" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
+  ${flowNode(280, 20, 'Inicio', true)}
+  ${flowNode(280, 90, 'Introducir credenciales')}
+  ${flowNode(280, 160, 'POST /api/authenticate')}
+  ${diamond(380, 255, '¿Válidas?')}
+  ${flowNode(70, 340, 'Mostrar error')}
+  ${flowNode(450, 340, 'Guardar JWT')}
+  ${flowNode(450, 410, 'Redirigir por rol')}
+  ${flowNode(280, 480, 'Fin', true)}
+  ${lineArrow('arrLogin', 380, 60, 380, 90)}
+  ${lineArrow('arrLogin', 380, 130, 380, 160)}
+  ${lineArrow('arrLogin', 380, 200, 380, 210)}
+  ${polyArrow('arrLogin', '295,255 170,255 170,340')}
+  ${polyArrow('arrLogin', '465,255 550,255 550,340')}
+  ${lineArrow('arrLogin', 550, 380, 550, 410)}
+  ${polyArrow('arrLogin', '170,380 170,455 380,455 380,480')}
+  ${polyArrow('arrLogin', '550,450 550,455 380,455 380,480')}
+  <text x="220" y="245" font-family="Arial" font-size="12">No</text>
+  <text x="500" y="245" font-family="Arial" font-size="12">Sí</text>
 </svg>`;
 
 const createSongSvg = `
-<svg viewBox="0 0 760 560" role="img" aria-label="Actividad de gestión de canción">
-  <defs><marker id="arr4" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
+<svg viewBox="0 0 760 610" role="img" aria-label="Actividad de gestión de canción">
+  <defs><marker id="arrSong" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#334155"/></marker></defs>
   ${flowNode(280, 20, 'Inicio', true)}
-  ${flowNode(230, 90, 'Usuario editor abre /song/new')}
-  ${flowNode(230, 160, 'Completar formulario')}
-  ${diamond(320, 255, '¿Formulario válido?')}
-  ${flowNode(55, 360, 'Mostrar validaciones')}
-  ${flowNode(440, 360, 'POST /api/songs')}
-  ${diamond(520, 455, '¿Permiso correcto?')}
-  ${flowNode(255, 500, 'Respuesta 403')}
-  ${flowNode(545, 500, '201 Created')}
-  ${arrow(380, 60, 380, 90)}
-  ${arrow(380, 130, 380, 160)}
-  ${arrow(380, 200, 380, 232)}
-  ${arrow(305, 280, 175, 360)}
-  ${arrow(175, 400, 260, 180)}
-  ${arrow(455, 280, 530, 360)}
-  ${arrow(530, 400, 530, 431)}
-  ${arrow(480, 480, 350, 500)}
-  ${arrow(570, 480, 610, 500)}
-  <text x="275" y="325" font-family="Arial" font-size="12">No</text>
-  <text x="485" y="325" font-family="Arial" font-size="12">Sí</text>
+  ${flowNode(280, 90, 'Usuario editor abre /song/new')}
+  ${flowNode(280, 160, 'Completar formulario')}
+  ${diamond(380, 255, '¿Formulario válido?')}
+  ${flowNode(70, 345, 'Mostrar validaciones')}
+  ${flowNode(280, 345, 'POST /api/songs')}
+  ${diamond(380, 455, '¿Permiso correcto?')}
+  ${flowNode(70, 530, 'Respuesta 403')}
+  ${flowNode(490, 530, '201 Created')}
+  ${lineArrow('arrSong', 380, 60, 380, 90)}
+  ${lineArrow('arrSong', 380, 130, 380, 160)}
+  ${lineArrow('arrSong', 380, 200, 380, 210)}
+  ${polyArrow('arrSong', '295,255 170,255 170,345')}
+  ${polyArrow('arrSong', '170,385 40,385 40,180 280,180')}
+  ${lineArrow('arrSong', 380, 300, 380, 345)}
+  ${lineArrow('arrSong', 380, 385, 380, 410)}
+  ${polyArrow('arrSong', '295,455 170,455 170,530')}
+  ${polyArrow('arrSong', '465,455 590,455 590,530')}
+  <text x="220" y="245" font-family="Arial" font-size="12">No</text>
+  <text x="396" y="325" font-family="Arial" font-size="12">Sí</text>
+  <text x="220" y="445" font-family="Arial" font-size="12">No</text>
+  <text x="500" y="445" font-family="Arial" font-size="12">Sí</text>
 </svg>`;
 
 function flowNode(x, y, text, terminal = false) {
@@ -557,8 +561,11 @@ function flowNode(x, y, text, terminal = false) {
 function diamond(cx, cy, text) {
   return `<polygon points="${cx},${cy - 45} ${cx + 85},${cy} ${cx},${cy + 45} ${cx - 85},${cy}" fill="#fff7ed" stroke="#475569"/><text x="${cx}" y="${cy + 5}" text-anchor="middle" font-family="Arial" font-size="13">${text}</text>`;
 }
-function arrow(x1, y1, x2, y2) {
-  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="1.8" marker-end="url(#arr3)"/><line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="1.8" marker-end="url(#arr4)"/>`;
+function lineArrow(markerId, x1, y1, x2, y2) {
+  return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#334155" stroke-width="1.8" fill="none" marker-end="url(#${markerId})"/>`;
+}
+function polyArrow(markerId, points) {
+  return `<polyline points="${points}" stroke="#334155" stroke-width="1.8" fill="none" marker-end="url(#${markerId})"/>`;
 }
 
 const testPyramidSvg = `
