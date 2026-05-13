@@ -46,6 +46,11 @@ export default class Main implements OnInit {
     if (!userAccount || isPublicPage) {
       return false;
     }
+
+    if (userAccount.authorities.includes(Authority.ADMIN)) {
+      return false;
+    }
+
     return userAccount.authorities.includes(Authority.USER);
   });
 
