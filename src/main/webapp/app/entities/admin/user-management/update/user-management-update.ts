@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
+import Swal from 'sweetalert2';
 
 import { LANGUAGES } from 'app/config/language.constants';
 import { AlertError } from 'app/shared/alert/alert-error';
@@ -51,7 +52,6 @@ export class UserManagementUpdate implements OnInit {
   });
 
   protected readonly authorityService = inject(AuthorityService);
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly authorities = computed(() => this.authorityService.authorities().map(authority => authority.name));
   private readonly userService = inject(UserManagementService);
   private readonly route = inject(ActivatedRoute);
@@ -75,27 +75,59 @@ export class UserManagementUpdate implements OnInit {
   }
 
   save(): void {
-    this.isSaving.set(true);
     const user = this.editForm.getRawValue();
-    if (user.id === null) {
-      this.userService.create(user).subscribe({
-        next: () => this.onSaveSuccess(),
-        error: () => this.onSaveError(),
-      });
-    } else {
-      this.userService.update(user).subscribe({
-        next: () => this.onSaveSuccess(),
-        error: () => this.onSaveError(),
-      });
-    }
+    const isNew = user.id === null;
+
+    Swal.fire({
+      title: isNew ? '¿Crear usuario?' : '¿Guardar cambios?',
+      text: isNew ? `Se creará el usuario "${user.login}".` : `Se actualizarán los datos de "${user.login}".`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: isNew ? 'Sí, crear' : 'Sí, guardar',
+      cancelButtonText: 'Cancelar',
+      background: '#0f172a',
+      color: '#ffffff',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.isSaving.set(true);
+        if (isNew) {
+          this.userService.create(user).subscribe({
+            next: () => this.onSaveSuccess(isNew),
+            error: () => this.onSaveError(),
+          });
+        } else {
+          this.userService.update(user).subscribe({
+            next: () => this.onSaveSuccess(isNew),
+            error: () => this.onSaveError(),
+          });
+        }
+      }
+    });
   }
 
-  private onSaveSuccess(): void {
+  private onSaveSuccess(isNew: boolean): void {
     this.isSaving.set(false);
-    this.previousState();
+    Swal.fire({
+      title: isNew ? '¡Usuario creado!' : '¡Cambios guardados!',
+      text: isNew ? 'El usuario ha sido creado correctamente.' : 'Los datos han sido actualizados correctamente.',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false,
+    }).then(() => this.previousState());
   }
 
   private onSaveError(): void {
     this.isSaving.set(false);
+    Swal.fire({
+      title: 'Error',
+      text: 'Ha ocurrido un error al guardar. Por favor, inténtalo de nuevo.',
+      icon: 'error',
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Aceptar',
+      color: '#ffffff',
+      background: '#0f172a',
+    });
   }
 }

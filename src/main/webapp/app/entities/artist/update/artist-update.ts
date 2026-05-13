@@ -10,12 +10,11 @@ import { finalize, map } from 'rxjs/operators';
 import Swal from 'sweetalert2';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-import { DataUtils, FileLoadError } from 'app/core/util/data-util.service';
-import { EventManager, EventWithContent } from 'app/core/util/event-manager.service';
+import { DataUtils } from 'app/core/util/data-util.service';
+import { EventManager } from 'app/core/util/event-manager.service';
 import { SongService } from 'app/entities/song/service/song.service';
 import { ISong } from 'app/entities/song/song.model';
 import { AlertError } from 'app/shared/alert/alert-error';
-import { AlertErrorModel } from 'app/shared/alert/alert-error.model';
 import { TranslateDirective } from 'app/shared/language';
 import { IArtist } from '../artist.model';
 import { ArtistService } from '../service/artist.service';
@@ -114,7 +113,7 @@ export class ArtistUpdate implements OnInit {
     this.http.get<IUser[]>(usersUrl).subscribe({
       next: users => this.showAssignDialog(artistId, users),
       error: () =>
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los usuarios.', background: '#1a1a2e', color: '#fff' }),
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los usuarios.', background: '#0f172a', color: '#ffffff' }),
     });
   }
 
@@ -155,6 +154,7 @@ export class ArtistUpdate implements OnInit {
       cancelButtonText: 'Omitir',
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#6b7280',
+
       preConfirm: () => {
         const selectedId = (document.getElementById('swal-selected-user-id') as HTMLInputElement)?.value;
         if (!selectedId) {
@@ -180,13 +180,13 @@ export class ArtistUpdate implements OnInit {
           icon: 'success',
           title: '¡Asignado!',
           text: 'Usuario vinculado al artista correctamente.',
-          background: '#1a1a2e',
-          color: '#fff',
+          background: '#0f172a',
+          color: '#ffffff',
           timer: 1800,
           showConfirmButton: false,
         }).then(() => this.previousState()),
       error: () =>
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo asignar el usuario.', background: '#1a1a2e', color: '#fff' }),
+        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo asignar el usuario.', background: '#0f172a', color: '#ffffff' }),
     });
   }
 
@@ -218,6 +218,8 @@ export class ArtistUpdate implements OnInit {
             icon: 'error',
             title: 'Error',
             text: 'No se pudo subir la imagen',
+            color: '#ffffff',
+            background: '#0f172a',
           });
         },
       });

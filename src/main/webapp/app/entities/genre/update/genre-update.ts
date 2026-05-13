@@ -6,6 +6,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import Swal from 'sweetalert2';
 
 import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
@@ -27,7 +28,6 @@ export class GenreUpdate implements OnInit {
   protected genreFormService = inject(GenreFormService);
   protected activatedRoute = inject(ActivatedRoute);
 
-  // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: GenreFormGroup = this.genreFormService.createGenreFormGroup();
 
   ngOnInit(): void {
@@ -44,13 +44,30 @@ export class GenreUpdate implements OnInit {
   }
 
   save(): void {
-    this.isSaving.set(true);
     const genre = this.genreFormService.getGenre(this.editForm);
-    if (genre.id === null) {
-      this.subscribeToSaveResponse(this.genreService.create(genre));
-    } else {
-      this.subscribeToSaveResponse(this.genreService.update(genre));
-    }
+    const isNew = genre.id === null;
+
+    Swal.fire({
+      title: isNew ? '¿Crear género?' : '¿Guardar cambios?',
+      text: isNew ? `Se creará el género "${genre.name}".` : `Se actualizará el género "${genre.name}".`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: isNew ? 'Sí, crear' : 'Sí, guardar',
+      cancelButtonText: 'Cancelar',
+      color: '#ffffff',
+      background: '#0f172a',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.isSaving.set(true);
+        if (isNew) {
+          this.subscribeToSaveResponse(this.genreService.create(genre));
+        } else {
+          this.subscribeToSaveResponse(this.genreService.update(genre));
+        }
+      }
+    });
   }
 
   protected subscribeToSaveResponse(result: Observable<IGenre | null>): void {
@@ -61,11 +78,29 @@ export class GenreUpdate implements OnInit {
   }
 
   protected onSaveSuccess(): void {
-    this.previousState();
+    this.isSaving.set(false);
+    Swal.fire({
+      title: '¡Guardado!',
+      text: 'El género ha sido guardado correctamente.',
+      icon: 'success',
+      timer: 2000,
+      showConfirmButton: false,
+      color: '#ffffff',
+      background: '#0f172a',
+    }).then(() => this.previousState());
   }
 
   protected onSaveError(): void {
-    // Api for inheritance.
+    this.isSaving.set(false);
+    Swal.fire({
+      title: 'Error',
+      text: 'Ha ocurrido un error al guardar. Por favor, inténtalo de nuevo.',
+      icon: 'error',
+      confirmButtonColor: '#d33',
+      confirmButtonText: 'Aceptar',
+      color: '#ffffff',
+      background: '#0f172a',
+    });
   }
 
   protected onSaveFinalize(): void {
