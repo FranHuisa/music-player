@@ -8,6 +8,7 @@ import { Login } from 'app/login/login.model';
 import { ApplicationConfigService } from '../config/application-config.service';
 
 import { StateStorageService } from './state-storage.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
 
 type JwtToken = {
   id_token: string;
@@ -18,6 +19,7 @@ export class AuthServerProvider {
   private readonly http = inject(HttpClient);
   private readonly stateStorageService = inject(StateStorageService);
   private readonly applicationConfigService = inject(ApplicationConfigService);
+  private readonly playerService = inject(PlayerService);
 
   getToken(): string {
     return this.stateStorageService.getAuthenticationToken() ?? '';
@@ -31,6 +33,7 @@ export class AuthServerProvider {
 
   logout(): Observable<void> {
     return new Observable(observer => {
+      this.playerService.reset();
       this.stateStorageService.clearAuthenticationToken();
       observer.complete();
     });

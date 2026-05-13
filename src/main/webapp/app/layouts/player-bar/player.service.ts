@@ -104,12 +104,21 @@ export class PlayerService {
   toggleRepeat(): void {
     this.isRepeat.update(v => !v);
   }
-
+  reset(): void {
+    this.audio.pause();
+    this.audio.src = '';
+    this.currentSong.set(null);
+    this.isPlaying.set(false);
+    this.progress.set(0);
+    this.currentTime.set(0);
+    this.duration.set(0);
+    this.queue = [];
+    this.queueIndex = 0;
+  }
   private loadAndPlay(song: ISong): void {
     console.log('SONG COMPLETA:', JSON.stringify(song));
     this.currentSong.set(song);
     const fileUrl = song.fileUrl ?? '';
-    // Si ya es una ruta completa, úsala; si no, construye la URL de stream
     this.audio.src = fileUrl.startsWith('/') ? fileUrl : `/api/upload/stream/${encodeURIComponent(fileUrl)}`;
     this.audio.load();
     this.audio.play().catch(console.error);
