@@ -1,7 +1,3 @@
-// ============================================================
-// Song List — Spotify-style track list
-// ============================================================
-
 $accent: #1db954;
 $text-primary: #ffffff;
 $text-secondary: #b3b3b3;
@@ -9,7 +5,7 @@ $text-subdued: #6a6a6a;
 $bg-hover: rgba(255, 255, 255, 0.07);
 $transition: 0.15s ease;
 
-$grid: 48px 1fr 1fr 120px 100px 120px 48px;
+$grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
 
 .song-list-page {
   padding-bottom: 2rem;
@@ -112,9 +108,43 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     &:hover {
       color: $text-primary;
     }
-
     &.btn-add {
       font-size: 1.5rem;
+    }
+  }
+}
+
+.song-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  .song-search-icon {
+    position: absolute;
+    left: 12px;
+    color: #6a6a6a;
+    font-size: 0.85rem;
+  }
+
+  .song-search-input {
+    width: 300px;
+    padding: 0.5rem 0.75rem 0.5rem 2.2rem;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    color: white;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    &::placeholder {
+      color: #6a6a6a;
     }
   }
 }
@@ -141,7 +171,6 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     font-size: 0.6rem;
     opacity: 0.6;
   }
-
   .col-num {
     text-align: center;
   }
@@ -182,13 +211,16 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
       color: $accent;
     }
   }
+
+  &.inactive {
+    opacity: 0.5;
+  }
 }
 
 .col-num {
   display: flex;
   align-items: center;
   justify-content: center;
-  position: relative;
 
   .track-num {
     font-size: 0.95rem;
@@ -213,11 +245,10 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
   }
 }
 
-.col-title {
+.col-cover {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  min-width: 0;
+  justify-content: center;
 }
 
 .track-cover {
@@ -226,7 +257,6 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
   min-width: 42px;
   border-radius: 4px;
   overflow: hidden;
-  position: relative;
   background: linear-gradient(135deg, #282828, #404040);
   display: flex;
   align-items: center;
@@ -243,23 +273,12 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     color: $text-subdued;
     font-size: 1rem;
   }
-
-  .track-cover-play {
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.6);
-    border: none;
-    color: #fff;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.85rem;
-    cursor: pointer;
-  }
 }
 
-.track-row:hover .track-cover-play {
+.col-title {
   display: flex;
+  align-items: center;
+  min-width: 0;
 }
 
 .track-info {
@@ -291,6 +310,12 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
   }
 }
 
+.track-hidden-badge {
+  font-size: 0.75rem;
+  color: #f87171;
+  font-weight: 400;
+}
+
 .col-album,
 .col-genre,
 .col-date {
@@ -304,7 +329,6 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
 .track-link {
   color: $text-secondary;
   text-decoration: none;
-
   &:hover {
     color: $text-primary;
     text-decoration: underline;
@@ -315,26 +339,24 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
   color: $text-subdued;
 }
 
+.col-hidden {
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+.song-visible {
+  color: #1db954;
+  font-weight: 600;
+}
+.song-hidden {
+  color: #ff4d4f;
+  font-weight: 600;
+}
+
 .col-duration {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.75rem;
-
-  .track-like-btn {
-    background: none;
-    border: none;
-    color: $text-subdued;
-    font-size: 0.85rem;
-    cursor: pointer;
-    opacity: 0;
-    transition: all $transition;
-    padding: 0;
-
-    &:hover {
-      color: $accent;
-    }
-  }
 
   .track-duration {
     font-size: 0.875rem;
@@ -345,34 +367,81 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
   }
 }
 
-.track-row:hover .track-like-btn {
-  opacity: 1;
+.col-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 0.5rem;
 }
 
-.col-actions {
+.song-menu {
+  position: relative;
   display: flex;
   justify-content: center;
 
-  .track-more-btn {
+  &:hover .song-menu-list {
+    display: flex;
+  }
+}
+
+.song-menu-list {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 0.4rem 0;
+  min-width: 160px;
+  z-index: 9999;
+  right: 60px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  list-style: none;
+  margin: 0;
+
+  li a,
+  li button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    color: #e0e0e0;
+    text-decoration: none;
     background: none;
     border: none;
-    color: $text-subdued;
     cursor: pointer;
-    opacity: 0;
-    padding: 4px 8px;
-    border-radius: 4px;
-    transition: all $transition;
-    line-height: 1;
+    font-size: 0.875rem;
+    text-align: left;
 
     &:hover {
-      color: $text-primary;
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
     }
+  }
 
-    .dots {
-      font-size: 1rem;
-      letter-spacing: 1px;
-    }
+  li button.danger {
+    color: #ef4444;
+  }
+}
+
+.track-more-btn {
+  background: none;
+  border: none;
+  color: $text-subdued;
+  cursor: pointer;
+  opacity: 0;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all $transition;
+  line-height: 1;
+
+  &:hover {
+    color: $text-primary;
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .dots {
+    font-size: 1rem;
+    letter-spacing: 1px;
   }
 }
 
@@ -393,7 +462,6 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
     font-size: 3rem;
     color: $text-subdued;
   }
-
   p {
     font-size: 1.1rem;
     margin: 0;
@@ -411,7 +479,7 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
 }
 
 @media (max-width: 900px) {
-  $grid-sm: 40px 1fr 120px 48px;
+  $grid-sm: 40px 52px 1fr 64px;
 
   .track-list-header,
   .track-row {
@@ -420,7 +488,8 @@ $grid: 48px 1fr 1fr 120px 100px 120px 48px;
 
   .col-album,
   .col-genre,
-  .col-date {
+  .col-date,
+  .col-hidden {
     display: none;
   }
 }

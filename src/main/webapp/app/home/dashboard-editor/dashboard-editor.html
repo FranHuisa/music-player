@@ -7,7 +7,8 @@
     <p class="editor-hero-subtitle">Gestiona tu música, tus álbumes y tus próximos lanzamientos en un solo lugar.</p>
     <div class="editor-hero-actions">
       <a routerLink="/song/new" class="btn-pill btn-pill-primary"> <fa-icon icon="plus" /> Nueva canción </a>
-      <a routerLink="/album/new" class="btn-pill btn-pill-ghost"> <fa-icon icon="compact-disc" /> Nuevo álbum </a>
+      <a routerLink="/album/new" class="btn-pill btn-pill-primary"> <fa-icon icon="plus" /> Nuevo álbum </a>
+      <a routerLink="/album/coming" class="btn-pill btn-pill-primary"> <fa-icon icon="plus" /> Nuevo lanzamiento </a>
     </div>
   </header>
 
@@ -48,44 +49,42 @@
   </section>
   <section class="editor-section">
     <div class="editor-section-head">
-      <h2>Atajos rápidos</h2>
-      <span class="editor-section-sub">Acciones que usas todos los días</span>
+      <h2>Tus tareas</h2>
+      <span class="editor-section-sub">Ve directamente a lo que necesitas gestionar</span>
     </div>
-    <div class="editor-quick-row">
-      <a routerLink="/song/new" class="editor-quick-card">
-        <fa-icon icon="plus" class="editor-quick-icon" />
-        <div>
-          <span class="editor-quick-title">Subir canción</span>
-          <span class="editor-quick-sub">Añade un tema nuevo a tu catálogo</span>
+    <div class="editor-actions-grid">
+      <a routerLink="/song" class="editor-action-card" style="--card-from: #450af5; --card-to: #1db954">
+        <div class="editor-action-content">
+          <span class="editor-action-eyebrow">Tu música</span>
+          <h3>Mis canciones</h3>
+          <p>Edita títulos, duraciones, géneros y portadas.</p>
         </div>
+        <fa-icon icon="music" class="editor-action-icon" />
       </a>
-      <a routerLink="/album/new" class="editor-quick-card">
-        <fa-icon icon="compact-disc" class="editor-quick-icon" />
-        <div>
-          <span class="editor-quick-title">Crear álbum</span>
-          <span class="editor-quick-sub">Agrupa tus canciones en un proyecto</span>
+
+      <a routerLink="/album" class="editor-action-card" style="--card-from: #e8115b; --card-to: #f59b23">
+        <div class="editor-action-content">
+          <span class="editor-action-eyebrow">Discografía</span>
+          <h3>Mis álbumes</h3>
+          <p>Crea, ordena y publica tus álbumes y EPs.</p>
         </div>
+        <fa-icon icon="compact-disc" class="editor-action-icon" />
       </a>
-      <a routerLink="/playlist/new" class="editor-quick-card">
-        <fa-icon icon="list" class="editor-quick-icon" />
-        <div>
-          <span class="editor-quick-title">Nueva playlist</span>
-          <span class="editor-quick-sub">Selección curada para tus oyentes</span>
+
+      <a routerLink="/album/coming" class="editor-action-card" style="--card-from: #0d4ea6; --card-to: #5179c8">
+        <div class="editor-action-content">
+          <span class="editor-action-eyebrow">Calendario</span>
+          <h3>Próximos lanzamientos</h3>
+          <p>Programa fechas de salida y prepara tu audiencia.</p>
         </div>
-      </a>
-      <a routerLink="/play" class="editor-quick-card">
-        <fa-icon icon="chart-bar" class="editor-quick-icon" />
-        <div>
-          <span class="editor-quick-title">Estadísticas</span>
-          <span class="editor-quick-sub">Mira el historial de reproducciones</span>
-        </div>
+        <fa-icon icon="calendar-alt" class="editor-action-icon" />
       </a>
     </div>
   </section>
   <section class="editor-section">
     <div class="editor-section-head">
       <h2>Próximos lanzamientos</h2>
-      <a routerLink="/album" [queryParams]="{ upcoming: true }" class="editor-section-link">Ver calendario</a>
+      <a routerLink="/album/ucoming" class="editor-section-link">Gestionar</a>
     </div>
     @if (upcomingAlbums().length === 0) {
       <div class="editor-empty">
@@ -98,7 +97,7 @@
           <a [routerLink]="['/album', album.id, 'view']" class="editor-release-card">
             <div class="editor-release-info">
               <span class="editor-release-title">{{ album.title }}</span>
-              <span class="editor-release-sub">Álbum #{{ album.id }}</span>
+              <span class="editor-release-sub">{{ album.albumType ?? 'ALBUM' }}</span>
             </div>
             <span class="editor-release-date">{{ album.releaseDate | formatMediumDate }}</span>
           </a>
@@ -136,40 +135,5 @@
         }
       </div>
     }
-  </section>
-
-  <section class="editor-section">
-    <div class="editor-section-head">
-      <h2>Tus tareas</h2>
-      <span class="editor-section-sub">Ve directamente a lo que necesitas gestionar</span>
-    </div>
-    <div class="editor-actions-grid">
-      <a routerLink="/song" class="editor-action-card" style="--card-from: #450af5; --card-to: #1db954">
-        <div class="editor-action-content">
-          <span class="editor-action-eyebrow">Tu música</span>
-          <h3>Mis canciones</h3>
-          <p>Edita títulos, duraciones, géneros y portadas.</p>
-        </div>
-        <fa-icon icon="music" class="editor-action-icon" />
-      </a>
-
-      <a routerLink="/album" class="editor-action-card" style="--card-from: #e8115b; --card-to: #f59b23">
-        <div class="editor-action-content">
-          <span class="editor-action-eyebrow">Discografía</span>
-          <h3>Mis álbumes</h3>
-          <p>Crea, ordena y publica tus álbumes y EPs.</p>
-        </div>
-        <fa-icon icon="compact-disc" class="editor-action-icon" />
-      </a>
-
-      <a routerLink="/album" [queryParams]="{ upcoming: true }" class="editor-action-card" style="--card-from: #0d4ea6; --card-to: #5179c8">
-        <div class="editor-action-content">
-          <span class="editor-action-eyebrow">Calendario</span>
-          <h3>Próximos lanzamientos</h3>
-          <p>Programa fechas de salida y prepara tu audiencia.</p>
-        </div>
-        <fa-icon icon="calendar-alt" class="editor-action-icon" />
-      </a>
-    </div>
   </section>
 </div>

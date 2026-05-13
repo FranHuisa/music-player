@@ -128,5 +128,8 @@ export default defineConfig(
   // jhipster-needle-eslint-add-config - JHipster will add additional config here
   {
     extends: [prettier],
+    rules: {
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
+    },
   },
 );

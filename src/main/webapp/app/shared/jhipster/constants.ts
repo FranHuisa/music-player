@@ -6,7 +6,6 @@ export enum Authority {
   ADMIN = 'ROLE_ADMIN',
   USER = 'ROLE_USER',
   EDITOR = 'ROLE_EDITOR',
-  ARTIST = 'ROLE_ARTIST',
   ROLE_USER = 'ROLE_USER',
   ROLE_ADMIN = 'ROLE_ADMIN',
 }

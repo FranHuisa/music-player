@@ -1,31 +1,21 @@
 import { Injectable } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-
 import dayjs from 'dayjs/esm';
-
 import { DATE_TIME_FORMAT } from 'app/config/input.constants';
 import { ISong, NewSong } from '../song.model';
+import { IArtist } from 'app/entities/artist/artist.model';
+import { IAlbum } from 'app/entities/album/album.model';
+import { IGenre } from 'app/entities/genre/genre.model';
 
-/**
- * A partial Type with required key is used as form input.
- */
 type PartialWithRequiredKeyOf<T extends { id: unknown }> = Partial<Omit<T, 'id'>> & { id: T['id'] };
 
-/**
- * Type for createFormGroup and resetForm argument.
- * It accepts ISong for edit and NewSongFormGroupInput for create.
- */
 type SongFormGroupInput = ISong | PartialWithRequiredKeyOf<NewSong>;
 
-/**
- * Type that converts some properties for forms.
- */
 type FormValueOf<T extends ISong | NewSong> = Omit<T, 'createdAt'> & {
   createdAt?: string | null;
 };
 
 type SongFormRawValue = FormValueOf<ISong>;
-
 type NewSongFormRawValue = FormValueOf<NewSong>;
 
 type SongFormDefaults = Pick<NewSong, 'id' | 'createdAt' | 'artistses'>;
@@ -39,9 +29,10 @@ type SongFormGroupContent = {
   lyrics: FormControl<SongFormRawValue['lyrics']>;
   releaseDate: FormControl<SongFormRawValue['releaseDate']>;
   createdAt: FormControl<SongFormRawValue['createdAt']>;
-  album: FormControl<SongFormRawValue['album']>;
-  genre: FormControl<SongFormRawValue['genre']>;
-  artistses: FormControl<SongFormRawValue['artistses']>;
+  album: FormControl<IAlbum | null>;
+  genre: FormControl<IGenre | null>;
+  artistses: FormControl<IArtist[]>;
+  artistsText: FormControl<string | null>;
 };
 
 export type SongFormGroup = FormGroup<SongFormGroupContent>;
@@ -49,43 +40,52 @@ export type SongFormGroup = FormGroup<SongFormGroupContent>;
 @Injectable({ providedIn: 'root' })
 export class SongFormService {
   createSongFormGroup(song?: SongFormGroupInput): SongFormGroup {
-    const songRawValue = this.convertSongToSongRawValue({
+    const songRawValue = this.convertSongToRaw({
       ...this.getFormDefaults(),
       ...(song ?? { id: null }),
     });
+
     return new FormGroup<SongFormGroupContent>({
-      id: new FormControl(
-        { value: songRawValue.id, disabled: true },
-        {
-          nonNullable: true,
-          validators: [Validators.required],
-        },
-      ),
+      id: new FormControl({ value: songRawValue.id, disabled: true }, { nonNullable: true }),
+
       title: new FormControl(songRawValue.title, {
         validators: [Validators.required, Validators.maxLength(150)],
       }),
+
       duration: new FormControl(songRawValue.duration),
-      fileUrl: new FormControl(songRawValue.fileUrl, {
-        validators: [Validators.required, Validators.maxLength(255)],
-      }),
-      coverImage: new FormControl(songRawValue.coverImage, {
-        validators: [Validators.maxLength(255)],
-      }),
+
+      fileUrl: new FormControl(songRawValue.fileUrl),
+
+      coverImage: new FormControl(songRawValue.coverImage),
+
       lyrics: new FormControl(songRawValue.lyrics),
+
       releaseDate: new FormControl(songRawValue.releaseDate),
+
       createdAt: new FormControl(songRawValue.createdAt),
-      album: new FormControl(songRawValue.album),
-      genre: new FormControl(songRawValue.genre),
+
+      album: new FormControl(songRawValue.album ?? null),
+
+      genre: new FormControl(songRawValue.genre ?? null),
+
       artistses: new FormControl(songRawValue.artistses ?? []),
+
+      artistsText: new FormControl(songRawValue.artistses?.map((a: any) => a.name).join(', ') ?? ''),
     });
   }
 
   getSong(form: SongFormGroup): ISong | NewSong {
-    return this.convertSongRawValueToSong(form.getRawValue() as SongFormRawValue | NewSongFormRawValue);
+    const raw = form.getRawValue();
+
+    return {
+      ...raw,
+      createdAt: raw.createdAt ? dayjs(raw.createdAt, DATE_TIME_FORMAT) : null,
+    };
   }
 
   resetForm(form: SongFormGroup, song: SongFormGroupInput): void {
-    const songRawValue = this.convertSongToSongRawValue({ ...this.getFormDefaults(), ...song });
+    const songRawValue = this.convertSongToRaw(song);
+
     form.reset({
       ...songRawValue,
       id: { value: songRawValue.id, disabled: true },
@@ -93,29 +93,17 @@ export class SongFormService {
   }
 
   private getFormDefaults(): SongFormDefaults {
-    const currentTime = dayjs();
-
     return {
       id: null,
-      createdAt: currentTime,
+      createdAt: dayjs(),
       artistses: [],
     };
   }
 
-  private convertSongRawValueToSong(rawSong: SongFormRawValue | NewSongFormRawValue): ISong | NewSong {
-    return {
-      ...rawSong,
-      createdAt: dayjs(rawSong.createdAt, DATE_TIME_FORMAT),
-    };
-  }
-
-  private convertSongToSongRawValue(
-    song: ISong | (Partial<NewSong> & SongFormDefaults),
-  ): SongFormRawValue | PartialWithRequiredKeyOf<NewSongFormRawValue> {
+  private convertSongToRaw(song: any): any {
     return {
       ...song,
       createdAt: song.createdAt ? song.createdAt.format(DATE_TIME_FORMAT) : undefined,
-      artistses: song.artistses ?? [],
     };
   }
 }

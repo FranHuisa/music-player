@@ -13,4 +13,6 @@ import org.springframework.stereotype.Repository;
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     @Query("select playlist from Playlist playlist where playlist.user.login = ?#{authentication.name}")
     List<Playlist> findByUserIsCurrentUser();
+
+    List<Playlist> findByUserLogin(String login);
 }

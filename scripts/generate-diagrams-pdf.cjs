@@ -26,15 +26,17 @@ const imagePaths = blocks.map((code, i) => {
   const pngFile = path.join(tempDir, `d${i}.png`);
   fs.writeFileSync(mmdFile, code);
 
-  const r = spawnSync(
-    'npx',
-    ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', '900'],
-    { shell: true, encoding: 'utf8', timeout: 60000 }
-  );
+  const r = spawnSync('npx', ['@mermaid-js/mermaid-cli', '-i', mmdFile, '-o', pngFile, '-b', 'white', '-t', 'default', '-w', '900'], {
+    shell: true,
+    encoding: 'utf8',
+    timeout: 60000,
+  });
 
   if (r.status !== 0) {
     console.error(`  ✗ Diagrama ${i + 1} falló:`, r.stderr?.slice(0, 200));
-    if (i === 4) { console.log('  ✓ Diagrama 5 → usando solo PNG de MySQL Workbench'); }
+    if (i === 4) {
+      console.log('  ✓ Diagrama 5 → usando solo PNG de MySQL Workbench');
+    }
     return null;
   }
 
@@ -78,17 +80,23 @@ const processedMd = path.join(tempDir, 'DIAGRAMAS_FLUJO.md');
 fs.writeFileSync(processedMd, final);
 
 const cssFile = path.join(tempDir, 'diagrams.css');
-fs.writeFileSync(cssFile, `
+fs.writeFileSync(
+  cssFile,
+  `
   body { font-family: sans-serif; font-size: 13px; }
   h2 { margin-top: 1.2rem; margin-bottom: 0.4rem; break-after: avoid !important; page-break-after: avoid !important; }
   h2 + p, h2 + div { break-before: avoid !important; page-break-before: avoid !important; }
   hr { margin: 0.6rem 0; }
   img { max-width: 90%; height: auto; display: block; margin: 0.4rem auto; break-inside: avoid; page-break-inside: avoid; }
-`);
+`,
+);
 
 console.log('Generando PDF...');
 const pdf = spawnSync('npx', ['md-to-pdf', processedMd, '--stylesheet', cssFile], {
-  shell: true, encoding: 'utf8', timeout: 60000, stdio: 'inherit',
+  shell: true,
+  encoding: 'utf8',
+  timeout: 60000,
+  stdio: 'inherit',
 });
 
 const generatedPdf = path.join(tempDir, 'DIAGRAMAS_FLUJO.pdf');

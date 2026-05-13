@@ -4,6 +4,7 @@ import com.musicplayer.domain.enumeration.AlbumType;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 /**
@@ -21,14 +22,14 @@ public class AlbumDTO implements Serializable {
     @Size(max = 255)
     private String coverImage;
 
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     private AlbumType albumType;
 
-    @NotNull
     private ArtistDTO artist;
 
     private GenreDTO genre;
+    private Boolean active;
 
     public Long getId() {
         return id;
@@ -54,11 +55,11 @@ public class AlbumDTO implements Serializable {
         this.coverImage = coverImage;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -86,6 +87,14 @@ public class AlbumDTO implements Serializable {
         this.genre = genre;
     }
 
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -111,13 +120,13 @@ public class AlbumDTO implements Serializable {
     @Override
     public String toString() {
         return "AlbumDTO{" +
-            "id=" + getId() +
-            ", title='" + getTitle() + "'" +
-            ", coverImage='" + getCoverImage() + "'" +
-            ", releaseDate='" + getReleaseDate() + "'" +
-            ", albumType='" + getAlbumType() + "'" +
-            ", artist=" + getArtist() +
-            ", genre=" + getGenre() +
-            "}";
+                "id=" + getId() +
+                ", title='" + getTitle() + "'" +
+                ", coverImage='" + getCoverImage() + "'" +
+                ", releaseDate='" + getReleaseDate() + "'" +
+                ", albumType='" + getAlbumType() + "'" +
+                ", artist=" + getArtist() +
+                ", genre=" + getGenre() +
+                "}";
     }
 }

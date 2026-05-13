@@ -30,7 +30,7 @@ const songRoute: Routes = [
       song: SongResolve,
     },
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -41,7 +41,7 @@ const songRoute: Routes = [
       song: SongResolve,
     },
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },

@@ -1,52 +1,39 @@
 <nav class="jhi-sidebar" [class.collapsed]="sidebarService.isCollapsed()">
-  <!-- Toggle button -->
   <button class="sidebar-toggle" (click)="sidebarService.toggle()" aria-label="Alternar barra lateral">
     <fa-icon icon="bars" />
   </button>
 
-  <!-- Brand -->
   <div class="sidebar-brand">
     <fa-icon icon="music" class="sidebar-brand-icon" />
     @if (!sidebarService.isCollapsed()) {
-      <span class="sidebar-brand-name">Streamify</span>
+      <span class="sidebar-brand-name">Wisafy </span>
     }
   </div>
+  @if (!sidebarService.isCollapsed()) {
+    <div class="sidebar-section-title">Tu Biblioteca</div>
+  } @else {
+    <div class="sidebar-divider"></div>
+  }
 
-  <!-- Navigation -->
   <div class="sidebar-nav">
-    <a routerLink="/" routerLinkActive="sidebar-active" [routerLinkActiveOptions]="{ exact: true }" class="sidebar-item" title="Inicio">
+    <a
+      [routerLink]="
+        account()?.authorities?.includes('ROLE_ADMIN')
+          ? '/dashboard-admin'
+          : account()?.authorities?.includes('ROLE_EDITOR')
+            ? '/dashboard-editor'
+            : '/dashboard-user'
+      "
+      routerLinkActive="sidebar-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="sidebar-item"
+      title="Inicio"
+    >
       <fa-icon icon="home" class="sidebar-item-icon" />
       @if (!sidebarService.isCollapsed()) {
         <span class="sidebar-item-label">Inicio</span>
       }
     </a>
-
-    <a routerLink="/song" routerLinkActive="sidebar-active" class="sidebar-item" title="Canciones">
-      <fa-icon icon="music" class="sidebar-item-icon" />
-      @if (!sidebarService.isCollapsed()) {
-        <span class="sidebar-item-label">Canciones</span>
-      }
-    </a>
-
-    <a routerLink="/artist" routerLinkActive="sidebar-active" class="sidebar-item" title="Artistas">
-      <fa-icon icon="guitar" class="sidebar-item-icon" />
-      @if (!sidebarService.isCollapsed()) {
-        <span class="sidebar-item-label">Artistas</span>
-      }
-    </a>
-
-    <a routerLink="/album" routerLinkActive="sidebar-active" class="sidebar-item" title="Álbumes">
-      <fa-icon icon="compact-disc" class="sidebar-item-icon" />
-      @if (!sidebarService.isCollapsed()) {
-        <span class="sidebar-item-label">Álbumes</span>
-      }
-    </a>
-
-    @if (!sidebarService.isCollapsed()) {
-      <div class="sidebar-section-title">Tu Biblioteca</div>
-    } @else {
-      <div class="sidebar-divider"></div>
-    }
 
     <a routerLink="/playlist" routerLinkActive="sidebar-active" class="sidebar-item" title="Playlists">
       <fa-icon icon="list" class="sidebar-item-icon" />
@@ -54,43 +41,11 @@
         <span class="sidebar-item-label">Playlists</span>
       }
     </a>
-
     <a routerLink="/like" routerLinkActive="sidebar-active" class="sidebar-item" title="Me gusta">
       <fa-icon icon="heart" class="sidebar-item-icon" />
       @if (!sidebarService.isCollapsed()) {
         <span class="sidebar-item-label">Me gusta</span>
       }
     </a>
-
-    <a routerLink="/genre" routerLinkActive="sidebar-active" class="sidebar-item" title="Géneros">
-      <fa-icon icon="fire" class="sidebar-item-icon" />
-      @if (!sidebarService.isCollapsed()) {
-        <span class="sidebar-item-label">Géneros</span>
-      }
-    </a>
-
-    @if (account() !== null) {
-      @if (!sidebarService.isCollapsed()) {
-        <div class="sidebar-section-title">Gestión</div>
-      } @else {
-        <div class="sidebar-divider"></div>
-      }
-
-      <a routerLink="/dashboard-editor" routerLinkActive="sidebar-active" class="sidebar-item" title="Panel Editor">
-        <fa-icon icon="chart-bar" class="sidebar-item-icon" />
-        @if (!sidebarService.isCollapsed()) {
-          <span class="sidebar-item-label">Panel Editor</span>
-        }
-      </a>
-
-      @if (account()?.authorities?.includes('ROLE_ADMIN')) {
-        <a routerLink="/dashboard-admin" routerLinkActive="sidebar-active" class="sidebar-item" title="Panel Admin">
-          <fa-icon icon="users-cog" class="sidebar-item-icon" />
-          @if (!sidebarService.isCollapsed()) {
-            <span class="sidebar-item-label">Panel Admin</span>
-          }
-        </a>
-      }
-    }
   </div>
 </nav>

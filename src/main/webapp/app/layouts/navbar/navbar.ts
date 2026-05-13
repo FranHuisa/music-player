@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbCollapse } from '@ng-bootstrap/ng-bootstrap/collapse';
@@ -37,6 +38,7 @@ import ActiveMenuDirective from './active-menu.directive';
     FindLanguageFromKeyPipe,
     TranslateDirective,
     TranslateModule,
+    FormsModule,
   ],
 })
 export class Navbar implements OnInit {
@@ -45,28 +47,19 @@ export class Navbar implements OnInit {
   readonly languages = LANGUAGES;
   readonly openAPIEnabled = signal(false);
   readonly version: string;
+  readonly searchQuery = signal('');
 
   readonly account = inject(AccountService).account;
 
   readonly dashboardRoute = computed<string | null>(() => {
     const acc = this.account();
-    if (!acc) {
-      return null;
-    }
+    if (!acc) return null;
 
     const authorities = acc.authorities ?? [];
 
-    if (authorities.includes(Authority.ADMIN)) {
-      return '/dashboard-admin';
-    }
-
-    if (authorities.includes(Authority.EDITOR) || authorities.includes(Authority.ARTIST)) {
-      return '/dashboard-editor';
-    }
-
-    if (authorities.includes(Authority.USER)) {
-      return '/dashboard-user';
-    }
+    if (authorities.includes(Authority.ADMIN)) return '/dashboard-admin';
+    if (authorities.includes(Authority.EDITOR)) return '/dashboard-editor';
+    if (authorities.includes(Authority.USER)) return '/dashboard-user';
 
     return null;
   });
@@ -79,11 +72,7 @@ export class Navbar implements OnInit {
 
   constructor() {
     const { VERSION } = environment;
-    if (VERSION) {
-      this.version = VERSION.toLowerCase().startsWith('v') ? VERSION : `v${VERSION}`;
-    } else {
-      this.version = '';
-    }
+    this.version = VERSION ? (VERSION.toLowerCase().startsWith('v') ? VERSION : `v${VERSION}`) : '';
   }
 
   ngOnInit(): void {
@@ -100,6 +89,18 @@ export class Navbar implements OnInit {
 
   collapseNavbar(): void {
     this.isNavbarCollapsed.set(true);
+  }
+
+  onSearch(): void {
+    const q = this.searchQuery().trim();
+    if (!q) return;
+
+    this.router.navigate(['/search'], {
+      queryParams: { q },
+      queryParamsHandling: 'merge',
+      onSameUrlNavigation: 'reload',
+    });
+    this.collapseNavbar();
   }
 
   login(): void {

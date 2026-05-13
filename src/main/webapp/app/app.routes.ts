@@ -32,7 +32,7 @@ const routes: Routes = [
     loadComponent: () => import('./home/dashboard-editor/dashboard-editor').then(m => m.default),
     canActivate: [UserRouteAccessService],
     data: {
-      authorities: [Authority.ADMIN, Authority.EDITOR, Authority.ARTIST],
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
   },
 
@@ -45,7 +45,12 @@ const routes: Routes = [
     },
     title: 'Panel Administrador',
   },
-
+  {
+    path: 'search',
+    loadComponent: () => import('./layouts/search/search'),
+    runGuardsAndResolvers: 'always',
+    title: 'Buscar',
+  },
   {
     path: 'admin',
     data: {

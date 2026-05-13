@@ -1,10 +1,16 @@
 package com.musicplayer.service.impl;
 
 import com.musicplayer.domain.Artist;
+import com.musicplayer.domain.User;
 import com.musicplayer.repository.ArtistRepository;
+import com.musicplayer.repository.UserRepository;
 import com.musicplayer.service.ArtistService;
 import com.musicplayer.service.dto.ArtistDTO;
 import com.musicplayer.service.mapper.ArtistMapper;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +18,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * Service Implementation for managing {@link com.musicplayer.domain.Artist}.
@@ -23,11 +30,13 @@ public class ArtistServiceImpl implements ArtistService {
     private static final Logger LOG = LoggerFactory.getLogger(ArtistServiceImpl.class);
 
     private final ArtistRepository artistRepository;
+    private final UserRepository userRepository;
 
     private final ArtistMapper artistMapper;
 
-    public ArtistServiceImpl(ArtistRepository artistRepository, ArtistMapper artistMapper) {
+    public ArtistServiceImpl(ArtistRepository artistRepository, UserRepository userRepository, ArtistMapper artistMapper) {
         this.artistRepository = artistRepository;
+        this.userRepository = userRepository;
         this.artistMapper = artistMapper;
     }
 
@@ -80,5 +89,50 @@ public class ArtistServiceImpl implements ArtistService {
     public void delete(Long id) {
         LOG.debug("Request to delete Artist : {}", id);
         artistRepository.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<ArtistDTO> findByUserLogin(String login) {
+        LOG.debug("Request to get Artist by user login : {}", login);
+        return artistRepository.findByUserLogin(login).map(artistMapper::toDto);
+    }
+
+    @Override
+    public void assignUserToArtist(Long artistId, Long userId) {
+        Artist artist = artistRepository.findById(artistId).orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+
+        artist.setUser(user);
+
+        artistRepository.save(artist);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<ArtistDTO> findByName(String name, Pageable pageable) {
+        LOG.debug("Request to get Artists by name : {}", name);
+        return artistRepository.findByNameContainingIgnoreCase(name, pageable).map(artistMapper::toDto);
+    }
+
+    public ArtistDTO uploadImage(Long artistId, MultipartFile file) throws Exception {
+        Artist artist = artistRepository.findById(artistId).orElseThrow(() -> new RuntimeException("Artist not found"));
+
+        String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+        Path uploadPath = Paths.get("uploads/artists");
+
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+
+        artist.setImage("/uploads/artists/" + fileName);
+
+        artist = artistRepository.save(artist);
+
+        return artistMapper.toDto(artist);
     }
 }

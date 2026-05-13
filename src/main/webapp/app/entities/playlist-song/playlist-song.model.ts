@@ -8,7 +8,7 @@ export interface IPlaylistSong {
   position?: number | null;
   addedAt?: dayjs.Dayjs | null;
   playlist?: Pick<IPlaylist, 'id'> | null;
-  song?: Pick<ISong, 'id'> | null;
+  song?: ISong;
 }
 
 export type NewPlaylistSong = Omit<IPlaylistSong, 'id'> & { id: null };

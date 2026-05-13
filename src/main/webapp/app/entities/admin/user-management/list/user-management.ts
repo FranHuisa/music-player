@@ -4,7 +4,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
 import { combineLatest } from 'rxjs';
@@ -17,9 +16,9 @@ import { AlertError } from 'app/shared/alert/alert-error';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
 import { SortByDirective, SortDirective, SortService, SortState, sortStateSignal } from 'app/shared/sort';
-import { UserManagementDeleteDialog } from '../delete/user-management-delete-dialog';
 import { UserManagementService } from '../service/user-management.service';
 import { IUserManagement } from '../user-management.model';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'jhi-user-mgmt',
@@ -51,7 +50,6 @@ export class UserManagement implements OnInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly sortService = inject(SortService);
-  private readonly modalService = inject(NgbModal);
 
   ngOnInit(): void {
     this.handleNavigation();
@@ -66,12 +64,41 @@ export class UserManagement implements OnInit {
   }
 
   deleteUser(userManagement: IUserManagement): void {
-    const modalRef = this.modalService.open(UserManagementDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.userManagement = userManagement;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed.subscribe(reason => {
-      if (reason === 'deleted') {
-        this.loadAll();
+    Swal.fire({
+      title: '¿Eliminar usuario?',
+      text: `¿Seguro que quieres eliminar el usuario "${userManagement.login}"?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      color: '#ffffff',
+      background: '#0f172a',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.userService.delete(userManagement.login!).subscribe({
+          next: () => {
+            Swal.fire({
+              title: '¡Eliminado!',
+              text: `El usuario "${userManagement.login}" ha sido eliminado.`,
+              icon: 'success',
+              timer: 2000,
+              showConfirmButton: false,
+            }).then(() => this.loadAll());
+          },
+          error: () => {
+            Swal.fire({
+              title: 'Error',
+              text: 'No se pudo eliminar el usuario. Inténtalo de nuevo.',
+              icon: 'error',
+              confirmButtonColor: '#d33',
+              confirmButtonText: 'Aceptar',
+              color: '#ffffff',
+              background: '#0f172a',
+            });
+          },
+        });
       }
     });
   }

@@ -6,16 +6,21 @@
     <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #1db954, #189b45)">
       <fa-icon icon="list" />
     </div>
+
     <div class="entity-list-hero-info">
       <span class="entity-list-hero-type">Biblioteca</span>
+
       <h1>Playlists</h1>
-      <span class="entity-list-hero-count">{{ playlists().length }} playlists</span>
+
+      <span class="entity-list-hero-count"> {{ playlists().length }} playlists </span>
     </div>
   </div>
+
   <div class="entity-list-actions">
     <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
       <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
     </button>
+
     <a class="btn-icon-action" routerLink="/playlist/new" title="Nueva playlist" aria-label="Nueva playlist">
       <fa-icon icon="plus" />
     </a>
@@ -24,60 +29,94 @@
   @if (playlists().length === 0) {
     <div class="entity-list-empty">
       <fa-icon icon="list" class="entity-list-empty-icon" />
+
       <p>No hay playlists disponibles</p>
     </div>
   } @else {
     <div class="playlist-grid" id="entities">
       @for (playlist of playlists(); track trackId(playlist)) {
-        <div class="playlist-card" ngbDropdown data-cy="entityTable">
-          <div class="playlist-cover">
-            <fa-icon icon="music" />
-            <button class="playlist-card-play" (click)="$event.stopPropagation()" aria-label="Reproducir">
-              <fa-icon icon="play" />
-            </button>
-          </div>
+        <a [routerLink]="['/playlist', playlist.id, 'view']" class="playlist-card-link">
+          <div class="playlist-card" ngbDropdown data-cy="entityTable">
+            <div class="playlist-cover">
+              @if (playlist.coverImage) {
+                <img [src]="playlist.coverImage" alt="cover" />
+              } @else {
+                <fa-icon icon="music" />
+              }
 
-          <a [routerLink]="['/playlist', playlist.id, 'view']" class="playlist-name" style="text-decoration: none; display: block">
-            {{ playlist.name }}
-          </a>
-          @if (playlist.description) {
-            <p class="playlist-description">{{ playlist.description }}</p>
-          } @else {
-            <p class="playlist-description" style="color: var(--text-subdued)">Sin descripción</p>
-          }
-          <div class="playlist-meta">
-            <span class="playlist-badge" [class.public]="playlist.isPublic" [class.private]="!playlist.isPublic">
-              {{ playlist.isPublic ? 'Pública' : 'Privada' }}
-            </span>
-          </div>
-
-          <button class="playlist-card-more" ngbDropdownToggle [id]="'playlist-actions-' + playlist.id" aria-label="Más opciones">
-            •••
-          </button>
-          <ul ngbDropdownMenu [attr.aria-labelledby]="'playlist-actions-' + playlist.id">
-            <li>
-              <a class="dropdown-item" [routerLink]="['/playlist', playlist.id, 'view']">
-                <fa-icon icon="eye" [fixedWidth]="true" /> Ver
-              </a>
-            </li>
-            <li>
-              <a class="dropdown-item" [routerLink]="['/playlist', playlist.id, 'edit']">
-                <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
-              </a>
-            </li>
-            <li>
-              <hr class="dropdown-divider" />
-              <button class="dropdown-item text-danger" (click)="delete(playlist)">
-                <fa-icon icon="trash" [fixedWidth]="true" /> Eliminar
+              <button class="playlist-card-play" (click)="$event.preventDefault(); $event.stopPropagation()" aria-label="Reproducir">
+                <fa-icon icon="play" />
               </button>
-            </li>
-          </ul>
-        </div>
+            </div>
+
+            <div class="playlist-content">
+              <div class="playlist-name">
+                {{ playlist.name }}
+              </div>
+
+              @if (playlist.description) {
+                <p class="playlist-description">
+                  {{ playlist.description }}
+                </p>
+              } @else {
+                <p class="playlist-description empty">Sin descripción</p>
+              }
+
+              <div class="playlist-meta">
+                <span class="playlist-badge" [class.public]="playlist.isPublic" [class.private]="!playlist.isPublic">
+                  {{ playlist.isPublic ? 'Pública' : 'Privada' }}
+                </span>
+              </div>
+            </div>
+
+            <button
+              class="playlist-card-more"
+              ngbDropdownToggle
+              [id]="'playlist-actions-' + playlist.id"
+              aria-label="Más opciones"
+              (click)="$event.preventDefault(); $event.stopPropagation()"
+            >
+              •••
+            </button>
+
+            <ul ngbDropdownMenu [attr.aria-labelledby]="'playlist-actions-' + playlist.id" (click)="$event.stopPropagation()">
+              <li>
+                <a class="dropdown-item" [routerLink]="['/playlist', playlist.id, 'view']">
+                  <fa-icon icon="eye" [fixedWidth]="true" />
+                  Ver
+                </a>
+              </li>
+
+              <li>
+                <a class="dropdown-item" [routerLink]="['/playlist', playlist.id, 'edit']">
+                  <fa-icon icon="pencil-alt" [fixedWidth]="true" />
+                  Editar
+                </a>
+              </li>
+
+              <li>
+                <hr class="dropdown-divider" />
+
+                <button class="dropdown-item text-danger" (click)="delete(playlist)">
+                  <fa-icon icon="trash" [fixedWidth]="true" />
+                  Eliminar
+                </button>
+              </li>
+            </ul>
+          </div>
+        </a>
       }
     </div>
 
     <div class="entity-list-pagination">
-      <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      <jhi-item-count
+        [params]="{
+          page: page(),
+          totalItems: totalItems(),
+          itemsPerPage: itemsPerPage(),
+        }"
+      />
+
       <ngb-pagination
         [collectionSize]="totalItems()"
         [page]="page()"

@@ -14,9 +14,10 @@
         <span class="entity-list-hero-type">Música</span>
         <h1>Álbumes</h1>
       }
-      <span class="entity-list-hero-count">{{ visibleAlbums().length }} álbumes</span>
+      <span class="entity-list-hero-count">{{ filteredAlbums().length }} álbumes</span>
     </div>
   </div>
+
   <div class="entity-list-actions">
     <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
       <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
@@ -26,14 +27,8 @@
         <fa-icon icon="th-list" />
       </a>
     } @else {
-      <a
-        class="btn-icon-action"
-        [routerLink]="['/album']"
-        [queryParams]="{ upcoming: true }"
-        title="Próximos lanzamientos"
-        aria-label="Próximos lanzamientos"
-      >
-        <fa-icon icon="calendar-alt" />
+      <a class="btn-icon-action" [routerLink]="['/album/coming']" title="Próximos lanzamientos" aria-label="Próximos lanzamientos">
+        <fa-icon icon="calendar-alt"></fa-icon>
       </a>
     }
     <a
@@ -47,52 +42,96 @@
     </a>
   </div>
 
-  @if (visibleAlbums().length === 0) {
+  <!-- BUSCADOR -->
+  <div class="album-search">
+    <fa-icon icon="search" class="album-search-icon" />
+    <input
+      type="text"
+      class="album-search-input"
+      placeholder="Buscar álbum..."
+      [value]="searchTerm()"
+      (input)="searchTerm.set($any($event.target).value)"
+    />
+  </div>
+
+  @if (filteredAlbums().length === 0) {
     <div class="entity-list-empty">
       <fa-icon icon="compact-disc" class="entity-list-empty-icon" />
       <p>No hay álbumes disponibles</p>
     </div>
   } @else {
     <div class="album-grid" id="entities">
-      @for (album of visibleAlbums(); track trackId(album)) {
-        <div class="album-card" ngbDropdown data-cy="entityTable">
+      @for (album of filteredAlbums(); track trackId(album)) {
+        <div
+          class="album-card"
+          [class.album-inactive]="!album.active"
+          ngbDropdown
+          data-cy="entityTable"
+          [routerLink]="['/album', album.id, 'view']"
+        >
+          <!-- PORTADA -->
           <div class="album-cover">
-            <fa-icon icon="compact-disc" />
+            @if (album.coverImage) {
+              <img [src]="album.coverImage" alt="{{ album.title }}" />
+            } @else {
+              <fa-icon icon="compact-disc" />
+            }
             <button class="album-card-play" (click)="playAlbum(album); $event.stopPropagation()" aria-label="Reproducir álbum">
               <fa-icon icon="play" />
             </button>
           </div>
 
-          <a [routerLink]="['/album', album.id, 'view']" class="album-title" style="text-decoration: none; display: block">
-            {{ album.title }}
-          </a>
-          <div class="album-meta">
-            @if (album.releaseDate) {
-              <span>{{ album.releaseDate | formatMediumDate }}</span>
+          <!-- INFO -->
+          <div class="album-card-info">
+            <span class="album-title">{{ album.title }}</span>
+            @if (!album.active) {
+              <span class="album-hidden-badge">Oculto</span>
             }
-            @if (album.albumType) {
-              <span class="album-type-badge">{{ album.albumType }}</span>
-            }
-            @if (album.artist) {
-              <a [routerLink]="['/artist', album.artist.id, 'view']" style="color: var(--text-secondary); text-decoration: none">
-                Artista #{{ album.artist.id }}
-              </a>
-            }
+            <div class="album-meta">
+              @if (album.releaseDate) {
+                <span>{{ album.releaseDate | formatMediumDate }}</span>
+              }
+              @if (album.albumType) {
+                <span class="album-type-badge">{{ album.albumType }}</span>
+              }
+              @if (album.artist) {
+                <a [routerLink]="['/artist', album.artist.id, 'view']" class="album-artist-link" (click)="$event.stopPropagation()">
+                  Artista #{{ album.artist.id }}
+                </a>
+              }
+            </div>
           </div>
 
-          <button class="album-card-more" ngbDropdownToggle [id]="'album-actions-' + album.id" aria-label="Más opciones">•••</button>
+          <!-- MENU -->
+          <button
+            class="album-card-more"
+            ngbDropdownToggle
+            [id]="'album-actions-' + album.id"
+            aria-label="Más opciones"
+            (click)="$event.stopPropagation()"
+          >
+            •••
+          </button>
           <ul ngbDropdownMenu [attr.aria-labelledby]="'album-actions-' + album.id">
             <li>
-              <a class="dropdown-item" [routerLink]="['/album', album.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver </a>
+              <a class="dropdown-item" [routerLink]="['/album', album.id, 'view']" (click)="$event.stopPropagation()">
+                <fa-icon icon="eye" [fixedWidth]="true" /> Ver
+              </a>
+            </li>
+            <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']">
+              <button class="dropdown-item" (click)="toggleActive(album); $event.stopPropagation()">
+                <fa-icon [icon]="album.active ? 'eye-slash' : 'eye'" [fixedWidth]="true" />
+                {{ album.active ? 'Ocultar' : 'Publicar' }}
+              </button>
             </li>
             <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
-              <a class="dropdown-item" [routerLink]="['/album', album.id, 'edit']">
+              <a class="dropdown-item" [routerLink]="['/album', album.id, 'edit']" (click)="$event.stopPropagation()">
                 <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar
               </a>
             </li>
             <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
               <hr class="dropdown-divider" />
-              <button class="dropdown-item text-danger" (click)="delete(album)">
+              <button class="dropdown-item text-danger" (click)="delete(album); $event.stopPropagation()">
                 <fa-icon icon="trash" [fixedWidth]="true" /> Eliminar
               </button>
             </li>

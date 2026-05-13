@@ -27,6 +27,8 @@ springdoc:
 management:
   endpoints:
     web:
+      resources:
+        static-locations: file:./uploads/, classpath:/static/
       base-path: /management
       exposure:
         include:
@@ -227,3 +229,6 @@ jhipster:
 # ===================================================================
 
 # application:
+app:
+  upload:
+    dir: uploads

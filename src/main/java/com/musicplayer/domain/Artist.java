@@ -1,6 +1,7 @@
 package com.musicplayer.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.musicplayer.domain.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serial;
@@ -57,6 +58,23 @@ public class Artist implements Serializable {
     private Set<Song> songses = new HashSet<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    public User getUser() {
+        return this.user;
+    }
+
+    public Artist user(User user) {
+        this.setUser(user);
+        return this;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 
     public Long getId() {
         return this.id;
@@ -180,7 +198,8 @@ public class Artist implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -195,7 +214,8 @@ public class Artist implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -203,13 +223,13 @@ public class Artist implements Serializable {
     @Override
     public String toString() {
         return "Artist{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", bio='" + getBio() + "'" +
-            ", image='" + getImage() + "'" +
-            ", country='" + getCountry() + "'" +
-            ", verified='" + getVerified() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", name='" + getName() + "'" +
+                ", bio='" + getBio() + "'" +
+                ", image='" + getImage() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", verified='" + getVerified() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                "}";
     }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, effect } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
@@ -29,29 +29,29 @@ export default class DashboardEditorComponent implements OnInit {
   private readonly albumService = inject(AlbumService);
   private readonly songService = inject(SongService);
 
-  ngOnInit(): void {
-    this.loadOverview();
+  constructor() {
+    effect(() => {
+      const albums = this.albumService.myAlbums();
+
+      if (this.albumService.myAlbumsResource.isLoading()) return;
+
+      const today = dayjs().startOf('day');
+
+      this.albumsCount.set(albums.length);
+
+      const upcoming = albums.filter(album => album.releaseDate && dayjs(album.releaseDate).isAfter(today));
+
+      this.upcomingCount.set(upcoming.length);
+      this.upcomingAlbums.set(upcoming.slice(0, 5));
+    });
   }
 
-  private loadOverview(): void {
-    this.isLoading.set(true);
-    this.albumService.query({ sort: 'releaseDate,asc', size: 200 }).subscribe({
-      next: res => {
-        const albums = res.body ?? [];
-        const today = dayjs().startOf('day');
-        const upcoming = albums.filter(album => album.releaseDate && album.releaseDate.isAfter(today));
-        this.albumsCount.set(albums.length);
-        this.upcomingCount.set(upcoming.length);
-        this.upcomingAlbums.set(upcoming.slice(0, 5));
-      },
-      error: () => {
-        this.albumsCount.set(0);
-        this.upcomingCount.set(0);
-        this.upcomingAlbums.set([]);
-      },
-    });
+  ngOnInit(): void {
+    this.loadSongs();
+  }
 
-    this.songService.query({ sort: 'createdAt,desc', size: 200 }).subscribe({
+  private loadSongs(): void {
+    this.songService.queryMySongs({ sort: 'createdAt,desc', size: 200 }).subscribe({
       next: res => {
         const songs = res.body ?? [];
         this.songsCount.set(songs.length);

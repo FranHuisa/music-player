@@ -1,7 +1,11 @@
 package com.musicplayer.repository;
 
 import com.musicplayer.domain.Artist;
+import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 /**
@@ -9,4 +13,9 @@ import org.springframework.stereotype.Repository;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface ArtistRepository extends JpaRepository<Artist, Long> {}
+public interface ArtistRepository extends JpaRepository<Artist, Long> {
+    @Query("SELECT a FROM Artist a WHERE a.user.login = :login")
+    Optional<Artist> findByUserLogin(@Param("login") String login);
+
+    Page<Artist> findByNameContainingIgnoreCase(String name, Pageable pageable);
+}

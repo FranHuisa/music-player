@@ -2,6 +2,7 @@ import { HttpHeaders } from '@angular/common/http';
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -23,6 +24,7 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { SongDeleteDialog } from '../delete/song-delete-dialog';
 import { SongService } from '../service/song.service';
 import { ISong } from '../song.model';
+import { AccountService } from 'app/core/auth/account.service';
 
 @Component({
   selector: 'jhi-song',
@@ -50,7 +52,9 @@ import { ISong } from '../song.model';
 })
 export class Song implements OnInit {
   subscription: Subscription | null = null;
+
   readonly songs = signal<ISong[]>([]);
+  readonly searchTerm = signal('');
 
   sortState = sortStateSignal({});
 
@@ -58,24 +62,28 @@ export class Song implements OnInit {
   readonly totalItems = signal(0);
   readonly page = signal(1);
 
+  protected readonly player = inject(PlayerService);
   readonly router = inject(Router);
   protected readonly songService = inject(SongService);
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly isLoading = this.songService.songsResource.isLoading;
+  readonly isLoading = this.songService.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected dataUtils = inject(DataUtils);
   protected modalService = inject(NgbModal);
+  protected readonly accountService = inject(AccountService);
 
   constructor() {
     effect(() => {
-      const headers = this.songService.songsResource.headers();
+      const songs = this.songService.songs();
+      if (songs.length > 0) console.log('PRIMERA SONG coverImage:', songs[0].coverImage);
+      this.songs.set(this.fillComponentAttributesFromResponseBody([...songs]));
+    });
+
+    effect(() => {
+      const headers = this.songService.lastHeaders();
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
-    });
-    effect(() => {
-      this.songs.set(this.fillComponentAttributesFromResponseBody([...this.songService.songs()]));
     });
   }
 
@@ -144,14 +152,41 @@ export class Song implements OnInit {
   }
 
   protected queryBackend(): void {
-    const pageToLoad: number = this.page();
-    const queryObject: any = {
-      page: pageToLoad - 1,
-      size: this.itemsPerPage(),
-      eagerload: true,
-      sort: this.sortService.buildSortParam(this.sortState()),
-    };
-    this.songService.songsParams.set(queryObject);
+    this.accountService.identity().subscribe(account => {
+      if (!account) return;
+
+      const isAdmin = account.authorities?.includes('ROLE_ADMIN') ?? false;
+      const isEditor = account.authorities?.includes('ROLE_EDITOR') ?? false;
+
+      this.songService.loadSongs(
+        {
+          page: this.page() - 1,
+          size: this.itemsPerPage(),
+          eagerload: true,
+          sort: this.sortService.buildSortParam(this.sortState()),
+        },
+        isAdmin,
+        isEditor,
+      );
+    });
+  }
+
+  playSong(song: ISong): void {
+    this.player.playSong(song, this.songs());
+  }
+
+  toggleActive(song: ISong): void {
+    this.songService.toggleActive(song.id).subscribe({
+      next: updated => {
+        this.songs.update(list => list.map(s => (s.id === updated.id ? updated : s)));
+      },
+    });
+  }
+
+  filteredSongs(): ISong[] {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.songs();
+    return this.songs().filter(s => (s.title ?? '').toLowerCase().includes(term));
   }
 
   protected handleNavigation(page: number, sortState: SortState): void {
@@ -160,7 +195,6 @@ export class Song implements OnInit {
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(sortState),
     };
-
     this.router.navigate(['./'], {
       relativeTo: this.activatedRoute,
       queryParams: queryParamsObj,

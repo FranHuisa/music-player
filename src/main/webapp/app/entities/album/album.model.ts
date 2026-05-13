@@ -8,10 +8,11 @@ export interface IAlbum {
   id: number;
   title?: string | null;
   coverImage?: string | null;
-  releaseDate?: dayjs.Dayjs | null;
+  releaseDate?: string | null;
   albumType?: keyof typeof AlbumType | null;
   artist?: Pick<IArtist, 'id'> | null;
   genre?: Pick<IGenre, 'id'> | null;
+  active?: boolean;
 }
 
 export type NewAlbum = Omit<IAlbum, 'id'> & { id: null };

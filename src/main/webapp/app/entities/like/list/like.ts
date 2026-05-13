@@ -1,6 +1,7 @@
 import { Component, OnInit, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
+import { DatePipe } from '@angular/common';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
@@ -17,10 +18,15 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { LikeDeleteDialog } from '../delete/like-delete-dialog';
 import { ILike } from '../like.model';
 import { LikeService } from '../service/like.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
+import { ISong } from 'app/entities/song/song.model';
+import { AddToPlaylistService } from 'app/entities/playlist/service/add-to-playlists.service';
+import { ApplicationConfigService } from 'app/core/config/application-config.service';
 
 @Component({
   selector: 'jhi-like',
   templateUrl: './like.html',
+  styleUrls: ['./like.scss'],
   imports: [
     RouterLink,
     FormsModule,
@@ -35,6 +41,7 @@ import { LikeService } from '../service/like.service';
     TranslateDirective,
     TranslateModule,
     FormatMediumDatetimePipe,
+    DatePipe,
   ],
 })
 export class Like implements OnInit {
@@ -48,9 +55,12 @@ export class Like implements OnInit {
   // eslint-disable-next-line @typescript-eslint/member-ordering
   readonly isLoading = this.likeService.likesResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
+  protected readonly appConfig = inject(ApplicationConfigService);
+
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
-
+  protected readonly player = inject(PlayerService);
+  protected readonly addToPlaylistService = inject(AddToPlaylistService);
   constructor() {
     effect(() => {
       this.likes.set(this.fillComponentAttributesFromResponseBody([...this.likeService.likes()]));
@@ -58,7 +68,10 @@ export class Like implements OnInit {
   }
 
   trackId = (item: ILike): number => this.likeService.getLikeIdentifier(item);
-
+  playSong(like: ILike): void {
+    if (!like.song) return;
+    this.player.playSong(like.song as ISong, this.likes() as ISong[]);
+  }
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
@@ -83,7 +96,13 @@ export class Like implements OnInit {
       )
       .subscribe();
   }
-
+  getCoverUrl(song: ISong | null | undefined): string {
+    if (!song?.coverImage) return '';
+    if (song.coverImage.startsWith('http')) return song.coverImage;
+    const path = song.coverImage.replace(/^\/uploads\//, '');
+    const base = window.location.port === '4200' ? 'http://localhost:8080' : window.location.origin;
+    return `${base}/uploads/${path}`;
+  }
   load(): void {
     this.queryBackend();
   }
@@ -95,7 +114,10 @@ export class Like implements OnInit {
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
   }
-
+  openAddToPlaylist(like: ILike): void {
+    if (!like.song) return;
+    this.addToPlaylistService.openDialog(like.song.id);
+  }
   protected refineData(data: ILike[]): ILike[] {
     const { predicate, order } = this.sortState();
     return predicate && order ? data.sort(this.sortService.startSort({ predicate, order })) : data;

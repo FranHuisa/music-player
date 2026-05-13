@@ -6,14 +6,16 @@
     <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #450af5, #e8115b)">
       <fa-icon icon="heart" />
     </div>
+
     <div class="entity-list-hero-info">
       <span class="entity-list-hero-type">Tu Biblioteca</span>
       <h1>Me gusta</h1>
       <span class="entity-list-hero-count">{{ likes().length }} canciones</span>
     </div>
   </div>
+
   <div class="entity-list-actions">
-    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar">
       <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
     </button>
   </div>
@@ -26,35 +28,40 @@
   } @else {
     <div id="entities">
       @for (like of likes(); track trackId(like)) {
-        <div class="like-row" ngbDropdown data-cy="entityTable">
+        <div class="like-row">
           <div class="like-row-icon">
-            <fa-icon icon="heart" />
+            @if (like.song?.coverImage) {
+              <img [src]="getCoverUrl(like.song)" class="like-row-cover" [alt]="like.song?.title ?? ''" />
+            } @else {
+              <fa-icon icon="music"></fa-icon>
+            }
           </div>
 
           <div class="like-row-info">
             @if (like.song) {
-              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song" style="text-decoration: none">
-                Canción #{{ like.song.id }}
+              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song">
+                {{ like.song.title }}
               </a>
             } @else {
               <span class="like-row-song">Canción desconocida</span>
             }
-            @if (like.createdAt) {
-              <span class="like-row-date">Guardada el {{ like.createdAt | formatMediumDatetime }}</span>
-            }
+
+            <span class="like-row-artist">
+              {{ like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
+            </span>
           </div>
 
-          <button class="like-row-more" ngbDropdownToggle [id]="'like-actions-' + like.id" aria-label="Más opciones">•••</button>
-          <ul ngbDropdownMenu [attr.aria-labelledby]="'like-actions-' + like.id">
-            <li>
-              <a class="dropdown-item" [routerLink]="['/like', like.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver </a>
-            </li>
-            <li>
-              <button class="dropdown-item text-danger" (click)="delete(like)">
-                <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
-              </button>
-            </li>
-          </ul>
+          <button class="like-row-play" (click)="playSong(like)">
+            <fa-icon icon="play" />
+          </button>
+
+          <button class="like-row-btn" (click)="openAddToPlaylist(like)">
+            <fa-icon icon="plus"></fa-icon>
+          </button>
+
+          <button class="like-row-btn danger" (click)="delete(like)">
+            <fa-icon icon="trash"></fa-icon>
+          </button>
         </div>
       }
     </div>
