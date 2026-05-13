@@ -23,19 +23,4 @@
       <span>Reproducidas recientemente</span>
     </a>
   </section>
-
-  <section class="user-section">
-    <div class="user-section-head">
-      <h2>Explora por estilo</h2>
-      <a routerLink="/genre" class="user-section-link">Más géneros</a>
-    </div>
-    <div class="user-style-row">
-      @for (style of styles; track style.label; let idx = $index) {
-        <a [routerLink]="['/genre']" class="user-style-chip" [class]="'genre-card-color-' + idx">
-          <fa-icon [icon]="style.icon" />
-          <span>{{ style.label }}</span>
-        </a>
-      }
-    </div>
-  </section>
 </div>
