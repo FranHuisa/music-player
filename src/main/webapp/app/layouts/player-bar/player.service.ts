@@ -1,9 +1,14 @@
-import { Injectable, signal, computed, effect } from '@angular/core';
+import { Injectable, signal, computed, effect, inject } from '@angular/core';
 import { ISong } from 'app/entities/song/song.model';
+import { PlayService } from 'app/entities/play/service/play.service';
+import { AccountService } from 'app/core/auth/account.service';
+import dayjs from 'dayjs/esm';
 
 @Injectable({ providedIn: 'root' })
 export class PlayerService {
   private audio = new Audio();
+  private readonly playService = inject(PlayService);
+  private readonly accountService = inject(AccountService);
 
   readonly currentSong = signal<ISong | null>(null);
   readonly isPlaying = signal(false);
@@ -23,6 +28,9 @@ export class PlayerService {
 
   private queue: ISong[] = [];
   private queueIndex = 0;
+
+  private activePlayId: number | null = null;
+  private songStartTime: number | null = null;
 
   constructor() {
     effect(() => {
@@ -104,7 +112,9 @@ export class PlayerService {
   toggleRepeat(): void {
     this.isRepeat.update(v => !v);
   }
+
   reset(): void {
+    this.saveCurrentPlay();
     this.audio.pause();
     this.audio.src = '';
     this.currentSong.set(null);
@@ -115,12 +125,56 @@ export class PlayerService {
     this.queue = [];
     this.queueIndex = 0;
   }
+
   private loadAndPlay(song: ISong): void {
-    console.log('SONG COMPLETA:', JSON.stringify(song));
+    this.saveCurrentPlay();
+
     this.currentSong.set(song);
-    const fileUrl = song.fileUrl ?? '';
-    this.audio.src = fileUrl.startsWith('/') ? fileUrl : `/api/upload/stream/${encodeURIComponent(fileUrl)}`;
+    this.audio.src = (song.fileUrl ?? '').startsWith('/') ? song.fileUrl! : `/api/upload/stream/${encodeURIComponent(song.fileUrl ?? '')}`;
     this.audio.load();
     this.audio.play().catch(console.error);
+
+    this.registerNewPlay(song);
+  }
+
+  private registerNewPlay(song: ISong): void {
+    if (!this.accountService.account()) return;
+
+    this.songStartTime = Date.now();
+
+    this.playService
+      .create({
+        id: null,
+        playedAt: dayjs(),
+        durationListened: 0,
+        song: { id: song.id },
+      })
+      .subscribe({
+        next: play => {
+          this.activePlayId = play.id;
+        },
+        error: err => console.error('Error registrando play:', err),
+      });
+  }
+
+  private saveCurrentPlay(): void {
+    if (!this.activePlayId || !this.songStartTime) return;
+
+    const seconds = Math.floor((Date.now() - this.songStartTime) / 1000);
+
+    this.playService
+      .partialUpdate({
+        id: this.activePlayId,
+        durationListened: seconds,
+      })
+      .subscribe({
+        error: err => console.error('Error guardando duración:', err),
+      });
+
+    this.activePlayId = null;
+    this.songStartTime = null;
+  }
+  pause(): void {
+    this.audio.pause();
   }
 }

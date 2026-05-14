@@ -45,15 +45,6 @@ export default class DashboardUserComponent {
     },
   ];
 
-  readonly styles: { label: string; icon: string }[] = [
-    { label: 'Pop', icon: 'music' },
-    { label: 'Rock', icon: 'guitar' },
-    { label: 'Electrónica', icon: 'fire' },
-    { label: 'Indie', icon: 'compact-disc' },
-    { label: 'Latina', icon: 'fire' },
-    { label: 'Hip-Hop', icon: 'music' },
-  ];
-
   get greeting(): string {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) return 'Buenos días';

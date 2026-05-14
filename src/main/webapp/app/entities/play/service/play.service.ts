@@ -2,7 +2,7 @@ import { HttpClient, HttpResponse, httpResource } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 
 import dayjs from 'dayjs/esm';
-import { Observable, map } from 'rxjs';
+import { Observable, catchError, map, of } from 'rxjs';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
 import { createRequestOption } from 'app/core/request/request-util';
@@ -128,5 +128,11 @@ export class PlayService extends PlaysService {
 
   protected convertResponseArrayFromServer(res: RestPlay[]): IPlay[] {
     return res.map(item => this.convertValueFromServer(item));
+  }
+  findLast(): Observable<IPlay | null> {
+    return this.http.get<RestPlay | null>(`${this.resourceUrl}/last`).pipe(
+      map(res => (res ? this.convertResponseFromServer(res) : null)),
+      catchError(() => of(null)),
+    );
   }
 }
