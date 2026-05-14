@@ -8,7 +8,7 @@ export interface IPlay {
   playedAt?: dayjs.Dayjs | null;
   durationListened?: number | null;
   user?: Pick<IUser, 'id'> | null;
-  song?: Pick<ISong, 'id'> | null;
+  song?: Pick<ISong, 'id' | 'title' | 'coverImage'> | null;
 }
 
 export type NewPlay = Omit<IPlay, 'id'> & { id: null };

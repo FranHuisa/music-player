@@ -135,4 +135,10 @@ export class PlayService extends PlaysService {
       catchError(() => of(null)),
     );
   }
+  findRecent(): Observable<IPlay[]> {
+    return this.http.get<RestPlay[]>(`${this.resourceUrl}/recent`).pipe(
+      map(res => this.convertResponseArrayFromServer(res)),
+      catchError(() => of([])),
+    );
+  }
 }

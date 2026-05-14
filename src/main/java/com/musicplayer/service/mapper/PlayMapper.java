@@ -25,5 +25,7 @@ public interface PlayMapper extends EntityMapper<PlayDTO, Play> {
     @Named("songId")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
+    @Mapping(target = "title", source = "title")
+    @Mapping(target = "coverImage", source = "coverImage")
     SongDTO toDtoSongId(Song song);
 }

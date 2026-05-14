@@ -80,8 +80,7 @@ export default class Login implements OnInit, AfterViewInit {
       )
       .subscribe(song => {
         if (song) {
-          this.playerService.playSong(song, [song]);
-          this.playerService.pause();
+          this.playerService.loadOnly(song);
         }
       });
   }

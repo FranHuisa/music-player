@@ -156,7 +156,11 @@ export class PlayerService {
         error: err => console.error('Error registrando play:', err),
       });
   }
-
+  loadOnly(song: ISong): void {
+    this.currentSong.set(song);
+    this.audio.src = (song.fileUrl ?? '').startsWith('/') ? song.fileUrl! : `/api/upload/stream/${encodeURIComponent(song.fileUrl ?? '')}`;
+    this.audio.load();
+  }
   private saveCurrentPlay(): void {
     if (!this.activePlayId || !this.songStartTime) return;
 

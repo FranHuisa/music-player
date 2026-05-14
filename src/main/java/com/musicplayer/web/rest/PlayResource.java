@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import tech.jhipster.web.util.HeaderUtil;
 import tech.jhipster.web.util.ResponseUtil;
@@ -199,14 +200,24 @@ public class PlayResource {
             .build();
     }
 
+    @GetMapping("/recent")
+    @Transactional(readOnly = true)
+    public List<PlayDTO> getRecentPlays() {
+        String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
+            new BadRequestAlertException("No authenticated user", ENTITY_NAME, "nologin")
+        );
+        return playRepository.findTop5WithSongByUserLogin(login).stream().map(playMapper::toDto).toList();
+    }
+
     @GetMapping("/last")
+    @Transactional(readOnly = true)
     public ResponseEntity<PlayDTO> getLastPlay() {
         String login = SecurityUtils.getCurrentUserLogin().orElseThrow(() ->
             new BadRequestAlertException("No authenticated user", ENTITY_NAME, "nologin")
         );
 
         return playRepository
-            .findLastByUserLogin(login)
+            .findLastWithSongByUserLogin(login)
             .map(playMapper::toDto)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.noContent().build());

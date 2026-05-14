@@ -1,8 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-
 import { AccountService } from 'app/core/auth/account.service';
+import { PlayService } from 'app/entities/play/service/play.service';
+import { PlaylistService } from 'app/entities/playlist/service/playlist.service';
+import { IPlay } from 'app/entities/play/play.model';
+import { IPlaylist } from 'app/entities/playlist/playlist.model';
 
 @Component({
   standalone: true,
@@ -11,39 +14,26 @@ import { AccountService } from 'app/core/auth/account.service';
   templateUrl: './dashboard-user.html',
   styleUrls: ['./dashboard-user.scss'],
 })
-export default class DashboardUserComponent {
+export default class DashboardUserComponent implements OnInit {
   readonly account = inject(AccountService).account;
+  private readonly playService = inject(PlayService);
+  private readonly playlistService = inject(PlaylistService);
 
-  readonly featuredMixes = [
-    {
-      title: 'Mix del día',
-      subtitle: 'Una selección que se ajusta a lo que escuchas',
-      eyebrow: 'Diario',
-      gradient: 'linear-gradient(135deg, #450af5 0%, #1db954 100%)',
-      route: ['/playlist'],
-    },
-    {
-      title: 'Descubrimiento semanal',
-      subtitle: 'Canciones nuevas elegidas para ti cada semana',
-      eyebrow: 'Cada lunes',
-      gradient: 'linear-gradient(135deg, #e8115b 0%, #f59b23 100%)',
-      route: ['/song'],
-    },
-    {
-      title: 'Lanzamientos de la semana',
-      subtitle: 'Lo más reciente de los artistas de Streamify',
-      eyebrow: 'Nuevo',
-      gradient: 'linear-gradient(135deg, #0d4ea6 0%, #5179c8 100%)',
-      route: ['/album'],
-    },
-    {
-      title: 'Tus favoritas',
-      subtitle: 'Las canciones a las que diste me gusta',
-      eyebrow: 'Tu biblioteca',
-      gradient: 'linear-gradient(135deg, #8d67ab 0%, #6c4a8a 100%)',
-      route: ['/like'],
-    },
-  ];
+  readonly recentPlays = signal<IPlay[]>([]);
+  readonly recentPlaylists = signal<IPlaylist[]>([]);
+
+  ngOnInit(): void {
+    this.playService.findRecent().subscribe(plays => this.recentPlays.set(plays));
+
+    this.playlistService.query({ size: 4, sort: 'createdAt,desc' }).subscribe(res => {
+      this.recentPlaylists.set(res.body ?? []);
+    });
+  }
+
+  getCoverUrl(url?: string | null): string {
+    if (!url) return '';
+    return url.startsWith('http') ? url : 'http://localhost:8080' + url;
+  }
 
   get greeting(): string {
     const hour = new Date().getHours();

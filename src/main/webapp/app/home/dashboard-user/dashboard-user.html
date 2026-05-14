@@ -5,7 +5,7 @@
     <div class="user-hero-greeting">
       <span class="user-hero-eyebrow">Tu música, tu momento</span>
       <h1>{{ greeting }}{{ acc?.firstName ? ', ' + acc!.firstName : '' }}</h1>
-      <p>Sigue donde lo dejaste o descubre algo nuevo en Streamify.</p>
+      <p>Sigue donde lo dejaste o descubre algo nuevo en Wisafy.</p>
     </div>
   </header>
 
@@ -15,8 +15,56 @@
       <span>Canciones que te gustan</span>
     </a>
     <a routerLink="/playlist" class="user-quick-card">
-      <div class="user-quick-icon" style="background: linear-gradient(135deg, #1db954, #189b45)"><fa-icon icon="list" /></div>
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #1db954, #189b45)">
+        <fa-icon icon="list" />
+      </div>
       <span>Tus playlists</span>
     </a>
   </section>
+
+  @if (recentPlays().length > 0) {
+    <section class="user-section">
+      <div class="user-section-head">
+        <h2>Escuchado recientemente</h2>
+        <a routerLink="/song" class="user-section-link">Ver todo</a>
+      </div>
+      <div class="user-recent-grid">
+        @for (play of recentPlays(); track play.id) {
+          <div class="user-recent-card">
+            @if (play.song?.coverImage) {
+              <img [src]="getCoverUrl(play.song!.coverImage)" class="user-recent-cover" alt="cover" />
+            } @else {
+              <div class="user-recent-cover user-recent-cover--empty">
+                <fa-icon icon="music" />
+              </div>
+            }
+            <span class="user-recent-title">{{ play.song?.title ?? '—' }}</span>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  @if (recentPlaylists().length > 0) {
+    <section class="user-section">
+      <div class="user-section-head">
+        <h2>Tus playlists</h2>
+        <a routerLink="/playlist" class="user-section-link">Ver todas</a>
+      </div>
+      <div class="user-recent-grid">
+        @for (pl of recentPlaylists(); track pl.id) {
+          <a [routerLink]="['/playlist', pl.id, 'view']" class="user-recent-card">
+            @if (pl.coverImage) {
+              <img [src]="getCoverUrl(pl.coverImage)" class="user-recent-cover" alt="cover" />
+            } @else {
+              <div class="user-recent-cover user-recent-cover--empty">
+                <fa-icon icon="list" />
+              </div>
+            }
+            <span class="user-recent-title">{{ pl.name }}</span>
+          </a>
+        }
+      </div>
+    </section>
+  }
 </div>
