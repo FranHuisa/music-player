@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "skills": {
+    "debugging-strategies": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/developer-essentials/skills/debugging-strategies/SKILL.md",
+      "computedHash": "d7d8542d2205ebdb547d14dab24f467e334f73cfb30c4458888f5431713ca82d"
+    },
+    "find-bugs": {
+      "source": "getsentry/skills",
+      "sourceType": "github",
+      "skillPath": "skills/find-bugs/SKILL.md",
+      "computedHash": "58b6a1bdc071068e031e6bb7e48a3ece07ba427b117e3bd50858a62c217e397c"
+    },
+    "parallel-debugging": {
+      "source": "wshobson/agents",
+      "sourceType": "github",
+      "skillPath": "plugins/agent-teams/skills/parallel-debugging/SKILL.md",
+      "computedHash": "f50fe7c87e4379f1f975dc2417952ae9cda0e2ebc09e4e69d6be85c38f4f0af1"
+    },
+    "sentry-backend-bugs": {
+      "source": "getsentry/sentry",
+      "sourceType": "github",
+      "skillPath": ".agents/skills/sentry-backend-bugs/SKILL.md",
+      "computedHash": "d883b80727dd9e7b3caa3fe4ab1cba57d6220613a286543ea0189c9139a5a3f2"
+    },
+    "test-first-bugs": {
+      "source": "jamditis/claude-skills-journalism",
+      "sourceType": "github",
+      "skillPath": "dev-toolkit/skills/test-first-bugs/SKILL.md",
+      "computedHash": "48c5c642169289e48045ef1dbba900d7a9fa00df0e3ca4fc5f44d81c00196be9"
+    },
+    "vue-debug-guides": {
+      "source": "hyf0/vue-skills",
+      "sourceType": "github",
+      "skillPath": "skills/vue-debug-guides/SKILL.md",
+      "computedHash": "58bb2ad9e92dce0c15b42acc65aeec1dd93bc36f9db96ab248e52b1d22945472"
+    }
+  }
+}

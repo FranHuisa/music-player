@@ -1,3 +1,119 @@
+# Portada
+
+**MusicPlayer: plataforma web de gestión y reproducción musical**
+
+| | |
+|---|---|
+| **Título** | MusicPlayer: plataforma web de gestión y reproducción musical |
+| **Autores** | Francisco Huisa y Giovanni Alejandro |
+| **Ciclo** | Desarrollo de Aplicaciones Web |
+| **Centro** | IES Isidra de Guzmán |
+| **Tutor** | Borja Bergua |
+| **Fecha** | 12 de mayo de 2026 |
+
+---
+
+## Resumen
+
+MusicPlayer es una plataforma web de gestión y reproducción musical desarrollada como Trabajo de Fin de Grado del ciclo de Desarrollo de Aplicaciones Web. El sistema permite a los usuarios escuchar música, gestionar listas de reproducción, marcar canciones como favoritas y consultar letras en tiempo real. La arquitectura se basa en JHipster 9.0.0, que integra un backend Spring Boot 4.0.3 con API REST, persistencia JPA versionada mediante Liquibase y conversión entidad-DTO con MapStruct, y un frontend Angular 21 en modo standalone. La seguridad se gestiona con JSON Web Tokens firmados con HS512 y control de acceso por cuatro roles diferenciados (ROLE_ADMIN, ROLE_USER, ROLE_EDITOR y ROLE_ARTIST). El sistema incluye un módulo de subida y streaming de ficheros de audio con soporte de rangos HTTP (RFC 7233) y protección contra ataques de path traversal. La gestión del catálogo musical abarca artistas, álbumes, géneros, canciones, playlists, historial de reproducciones y favoritos. El presente documento describe el análisis de requisitos, el diseño arquitectónico, la implementación por capas, las decisiones técnicas adoptadas, los problemas encontrados con sus soluciones y las líneas de trabajo futuro para evolucionar el prototipo a una plataforma de streaming productiva.
+
+**Palabras clave:** MusicPlayer, Angular, Spring Boot, JHipster, JWT, Liquibase.
+
+---
+
+## Abstract
+
+MusicPlayer is a web-based music management and playback platform developed as a final-year project for the Web Application Development programme. The system enables users to listen to music, manage playlists, mark favourite songs and retrieve lyrics in real time. The architecture is based on JHipster 9.0.0, combining a Spring Boot 4.0.3 backend with a REST API, Liquibase-versioned JPA persistence and MapStruct entity-DTO mapping, together with an Angular 21 standalone frontend. Security is handled via JSON Web Tokens signed with HS512 and role-based access control using four roles (ROLE_ADMIN, ROLE_USER, ROLE_EDITOR and ROLE_ARTIST). The system includes a file upload and audio streaming module with HTTP Range support (RFC 7233) and path traversal protection. The music catalogue covers artists, albums, genres, songs, playlists, play history and likes. This document describes the requirements analysis, architectural design, layered implementation, technical decisions, problems encountered with their solutions, and future work to evolve the prototype into a production-ready streaming platform.
+
+**Keywords:** MusicPlayer, Angular, Spring Boot, JHipster, JWT, Liquibase.
+
+---
+
+## Índice general
+
+1. [Introducción](#1-introducción)
+   - 1.1 Descripción del proyecto
+   - 1.2 Objetivos
+   - 1.3 Alcance
+2. [Arquitectura del sistema](#2-arquitectura-del-sistema)
+   - 2.1 Visión general
+   - 2.2 Framework base: JHipster 9.0.0
+   - 2.3 Capa frontend
+   - 2.4 Capa backend
+   - 2.5 Capa de datos
+3. [Capa backend](#3-capa-backend)
+   - 3.1 API REST
+   - 3.2 Modelo de dominio
+   - 3.3 Capa de servicio y patrón DTO
+   - 3.4 Persistencia y migraciones Liquibase
+   - 3.5 Seguridad del backend
+   - 3.6 Manejo de errores
+   - 3.7 Servicio de correo
+   - 3.8 Perfiles de despliegue
+   - 3.9 Monitorización y logging
+   - 3.10 Patrón de propiedad en la capa de servicio
+   - 3.11 Sistema de subida y streaming de ficheros
+   - 3.12 Repositorios personalizados y consultas JPQL
+   - 3.13 Servicio de búsqueda y filtrado
+   - 3.14 Control de acceso por rol en endpoints REST
+4. [Tecnologías del frontend](#4-tecnologías-del-frontend)
+   - 4.1 Angular 21
+   - 4.2 Bootstrap 5 + SCSS
+   - 4.3 Font Awesome 7
+   - 4.4 RxJS 7
+   - 4.5 ngx-translate
+5. [Diseño UI/UX](#5-diseño-uiux)
+   - 5.1 Tema oscuro estilo Spotify
+   - 5.2 Dashboards diferenciados por rol
+   - 5.3 Barra lateral (Sidebar)
+   - 5.4 Barra del reproductor (Player Bar)
+   - 5.5 Panel de letras
+6. [Seguridad del frontend](#6-seguridad-del-frontend)
+   - 6.1 Autenticación JWT
+   - 6.2 Guards de rutas
+   - 6.3 Directivas de autorización por rol
+7. [Integración de la API de letras](#7-integración-de-la-api-de-letras)
+   - 7.1 API seleccionada: lyrics.ovh
+   - 7.2 Implementación
+8. [Problemas encontrados y soluciones](#8-problemas-encontrados-y-soluciones)
+   - 8.1 Integración de roles personalizados
+   - 8.2 Diseño responsive de la sidebar y el player
+   - 8.3 Estado del reproductor sin backend de audio
+   - 8.4 Carga de relaciones ManyToMany en JPA
+   - 8.5 Streaming de audio y soporte de rangos HTTP
+   - 8.6 Colisión de nombres de fichero en subidas concurrentes
+   - 8.7 Vulnerabilidad de path traversal en el endpoint de streaming
+   - 8.8 Orden de changelogs en master.xml de Liquibase
+   - 8.9 Configuración del secreto JWT mediante variable de entorno
+   - 8.10 Endpoint raíz GET /api/albums retornaba 405 Method Not Allowed
+9. [Conclusiones y trabajo futuro](#9-conclusiones-y-trabajo-futuro)
+   - 9.1 Conclusiones
+   - 9.2 Trabajo futuro
+10. [Bibliografía](#bibliografía)
+- [Anexo: Glosario de términos técnicos](#anexo-glosario-de-términos-técnicos)
+
+---
+
+## Tabla de abreviaturas
+
+| Acrónimo | Significado |
+|----------|-------------|
+| AOP | Aspect-Oriented Programming; programación orientada a aspectos. |
+| API | Application Programming Interface; interfaz de programación de aplicaciones. |
+| CORS | Cross-Origin Resource Sharing; intercambio de recursos de origen cruzado. |
+| CRUD | Create, Read, Update, Delete; operaciones básicas sobre datos persistidos. |
+| DTO | Data Transfer Object; objeto de transferencia de datos entre capas. |
+| E2E | End-to-End; pruebas que verifican el flujo completo del sistema. |
+| JPA | Java Persistence API; especificación Java para persistencia relacional con ORM. |
+| JWT | JSON Web Token; estándar para transmitir información verificable (RFC 7519). |
+| REST | Representational State Transfer; estilo arquitectónico para servicios web. |
+| SPA | Single Page Application; aplicación de una sola página con enrutado del lado del cliente. |
+| SQL | Structured Query Language; lenguaje de consulta para bases de datos relacionales. |
+| TFG | Trabajo de Fin de Grado; proyecto final del ciclo formativo. |
+| UUID | Universally Unique Identifier; identificador único de 128 bits. |
+
+---
+
 # Memoria Técnica — MusicPlayer
 
 ---
