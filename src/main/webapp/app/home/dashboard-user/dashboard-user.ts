@@ -27,8 +27,8 @@ export default class DashboardUserComponent implements OnInit {
   ngOnInit(): void {
     this.playService.findRecent().subscribe(plays => this.recentPlays.set(plays));
 
-    this.playlistService.query({ size: 4, sort: 'createdAt,desc' }).subscribe(res => {
-      this.recentPlaylists.set(res.body ?? []);
+    this.playlistService.findMy().subscribe(playlists => {
+      this.recentPlaylists.set(playlists.slice(0, 4));
     });
   }
 

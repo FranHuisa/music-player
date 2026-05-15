@@ -39,7 +39,7 @@
 
           <div class="like-row-info">
             @if (like.song) {
-              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song">
+              <a class="like-row-song">
                 {{ like.song.title }}
               </a>
             } @else {

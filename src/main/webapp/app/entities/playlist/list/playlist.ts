@@ -71,9 +71,6 @@ export class Playlist implements OnInit {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
-    effect(() => {
-      this.playlists.set(this.fillComponentAttributesFromResponseBody([...this.playlistService.playlists()]));
-    });
   }
 
   trackId = (item: IPlaylist): number => this.playlistService.getPlaylistIdentifier(item);
@@ -82,11 +79,10 @@ export class Playlist implements OnInit {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
       .pipe(
         tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => this.load()),
+        tap(() => this.playlistService.findMy().subscribe(playlists => this.playlists.set(playlists))),
       )
       .subscribe();
   }
-
   byteSize(base64String: string): string {
     return this.dataUtils.byteSize(base64String);
   }

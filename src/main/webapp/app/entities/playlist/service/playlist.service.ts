@@ -100,7 +100,9 @@ export class PlaylistService extends PlaylistsService {
   comparePlaylist(o1: Pick<IPlaylist, 'id'> | null, o2: Pick<IPlaylist, 'id'> | null): boolean {
     return o1 && o2 ? this.getPlaylistIdentifier(o1) === this.getPlaylistIdentifier(o2) : o1 === o2;
   }
-
+  findMy(): Observable<IPlaylist[]> {
+    return this.http.get<IPlaylist[]>(`${this.resourceUrl}/my`);
+  }
   addPlaylistToCollectionIfMissing<Type extends Pick<IPlaylist, 'id'>>(
     playlistCollection: Type[],
     ...playlistsToCheck: (Type | null | undefined)[]
