@@ -24,8 +24,8 @@ export class AddToPlaylistService {
           icon: 'error',
           title: 'Error',
           text: 'No se pudieron cargar tus playlists.',
-          background: '#1a1a2e',
-          color: '#fff',
+          background: '#0f172a',
+          color: '#ffffff',
         }),
     });
   }
@@ -36,8 +36,8 @@ export class AddToPlaylistService {
         title: 'Sin playlists',
         text: 'No tienes playlists creadas todavía.',
         icon: 'info',
-        background: '#1a1a2e',
-        color: '#fff',
+        background: '#0f172a',
+        color: '#ffffff',
         confirmButtonText: '➕ Crear playlist',
         confirmButtonColor: '#3b82f6',
       }).then(result => {
@@ -67,8 +67,8 @@ export class AddToPlaylistService {
 
     Swal.fire({
       title: 'Añadir a playlist',
-      background: '#1a1a2e',
-      color: '#fff',
+      background: '#0f172a',
+      color: '#ffffff',
       html: `
         <style>
           .swal-playlist-list {
