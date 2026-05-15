@@ -86,7 +86,7 @@
 
       <div class="artist-albums-grid">
         @for (album of albums(); track album.id) {
-          <div class="artist-album-card" [routerLink]="['/album', album.id]">
+          <div class="artist-album-card" [routerLink]="['/album', album.id, 'view']">
             <div class="artist-album-cover">
               @if (album.coverImage) {
                 <img [src]="album.coverImage" />
@@ -97,7 +97,7 @@
 
             <div class="artist-album-info">
               <span class="artist-album-title">{{ album.title }}</span>
-              <span class="artist-album-year">{{ album.releaseDate }}</span>
+              <span class="artist-album-year">{{ album.releaseDate | date: 'yyyy' }}</span>
             </div>
           </div>
         }

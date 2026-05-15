@@ -11,7 +11,7 @@ import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { IArtist } from '../artist.model';
 import { FormatDurationPipe } from 'app/layouts/player-bar/FormatDuration';
-import { UpperCasePipe } from '@angular/common';
+import { UpperCasePipe, DatePipe } from '@angular/common';
 import { ISong } from 'app/entities/song/song.model';
 import { IPlay } from 'app/entities/play/play.model';
 import { SongService } from 'app/entities/song/service/song.service';
@@ -34,6 +34,7 @@ import { AlbumService } from 'app/entities/album/service/album.service';
     FormatMediumDatetimePipe,
     FormatDurationPipe,
     UpperCasePipe,
+    DatePipe,
   ],
 })
 export class ArtistDetail {
