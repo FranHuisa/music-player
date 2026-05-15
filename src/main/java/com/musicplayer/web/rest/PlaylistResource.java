@@ -84,9 +84,7 @@ public class PlaylistResource {
         playlistDTO.setUserId(user.getId());
         playlistDTO = playlistService.save(playlistDTO);
 
-        return ResponseEntity.created(new URI("/api/playlists/" + playlistDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, playlistDTO.getId().toString()))
-            .body(playlistDTO);
+        return ResponseEntity.created(new URI("/api/playlists/" + playlistDTO.getId())).body(playlistDTO);
     }
 
     /**
@@ -120,9 +118,7 @@ public class PlaylistResource {
         }
 
         playlistDTO = playlistService.update(playlistDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, playlistDTO.getId().toString()))
-            .body(playlistDTO);
+        return ResponseEntity.ok().body(playlistDTO);
     }
 
     /**
@@ -212,9 +208,7 @@ public class PlaylistResource {
     public ResponseEntity<Void> deletePlaylist(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Playlist : {}", id);
         playlistService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/{playlistId}/songs/{songId}")
