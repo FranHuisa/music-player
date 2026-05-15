@@ -23,6 +23,7 @@ import { ArtistFormGroup, ArtistFormService } from './artist-form.service';
 interface IUser {
   id: number;
   login: string;
+  authorities?: string[];
 }
 
 @Component({
@@ -110,51 +111,71 @@ export class ArtistUpdate implements OnInit {
     if (!artistId) return;
 
     const usersUrl = this.appConfig.getEndpointFor('api/admin/users');
+    const assignedUrl = this.appConfig.getEndpointFor('api/artists/assigned-user-ids');
+
     this.http.get<IUser[]>(usersUrl).subscribe({
-      next: users => this.showAssignDialog(artistId, users),
+      next: users => {
+        this.http.get<number[]>(assignedUrl).subscribe({
+          next: assignedIds => {
+            const available = users.filter(u => u.authorities?.includes('ROLE_EDITOR') && !assignedIds.includes(u.id));
+            this.showAssignDialog(artistId, available);
+          },
+          error: () => this.showAssignDialog(artistId, users),
+        });
+      },
       error: () =>
         Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los usuarios.', background: '#0f172a', color: '#ffffff' }),
     });
   }
-
   private showAssignDialog(artistId: number, users: IUser[]): void {
+    if (users.length === 0) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Sin editores disponibles',
+        text: 'No hay editores sin artista asignado.',
+        background: '#0f172a',
+        color: '#ffffff',
+      }).then(() => this.deleteArtistAndGoBack(artistId));
+      return;
+    }
+
     const listHtml = users
       .map(
         u => `
-        <button class="swal-user-item" data-id="${u.id}"
-          onclick="document.querySelectorAll('.swal-user-item').forEach(b => b.classList.remove('selected'));
-                   this.classList.add('selected');
-                   document.getElementById('swal-selected-user-id').value='${u.id}'">
-          <span class="swal-user-icon">👤</span>
-          <span class="swal-user-login">${u.login}</span>
-        </button>`,
+      <button class="swal-user-item" data-id="${u.id}"
+        onclick="document.querySelectorAll('.swal-user-item').forEach(b => b.classList.remove('selected'));
+                 this.classList.add('selected');
+                 document.getElementById('swal-selected-user-id').value='${u.id}'">
+        <span class="swal-user-icon">👤</span>
+        <span class="swal-user-login">${u.login}</span>
+      </button>`,
       )
       .join('');
 
     Swal.fire({
       title: 'Asignar usuario al artista',
-      background: '#1a1a2e',
-      color: '#fff',
+      color: '#ffffff',
+      background: '#0f172a',
       html: `
-        <style>
-          .swal-user-list { display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding:4px 2px; }
-          .swal-user-item { display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px;
-            background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
-            border-radius:8px; color:#fff; font-size:14px; cursor:pointer; transition:all 0.2s ease; text-align:left; }
-          .swal-user-item:hover { background:rgba(59,130,246,0.2); border-color:#3b82f6; }
-          .swal-user-item.selected { background:rgba(59,130,246,0.3); border-color:#3b82f6; }
-          .swal-user-icon { font-size:18px; }
-          .swal-user-login { font-weight:500; }
-        </style>
-        <div class="swal-user-list">${listHtml}</div>
-        <input type="hidden" id="swal-selected-user-id" value="" />
-      `,
+      <style>
+        .swal-user-list { display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto; padding:4px 2px; }
+        .swal-user-item { display:flex; align-items:center; gap:12px; width:100%; padding:10px 14px;
+          background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+          border-radius:8px; color:#fff; font-size:14px; cursor:pointer; transition:all 0.2s ease; text-align:left; }
+        .swal-user-item:hover { background:rgba(59,130,246,0.2); border-color:#3b82f6; }
+        .swal-user-item.selected { background:rgba(59,130,246,0.3); border-color:#3b82f6; }
+        .swal-user-icon { font-size:18px; }
+        .swal-user-login { font-weight:500; }
+      </style>
+      <div class="swal-user-list">${listHtml}</div>
+      <input type="hidden" id="swal-selected-user-id" value="" />
+    `,
       showCancelButton: true,
       confirmButtonText: 'Asignar',
-      cancelButtonText: 'Omitir',
+      cancelButtonText: 'Cancelar',
       confirmButtonColor: '#3b82f6',
       cancelButtonColor: '#6b7280',
-
+      allowOutsideClick: false,
       preConfirm: () => {
         const selectedId = (document.getElementById('swal-selected-user-id') as HTMLInputElement)?.value;
         if (!selectedId) {
@@ -167,8 +188,15 @@ export class ArtistUpdate implements OnInit {
       if (result.isConfirmed && result.value) {
         this.assignUser(artistId, result.value as number);
       } else {
-        this.previousState();
+        this.deleteArtistAndGoBack(artistId);
       }
+    });
+  }
+
+  private deleteArtistAndGoBack(artistId: number): void {
+    this.artistService.delete(artistId).subscribe({
+      next: () => this.previousState(),
+      error: () => this.previousState(),
     });
   }
 

@@ -42,7 +42,7 @@
     <div class="stat-tile" style="--tile-color: #f59b23">
       <div class="stat-tile-icon"><fa-icon icon="calendar-alt" /></div>
       <div class="stat-tile-info">
-        <span class="stat-tile-label">Próximos lanzamientos</span>
+        <span class="stat-tile-label">Lanzamientos Realizados</span>
         <span class="stat-tile-value">{{ upcomingCount() }}</span>
       </div>
     </div>
@@ -83,8 +83,8 @@
   </section>
   <section class="editor-section">
     <div class="editor-section-head">
-      <h2>Próximos lanzamientos</h2>
-      <a routerLink="/album/ucoming" class="editor-section-link">Gestionar</a>
+      <h2>Lanzamientos Realizados</h2>
+      <a routerLink="/album/coming" class="editor-section-link">Gestionar</a>
     </div>
     @if (upcomingAlbums().length === 0) {
       <div class="editor-empty">

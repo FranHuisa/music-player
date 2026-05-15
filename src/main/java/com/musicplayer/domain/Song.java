@@ -188,7 +188,7 @@ public class Song implements Serializable {
     }
 
     @Column(name = "active", nullable = false)
-    private Boolean active = true;
+    private Boolean active = false;
 
     public Boolean getActive() {
         return this.active;

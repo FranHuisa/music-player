@@ -65,9 +65,7 @@ public class ArtistResource {
             throw new BadRequestAlertException("A new artist cannot already have an ID", ENTITY_NAME, "idexists");
         }
         artistDTO = artistService.save(artistDTO);
-        return ResponseEntity.created(new URI("/api/artists/" + artistDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, artistDTO.getId().toString()))
-            .body(artistDTO);
+        return ResponseEntity.created(new URI("/api/artists/" + artistDTO.getId())).build();
     }
 
     /**
@@ -101,9 +99,7 @@ public class ArtistResource {
         }
 
         artistDTO = artistService.update(artistDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, artistDTO.getId().toString()))
-            .body(artistDTO);
+        return ResponseEntity.ok().body(artistDTO);
     }
 
     /**
@@ -140,10 +136,7 @@ public class ArtistResource {
 
         Optional<ArtistDTO> result = artistService.partialUpdate(artistDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, artistDTO.getId().toString())
-        );
+        return ResponseUtil.wrapOrNotFound(result);
     }
 
     /**
@@ -168,6 +161,16 @@ public class ArtistResource {
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
 
+    @GetMapping("/assigned-user-ids")
+    public List<Long> getAssignedUserIds() {
+        return artistRepository
+            .findAll()
+            .stream()
+            .filter(a -> a.getUser() != null)
+            .map(a -> a.getUser().getId())
+            .toList();
+    }
+
     /**
      * {@code GET  /artists/:id} : get the "id" artist.
      *
@@ -175,6 +178,7 @@ public class ArtistResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body
      *         the artistDTO, or with status {@code 404 (Not Found)}.
      */
+
     @GetMapping("/{id}")
     public ResponseEntity<ArtistDTO> getArtist(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Artist : {}", id);

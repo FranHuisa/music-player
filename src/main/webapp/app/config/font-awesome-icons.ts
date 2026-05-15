@@ -61,6 +61,7 @@ import {
   faSpinner,
   faPlayCircle,
   faCheckCircle,
+  faRecordVinyl,
   // jhipster-needle-add-icon-import
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -127,5 +128,6 @@ export const fontAwesomeIcons = [
   faSpinner,
   faPlayCircle,
   faCheckCircle,
+  faRecordVinyl,
   // jhipster-needle-add-icon-import
 ];

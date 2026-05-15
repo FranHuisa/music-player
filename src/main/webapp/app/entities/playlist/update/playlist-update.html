@@ -12,16 +12,6 @@
 
 <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="playlist-editor">
   <div class="playlist-editor-card">
-    @if (editForm.controls.id.value !== null) {
-      <div class="section">
-        <h3>Identificador</h3>
-        <div class="field">
-          <label>ID</label>
-          <input type="number" formControlName="id" readonly />
-        </div>
-      </div>
-    }
-
     <div class="section">
       <div class="cover-wrapper">
         @if (coverPreviewUrl) {

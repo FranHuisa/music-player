@@ -67,6 +67,7 @@ public class SongResource {
      */
     @PostMapping("")
     public ResponseEntity<SongDTO> createSong(@Valid @RequestBody SongDTO songDTO) throws URISyntaxException {
+        songDTO.setActive(false);
         LOG.debug("REST request to save Song : {}", songDTO);
 
         if (songDTO.getId() != null) {
