@@ -13,20 +13,9 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface ArtistMapper extends EntityMapper<ArtistDTO, Artist> {
-    @Mapping(target = "songses", source = "songses", qualifiedByName = "songIdSet")
     ArtistDTO toDto(Artist s);
 
     @Mapping(target = "songses", ignore = true)
     @Mapping(target = "removeSongs", ignore = true)
     Artist toEntity(ArtistDTO artistDTO);
-
-    @Named("songId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    SongDTO toDtoSongId(Song song);
-
-    @Named("songIdSet")
-    default Set<SongDTO> toDtoSongIdSet(Set<Song> song) {
-        return song.stream().map(this::toDtoSongId).collect(Collectors.toSet());
-    }
 }

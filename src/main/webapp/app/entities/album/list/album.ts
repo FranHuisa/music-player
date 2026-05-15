@@ -1,9 +1,11 @@
 import { HttpHeaders } from '@angular/common/http';
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
+import dayjs from 'dayjs/esm';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,6 +15,7 @@ import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigati
 import { ITEMS_PER_PAGE, PAGE_HEADER, TOTAL_COUNT_RESPONSE_HEADER } from 'app/config/pagination.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { FormatMediumDatePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { ItemCount } from 'app/shared/pagination';
@@ -20,16 +23,23 @@ import { SortByDirective, SortDirective, SortService, type SortState, sortStateS
 import { IAlbum } from '../album.model';
 import { AlbumDeleteDialog } from '../delete/album-delete-dialog';
 import { AlbumService } from '../service/album.service';
+import { AccountService } from 'app/core/auth/account.service';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
 
 @Component({
   selector: 'jhi-album',
   templateUrl: './album.html',
+  styleUrls: ['./album.scss'],
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
+    HasAnyAuthorityDirective,
     SortDirective,
     SortByDirective,
     TranslateDirective,
@@ -41,49 +51,90 @@ import { AlbumService } from '../service/album.service';
 })
 export class Album implements OnInit {
   subscription: Subscription | null = null;
+
   readonly albums = signal<IAlbum[]>([]);
+  readonly roleLoaded = signal(false);
+  isAdmin = signal(false);
 
   sortState = sortStateSignal({});
+  readonly searchTerm = signal('');
 
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
+  readonly upcomingOnly = signal(false);
+
+  readonly visibleAlbums = computed(() => {
+    const albums = this.albums();
+    if (!this.upcomingOnly()) return albums;
+
+    const today = dayjs().startOf('day');
+    return albums.filter(album => album.releaseDate && dayjs(album.releaseDate).isAfter(today));
+  });
 
   readonly router = inject(Router);
   protected readonly albumService = inject(AlbumService);
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  readonly isLoading = this.albumService.albumsResource.isLoading;
+  readonly isLoading = this.albumService.myAlbumsResource.isLoading;
   protected readonly activatedRoute = inject(ActivatedRoute);
   protected readonly sortService = inject(SortService);
   protected modalService = inject(NgbModal);
+  protected readonly accountService = inject(AccountService);
+  protected readonly player = inject(PlayerService);
 
   constructor() {
     effect(() => {
-      const headers = this.albumService.albumsResource.headers();
+      if (!this.roleLoaded()) return;
+
+      if (this.isAdmin()) {
+        this.albums.set(this.albumService.albums());
+      } else {
+        if (!this.albumService.myAlbumsResource.isLoading()) {
+          this.albums.set(this.albumService.myAlbums());
+        }
+      }
+    });
+
+    effect(() => {
+      const headers = this.albumService.myAlbumsResource.headers();
       if (headers) {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
-    effect(() => {
-      this.albums.set(this.fillComponentAttributesFromResponseBody([...this.albumService.albums()]));
-    });
   }
 
   trackId = (item: IAlbum): number => this.albumService.getAlbumIdentifier(item);
-
+  readonly filteredAlbums = computed(() => {
+    const term = this.searchTerm().toLowerCase();
+    if (!term) return this.visibleAlbums();
+    return this.visibleAlbums().filter(a => a.title?.toLowerCase().includes(term));
+  });
+  toggleActive(album: IAlbum): void {
+    this.albumService.toggleActive(album.id).subscribe({
+      next: updated => {
+        this.albums.update(list => list.map(a => (a.id === updated.id ? updated : a)));
+      },
+    });
+  }
   ngOnInit(): void {
-    this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
-      .pipe(
-        tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
-        tap(() => this.load()),
-      )
-      .subscribe();
+    this.albumService.myAlbumsResource.reload();
+    this.accountService.identity().subscribe(account => {
+      const authorities = account?.authorities ?? [];
+
+      this.isAdmin.set(authorities.includes('ROLE_ADMIN'));
+      this.roleLoaded.set(true);
+
+      this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])
+        .pipe(
+          tap(([params, data]) => this.fillComponentAttributeFromRoute(params, data)),
+          tap(() => this.load()),
+        )
+        .subscribe();
+    });
   }
 
   delete(album: IAlbum): void {
     const modalRef = this.modalService.open(AlbumDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.album = album;
-    // unsubscribe not needed because closed completes on modal close
     modalRef.closed
       .pipe(
         filter(reason => reason === ITEM_DELETED_EVENT),
@@ -106,12 +157,13 @@ export class Album implements OnInit {
 
   protected fillComponentAttributeFromRoute(params: ParamMap, data: Data): void {
     const page = params.get(PAGE_HEADER);
+    const upcoming = params.get('upcoming') === 'true';
+
     this.page.set(+(page ?? 1));
     this.sortState.set(this.sortService.parseSortParam(params.get(SORT) ?? data[DEFAULT_SORT_DATA]));
-  }
+    this.upcomingOnly.set(upcoming);
 
-  protected fillComponentAttributesFromResponseBody(data: IAlbum[]): IAlbum[] {
-    return data;
+    if (upcoming) this.page.set(1);
   }
 
   protected fillComponentAttributesFromResponseHeader(headers: HttpHeaders): void {
@@ -119,13 +171,18 @@ export class Album implements OnInit {
   }
 
   protected queryBackend(): void {
-    const pageToLoad: number = this.page();
-    const queryObject: any = {
-      page: pageToLoad - 1,
-      size: this.itemsPerPage(),
-      sort: this.sortService.buildSortParam(this.sortState()),
-    };
-    this.albumService.albumsParams.set(queryObject);
+    if (!this.roleLoaded()) return;
+
+    const pageToLoad = this.page();
+
+    if (this.isAdmin()) {
+      const queryObject: any = {
+        page: pageToLoad - 1,
+        size: this.itemsPerPage(),
+        sort: this.sortService.buildSortParam(this.sortState()),
+      };
+      this.albumService.albumsParams.set(queryObject);
+    }
   }
 
   protected handleNavigation(page: number, sortState: SortState): void {
@@ -139,5 +196,9 @@ export class Album implements OnInit {
       relativeTo: this.activatedRoute,
       queryParams: queryParamsObj,
     });
+  }
+
+  playAlbum(album: IAlbum): void {
+    this.router.navigate(['/album', album.id, 'view']);
   }
 }

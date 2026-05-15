@@ -7,14 +7,14 @@ import { NgbDatepickerConfig } from '@ng-bootstrap/ng-bootstrap/datepicker';
 import dayjs from 'dayjs/esm';
 
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
-
+import { Navbar } from './layouts/navbar/navbar';
 import { fontAwesomeIcons } from './config/font-awesome-icons';
 import Main from './layouts/main/main';
 
 @Component({
   selector: 'jhi-app',
   template: '<jhi-main />',
-  imports: [Main],
+  imports: [Main, Navbar],
 })
 export default class App {
   private readonly applicationConfigService = inject(ApplicationConfigService);

@@ -21,6 +21,10 @@ logging:
     com.musicplayer: DEBUG
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
   devtools:
     restart:
       enabled: true
@@ -37,10 +41,17 @@ spring:
       indent-output: true
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:h2:file:./target/h2db/db/musicPlayer;DB_CLOSE_DELAY=-1;MODE=MYSQL
+    url: jdbc:mysql://localhost:3306/music-player?useUnicode=true&characterEncoding=utf8&useSSL=false&useLegacyDatetimeCode=false&serverTimezone=UTC&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       poolName: Hikari
       auto-commit: false
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
   h2:
     console:
       # JHipster uses a custom h2-console initializer
@@ -87,6 +98,7 @@ jhipster:
     authentication:
       jwt:
         # Token is valid 24 hours
+        base64-secret: NGU4Mjk2MDZmM2E4MjQzZWMxMGM5ZTc5NWEzZjFmYjRlZWNkZDI0ZjVkZGYyMzU2MWM0NmIxM2YzYzQ2OGIxMGJlZTZkN2UyNWU5YTU4ODAxODU2MzUyYTYzY2IwMmVmOTUxNzNhZmYzMTg4Njg2NTRjMzA0M2E5NzBmMzAyYjQ=
         token-validity-in-seconds: 86400
         token-validity-in-seconds-for-remember-me: 2592000
   mail: # specific JHipster mail property, for standard properties see MailProperties
@@ -108,3 +120,6 @@ jhipster:
 # ===================================================================
 
 # application:
+app:
+  upload:
+    dir: uploads

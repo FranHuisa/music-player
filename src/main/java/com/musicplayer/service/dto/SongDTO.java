@@ -5,6 +5,7 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -21,6 +22,7 @@ public class SongDTO implements Serializable {
     @Size(max = 150)
     private String title;
 
+    @Max(3600)
     private Integer duration;
 
     @NotNull
@@ -33,13 +35,25 @@ public class SongDTO implements Serializable {
     @Lob
     private String lyrics;
 
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     private Instant createdAt;
 
     private AlbumDTO album;
 
     private GenreDTO genre;
+
+    private ArtistDTO artist;
+
+    private Boolean active = true;
+
+    public Boolean getActive() {
+        return active;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
+    }
 
     private Set<ArtistDTO> artistses = new HashSet<>();
 
@@ -91,11 +105,11 @@ public class SongDTO implements Serializable {
         this.lyrics = lyrics;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return releaseDate;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -109,6 +123,14 @@ public class SongDTO implements Serializable {
 
     public AlbumDTO getAlbum() {
         return album;
+    }
+
+    public ArtistDTO getArtist() {
+        return artist;
+    }
+
+    public void setArtist(ArtistDTO artist) {
+        this.artist = artist;
     }
 
     public void setAlbum(AlbumDTO album) {
@@ -156,17 +178,19 @@ public class SongDTO implements Serializable {
     @Override
     public String toString() {
         return "SongDTO{" +
-            "id=" + getId() +
-            ", title='" + getTitle() + "'" +
-            ", duration=" + getDuration() +
-            ", fileUrl='" + getFileUrl() + "'" +
-            ", coverImage='" + getCoverImage() + "'" +
-            ", lyrics='" + getLyrics() + "'" +
-            ", releaseDate='" + getReleaseDate() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", album=" + getAlbum() +
-            ", genre=" + getGenre() +
-            ", artistses=" + getArtistses() +
-            "}";
+                "id=" + getId() +
+                ", title='" + getTitle() + "'" +
+                ", duration=" + getDuration() +
+                ", fileUrl='" + getFileUrl() + "'" +
+                ", coverImage='" + getCoverImage() + "'" +
+                ", lyrics='" + getLyrics() + "'" +
+                ", releaseDate='" + getReleaseDate() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", album=" + getAlbum() +
+                ", genre=" + getGenre() +
+                ", artistses=" + getArtistses() +
+                ", active='" + getActive() + "'" +
+
+                "}";
     }
 }

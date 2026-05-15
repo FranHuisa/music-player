@@ -1,0 +1,254 @@
+@page {
+  size: A4;
+  margin: 2.5cm 3cm 2.5cm 3cm;
+  @bottom-center {
+    content: counter(page);
+    font-family: "Times New Roman", serif;
+    font-size: 10pt;
+    color: #333;
+  }
+}
+@page:first {
+  @bottom-center { content: ""; }
+}
+:root {
+  --ink: #161616;
+  --muted: #555;
+  --line: #b9b9b9;
+  --soft: #f2f4f7;
+  --accent: #1f6f5f;
+  --accent-2: #324f8f;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  color: var(--ink);
+  font-family: "Times New Roman", Times, serif;
+  font-size: 12pt;
+  line-height: 1.5;
+  text-align: justify;
+  background: white;
+}
+h1, h2, h3, h4 {
+  font-family: Arial, Helvetica, sans-serif;
+  text-align: left;
+  color: #111;
+  page-break-after: avoid;
+  break-after: avoid;
+  margin: 0 0 0.35cm;
+  line-height: 1.2;
+}
+h1 { font-size: 19pt; margin-top: 0; }
+h2 { font-size: 16pt; margin-top: 0.7cm; border-bottom: 1px solid var(--line); padding-bottom: 0.12cm; }
+h3 { font-size: 13.5pt; margin-top: 0.55cm; }
+h4 { font-size: 12.2pt; margin-top: 0.4cm; }
+p { margin: 0 0 6pt; }
+a { color: var(--accent-2); text-decoration: none; }
+ul, ol { margin: 0 0 6pt 0.55cm; padding-left: 0.2cm; }
+li { margin-bottom: 3pt; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0.15cm 0 0.45cm;
+  font-size: 10pt;
+  line-height: 1.25;
+  text-align: left;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+thead { display: table-header-group; }
+tbody { display: table-row-group; }
+tr, img, svg, pre { break-inside: avoid; }
+caption {
+  caption-side: top;
+  text-align: left;
+  font-weight: bold;
+  margin-bottom: 0.12cm;
+  font-family: Arial, Helvetica, sans-serif;
+}
+th, td {
+  border: 1px solid #999;
+  padding: 0.13cm 0.16cm;
+  vertical-align: top;
+}
+th { background: #e7edf4; }
+code {
+  font-family: "Courier New", monospace;
+  font-size: 10pt;
+  background: #f3f3f3;
+  padding: 0 2pt;
+}
+pre {
+  white-space: pre-wrap;
+  font-family: "Courier New", monospace;
+  font-size: 9.5pt;
+  line-height: 1.25;
+  background: #f6f6f6;
+  border: 1px solid #ccc;
+  padding: 0.25cm;
+  text-align: left;
+}
+.cover {
+  min-height: 24cm;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+  page-break-after: always;
+}
+.cover h1 {
+  font-size: 24pt;
+  text-align: center;
+  margin-bottom: 0.5cm;
+}
+.cover .subtitle {
+  font-size: 16pt;
+  font-family: Arial, Helvetica, sans-serif;
+  color: var(--accent-2);
+  text-align: center;
+  margin-bottom: 2cm;
+}
+.cover table {
+  width: 80%;
+  margin: 0 auto;
+  font-size: 12pt;
+  line-height: 1.45;
+}
+.cover td { border: 0; border-bottom: 1px solid #ddd; padding: 0.2cm 0; }
+.cover td:first-child { font-weight: bold; width: 36%; text-align: right; padding-right: 0.35cm; }
+.frontmatter, .chapter { page-break-before: auto; break-before: auto; }
+.frontmatter + .frontmatter,
+.frontmatter + .chapter,
+.chapter + .chapter {
+  margin-top: 0.9cm;
+}
+.toc-list { margin-left: 0; padding-left: 0; list-style: none; text-align: left; }
+.toc-list li { margin-bottom: 4pt; }
+.toc-list .lvl2 { margin-left: 0.45cm; }
+.toc-list .lvl3 { margin-left: 0.9cm; color: #333; }
+.keywords {
+  margin-top: 0.3cm;
+  padding: 0.25cm;
+  border-left: 4px solid var(--accent);
+  background: #f5f8f7;
+}
+.figure {
+  margin: 0.25cm auto 0.4cm;
+  text-align: center;
+  page-break-inside: auto;
+  break-inside: auto;
+}
+.figure svg, .figure img, .screen {
+  max-width: 100%;
+  max-height: 19.5cm;
+  margin: 0 auto;
+  display: block;
+}
+.caption {
+  font-size: 10pt;
+  line-height: 1.25;
+  color: #333;
+  text-align: center;
+  margin-top: 0.15cm;
+}
+.note {
+  font-size: 10pt;
+  line-height: 1.3;
+  color: #333;
+  background: #f6f6f6;
+  border-left: 4px solid #999;
+  padding: 0.2cm 0.25cm;
+  margin: 0.2cm 0 0.35cm;
+}
+.avoid { page-break-inside: avoid; break-inside: avoid; }
+.forced-page { page-break-before: auto; break-before: auto; }
+.cols { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35cm; text-align: left; }
+.card {
+  border: 1px solid #bbb;
+  padding: 0.25cm;
+  background: #fbfbfb;
+}
+.ref-list p {
+  padding-left: 0.8cm;
+  text-indent: -0.8cm;
+  text-align: left;
+  margin-bottom: 0.25cm;
+}
+.screen {
+  border: 1px solid #999;
+  border-radius: 3px;
+  overflow: hidden;
+  background: #111827;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 8.5pt;
+  text-align: left;
+}
+.screen-bar { height: 0.55cm; background: #e5e7eb; color: #333; padding: 0.09cm 0.2cm; }
+.screen-body { display: grid; grid-template-columns: 2.8cm 1fr; min-height: 5.8cm; }
+.screen-nav { background: #0b111f; padding: 0.28cm; }
+.screen-nav div { margin-bottom: 0.18cm; color: #d7dde8; }
+.screen-main { background: #182033; padding: 0.32cm; }
+.screen-title { font-size: 15pt; font-weight: bold; margin-bottom: 0.25cm; }
+.tile-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.18cm; }
+.tile { background: #24314e; border: 1px solid #3f4f74; padding: 0.22cm; min-height: 1.25cm; }
+.track-row { display: grid; grid-template-columns: 0.7cm 1fr 1.6cm 1.5cm; gap: 0.12cm; padding: 0.14cm; border-bottom: 1px solid #39445c; }
+.player { background: #070b12; border-top: 1px solid #303849; padding: 0.22cm; display: grid; grid-template-columns: 1fr 2fr 1fr; gap: 0.2cm; align-items: center; }
+.mini-btn { display: inline-block; width: 0.42cm; height: 0.42cm; border-radius: 50%; background: #1db954; margin: 0 0.04cm; }
+.bar { height: 0.08cm; background: #64748b; border-radius: 3px; overflow: hidden; }
+.bar span { display: block; height: 100%; background: #1db954; }
+.toc-links {
+  margin-left: 0;
+  padding-left: 0;
+  list-style: none;
+  text-align: left;
+}
+.toc-links li {
+  margin-bottom: 4pt;
+}
+.toc-links .lvl2 {
+  margin-left: 0.45cm;
+}
+.toc-links .lvl3 {
+  margin-left: 0.9cm;
+}
+.toc-links a {
+  color: inherit;
+  text-decoration: none;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25cm;
+}
+.toc-links .label {
+  display: block;
+  flex: 1 1 auto;
+}
+.toc-links .page-ref {
+  display: inline-block;
+  min-width: 1.2cm;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.entity-model {
+  max-height: 18cm;
+  width: 100%;
+  object-fit: contain;
+  background: white;
+  border: 1px solid #bbb;
+}
+.figure .screenshot {
+  border: 1px solid #999;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+  max-height: 17cm;
+  object-fit: contain;
+  background: white;
+}
+h1[id], h2[id], h3[id], h4[id],
+.figure[id], table[id] {
+  scroll-margin-top: 1cm;
+}
+table code {
+  font-size: 9.5pt;
+}

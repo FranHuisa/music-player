@@ -27,6 +27,8 @@ springdoc:
 management:
   endpoints:
     web:
+      resources:
+        static-locations: file:./uploads/, classpath:/static/
       base-path: /management
       exposure:
         include:
@@ -105,7 +107,6 @@ spring:
     active: '@spring.profiles.active@'
     group:
       dev:
-        - secret-samples
         - api-docs
         # Uncomment to activate TLS for the dev profile
         #- tls
@@ -228,3 +229,6 @@ jhipster:
 # ===================================================================
 
 # application:
+app:
+  upload:
+    dir: uploads

@@ -1,4 +1,4 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -25,6 +25,7 @@ import { AlbumFormGroup, AlbumFormService } from './album-form.service';
 @Component({
   selector: 'jhi-album-update',
   templateUrl: './album-update.html',
+  styleUrl: './album-update.scss',
   imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class AlbumUpdate implements OnInit {
@@ -40,7 +41,9 @@ export class AlbumUpdate implements OnInit {
   protected artistService = inject(ArtistService);
   protected genreService = inject(GenreService);
   protected activatedRoute = inject(ActivatedRoute);
-
+  private readonly http = inject(HttpClient);
+  selectedCover: File | null = null;
+  coverPreviewUrl: string | null = null;
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: AlbumFormGroup = this.albumFormService.createAlbumFormGroup();
 
@@ -62,15 +65,66 @@ export class AlbumUpdate implements OnInit {
   previousState(): void {
     globalThis.history.back();
   }
+  onCoverSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
 
+    if (!input.files || input.files.length === 0) {
+      this.selectedCover = null;
+      this.coverPreviewUrl = null;
+      return;
+    }
+
+    const file = input.files[0];
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Formato no permitido');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      alert('Máximo 5MB');
+      return;
+    }
+
+    const img = new Image();
+
+    img.onload = () => {
+      if (img.width < 300 || img.height < 300) {
+        alert('Resolución mínima 300x300');
+        return;
+      }
+
+      this.selectedCover = file;
+      this.coverPreviewUrl = URL.createObjectURL(file);
+    };
+
+    img.src = URL.createObjectURL(file);
+  }
   save(): void {
     this.isSaving.set(true);
     const album = this.albumFormService.getAlbum(this.editForm);
-    if (album.id === null) {
-      this.subscribeToSaveResponse(this.albumService.create(album));
-    } else {
-      this.subscribeToSaveResponse(this.albumService.update(album));
-    }
+
+    const saveAlbum = album.id === null ? this.albumService.create(album) : this.albumService.update(album);
+
+    saveAlbum.pipe(finalize(() => this.onSaveFinalize())).subscribe({
+      next: saved => {
+        if (this.selectedCover && saved?.id) {
+          const formData = new FormData();
+          formData.append('file', this.selectedCover);
+          this.http.post(`/api/albums/${saved.id}/upload-image`, formData).subscribe({
+            next: () => this.onSaveSuccess(),
+            error: () => this.onSaveSuccess(),
+          });
+        } else {
+          this.onSaveSuccess();
+        }
+      },
+      error: () => this.onSaveError(),
+    });
   }
 
   protected subscribeToSaveResponse(result: Observable<IAlbum | null>): void {

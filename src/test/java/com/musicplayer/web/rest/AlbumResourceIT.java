@@ -17,7 +17,9 @@ import com.musicplayer.service.dto.AlbumDTO;
 import com.musicplayer.service.mapper.AlbumMapper;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.AfterEach;
@@ -44,8 +46,8 @@ class AlbumResourceIT {
     private static final String DEFAULT_COVER_IMAGE = "AAAAAAAAAA";
     private static final String UPDATED_COVER_IMAGE = "BBBBBBBBBB";
 
-    private static final LocalDate DEFAULT_RELEASE_DATE = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_RELEASE_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDateTime DEFAULT_RELEASE_DATE = LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC);
+    private static final LocalDateTime UPDATED_RELEASE_DATE = LocalDateTime.now(ZoneId.systemDefault());
 
     private static final AlbumType DEFAULT_ALBUM_TYPE = AlbumType.ALBUM;
     private static final AlbumType UPDATED_ALBUM_TYPE = AlbumType.SINGLE;
@@ -250,7 +252,8 @@ class AlbumResourceIT {
 
         // Update the album
         Album updatedAlbum = albumRepository.findById(album.getId()).orElseThrow();
-        // Disconnect from session so that the updates on updatedAlbum are not directly saved in db
+        // Disconnect from session so that the updates on updatedAlbum are not directly
+        // saved in db
         em.detach(updatedAlbum);
         updatedAlbum.title(UPDATED_TITLE).coverImage(UPDATED_COVER_IMAGE).releaseDate(UPDATED_RELEASE_DATE).albumType(UPDATED_ALBUM_TYPE);
         AlbumDTO albumDTO = albumMapper.toDto(updatedAlbum);

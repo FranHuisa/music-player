@@ -4,6 +4,7 @@ import static com.musicplayer.domain.SongAsserts.*;
 import static com.musicplayer.web.rest.TestUtil.createUpdateProxyForBean;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -18,7 +19,9 @@ import com.musicplayer.service.mapper.SongMapper;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Random;
@@ -62,8 +65,8 @@ class SongResourceIT {
     private static final String DEFAULT_LYRICS = "AAAAAAAAAA";
     private static final String UPDATED_LYRICS = "BBBBBBBBBB";
 
-    private static final LocalDate DEFAULT_RELEASE_DATE = LocalDate.ofEpochDay(0L);
-    private static final LocalDate UPDATED_RELEASE_DATE = LocalDate.now(ZoneId.systemDefault());
+    private static final LocalDateTime DEFAULT_RELEASE_DATE = LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC);
+    private static final LocalDateTime UPDATED_RELEASE_DATE = LocalDateTime.now(ZoneId.systemDefault());
 
     private static final Instant DEFAULT_CREATED_AT = Instant.ofEpochMilli(0L);
     private static final Instant UPDATED_CREATED_AT = Instant.now().truncatedTo(ChronoUnit.MILLIS);

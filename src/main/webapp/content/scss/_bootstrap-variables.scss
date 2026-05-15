@@ -1,36 +1,62 @@
 /*
- * Bootstrap overrides https://getbootstrap.com/docs/5.1/customize/sass/
- * All values defined in bootstrap source
- * https://github.com/twbs/bootstrap/blob/v5.1.3/scss/_variables.scss can be overwritten here
- * Make sure not to add !default to values here
+ * Bootstrap overrides — Streamify dark theme
  */
 
-// Options:
-// Quickly modify global styling by enabling or disabling optional features.
 $enable-rounded: true;
-$enable-shadows: false;
+$enable-shadows: true;
 $enable-gradients: false;
 $enable-transitions: true;
 $enable-hover-media-query: false;
 $enable-grid-classes: true;
 $enable-print-styles: true;
 
-// Components:
-// Define common padding and border radius sizes and more.
+$border-radius: 0.5rem;
+$border-radius-lg: 0.75rem;
+$border-radius-sm: 0.35rem;
 
-$border-radius: 0.15rem;
-$border-radius-lg: 0.125rem;
-$border-radius-sm: 0.1rem;
-
-// Body:
-// Settings for the `<body>` element.
-
-$body-bg: #ffffff;
-
-// Typography:
-// Font, line-height, and color for body text, headings, and more.
+$body-bg: #0f172a;
+$body-color: #ffffff;
 
 $font-size-base: 1rem;
+$font-family-sans-serif:
+  'Inter',
+  system-ui,
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  sans-serif;
 
-$dropdown-link-hover-color: white;
-$dropdown-link-hover-bg: #343a40;
+$card-bg: #1e293b;
+$card-border-color: transparent;
+$card-color: #ffffff;
+
+$navbar-dark-color: rgba(255, 255, 255, 0.7);
+$navbar-dark-hover-color: #ffffff;
+$navbar-dark-active-color: #ffffff;
+$navbar-dark-toggler-border-color: transparent;
+
+$dropdown-bg: #1e293b;
+$dropdown-border-color: transparent;
+$dropdown-link-color: #b3b3b3;
+$dropdown-link-hover-color: #ffffff;
+$dropdown-link-hover-bg: rgba(255, 255, 255, 0.1);
+$dropdown-link-active-color: #ffffff;
+$dropdown-link-active-bg: rgba(255, 255, 255, 0.15);
+
+$input-bg: #2a2a2a;
+$input-border-color: #3e3e3e;
+$input-color: #ffffff;
+$input-placeholder-color: #737373;
+$input-focus-bg: #333333;
+$input-focus-border-color: #ffffff;
+$input-focus-color: #ffffff;
+
+$table-color: #b3b3b3;
+$table-bg: transparent;
+$table-border-color: rgba(255, 255, 255, 0.1);
+$table-striped-bg: rgba(255, 255, 255, 0.03);
+$table-hover-bg: rgba(255, 255, 255, 0.07);
+
+$btn-border-radius: 9999px;
+$btn-border-radius-sm: 9999px;
+$btn-border-radius-lg: 9999px;

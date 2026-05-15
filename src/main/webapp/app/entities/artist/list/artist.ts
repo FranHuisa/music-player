@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
@@ -25,10 +26,14 @@ import { ArtistService } from '../service/artist.service';
 @Component({
   selector: 'jhi-artist',
   templateUrl: './artist.html',
+  styleUrl: './artist.scss',
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
     SortDirective,
@@ -45,7 +50,7 @@ export class Artist implements OnInit {
   readonly artists = signal<IArtist[]>([]);
 
   sortState = sortStateSignal({});
-
+  readonly search = signal('');
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
@@ -66,11 +71,11 @@ export class Artist implements OnInit {
         this.fillComponentAttributesFromResponseHeader(headers);
       }
     });
+
     effect(() => {
-      this.artists.set(this.fillComponentAttributesFromResponseBody([...this.artistService.artists()]));
+      this.artists.set(this.artistService.artists());
     });
   }
-
   trackId = (item: IArtist): number => this.artistService.getArtistIdentifier(item);
 
   ngOnInit(): void {
@@ -85,7 +90,10 @@ export class Artist implements OnInit {
   byteSize(base64String: string): string {
     return this.dataUtils.byteSize(base64String);
   }
-
+  onSearch(): void {
+    this.page.set(1);
+    this.queryBackend();
+  }
   openFile(base64String: string, contentType: string | null | undefined): void {
     return this.dataUtils.openFile(base64String, contentType);
   }
@@ -130,11 +138,19 @@ export class Artist implements OnInit {
 
   protected queryBackend(): void {
     const pageToLoad: number = this.page();
+
     const queryObject: any = {
       page: pageToLoad - 1,
       size: this.itemsPerPage(),
       sort: this.sortService.buildSortParam(this.sortState()),
     };
+
+    const searchValue = this.search();
+
+    if (searchValue && searchValue.trim().length > 0) {
+      queryObject['name.contains'] = searchValue.trim();
+    }
+
     this.artistService.artistsParams.set(queryObject);
   }
 

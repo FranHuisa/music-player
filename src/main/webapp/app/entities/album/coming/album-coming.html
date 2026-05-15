@@ -1,0 +1,163 @@
+<div class="upcoming-container">
+  <jhi-alert-error />
+  <jhi-alert />
+
+  <div class="upcoming-layout">
+    <!-- IZQUIERDA -->
+    <div class="left-column">
+      <div class="upcoming-hero">
+        <div class="upcoming-hero-icon">
+          <fa-icon icon="calendar-alt" />
+        </div>
+        <div class="upcoming-hero-info">
+          <span class="upcoming-hero-type">Gestión</span>
+          <h1>Próximos lanzamientos</h1>
+          <span class="upcoming-hero-count">{{ upcomingAlbums().length }} álbumes programados</span>
+        </div>
+        <button class="btn-back" (click)="previousState()"><fa-icon icon="arrow-left" /> Volver</button>
+      </div>
+
+      <div class="upcoming-section">
+        <h2 class="section-title">
+          <fa-icon icon="clock" />
+          Programados
+        </h2>
+
+        @if (upcomingAlbums().length === 0) {
+          <div class="empty-state">
+            <fa-icon icon="calendar-alt" />
+            <p>No tienes álbumes programados</p>
+            <span>Añade álbumes desde la lista de la derecha</span>
+          </div>
+        } @else {
+          <div class="upcoming-list">
+            @for (album of upcomingAlbums(); track album.id) {
+              <div class="upcoming-card">
+                <div class="upcoming-card-cover">
+                  @if (album.coverImage) {
+                    <img [src]="album.coverImage" alt="Cover" />
+                  } @else {
+                    <fa-icon icon="compact-disc" />
+                  }
+                </div>
+
+                <div class="upcoming-card-info">
+                  <span class="upcoming-card-title">{{ album.title }}</span>
+
+                  @if (album.albumType) {
+                    <span class="upcoming-card-type">{{ album.albumType }}</span>
+                  }
+
+                  @if (editingAlbumId() === album.id) {
+                    <div class="date-picker-inline">
+                      <div class="date-time-row">
+                        <input
+                          type="text"
+                          class="date-input"
+                          placeholder="dd/mm/aaaa"
+                          ngbDatepicker
+                          #dp="ngbDatepicker"
+                          [(ngModel)]="selectedDateModel"
+                          (click)="dp.open()"
+                          container="body"
+                          readonly
+                        />
+
+                        <input type="time" class="time-input" [(ngModel)]="selectedTime" />
+                      </div>
+                      <div class="date-picker-actions">
+                        <button class="btn-save-date" (click)="saveReleaseDate(album)"><fa-icon icon="check" /> Guardar</button>
+                        <button class="btn-cancel-date" (click)="cancelEditing()"><fa-icon icon="times" /> Cancelar</button>
+                      </div>
+                    </div>
+                  } @else {
+                    <div class="upcoming-card-date">
+                      <fa-icon icon="calendar" />
+                      <span>{{ album.releaseDate | formatMediumDate }}</span>
+                      @if (album.releaseDate) {
+                        <span>{{ album.releaseDate | date: 'HH:mm' }}</span>
+                      }
+                      <span class="days-badge">{{ timeUntil(album.releaseDate) }}</span>
+                    </div>
+                  }
+                </div>
+
+                <div class="upcoming-card-actions">
+                  <button class="btn-edit-date" (click)="startEditing(album)" title="Cambiar fecha">
+                    <fa-icon icon="pencil-alt" />
+                  </button>
+                  <button class="btn-remove" (click)="removeFromUpcoming(album)" title="Quitar de programados">
+                    <fa-icon icon="times" />
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- DERECHA -->
+    <div class="right-column">
+      <div class="available-section">
+        <h2 class="section-title">
+          <fa-icon icon="compact-disc" />
+          Tus álbumes
+        </h2>
+
+        <input type="text" class="search-input" placeholder="Buscar álbum..." (input)="onSearch($event)" />
+
+        @if (availableAlbums().length === 0) {
+          <div class="empty-state small">
+            <p>Todos tus álbumes están programados</p>
+          </div>
+        } @else {
+          <div class="available-list">
+            @for (album of availableAlbums(); track album.id) {
+              <div class="available-card">
+                <div class="available-card-cover">
+                  @if (album.coverImage) {
+                    <img [src]="album.coverImage" alt="Cover" />
+                  } @else {
+                    <fa-icon icon="compact-disc" />
+                  }
+                </div>
+
+                <span class="available-card-title">{{ album.title }}</span>
+
+                <button class="btn-add" (click)="addToUpcoming(album)" title="Programar lanzamiento">
+                  <fa-icon icon="calendar-plus" />
+                </button>
+              </div>
+
+              @if (editingAlbumId() === album.id) {
+                <div class="date-picker-panel">
+                  <span class="date-picker-label">Fecha de lanzamiento para "{{ album.title }}"</span>
+
+                  <div class="date-time-row">
+                    <input
+                      type="text"
+                      class="date-input"
+                      placeholder="dd/mm/aaaa"
+                      ngbDatepicker
+                      #dp="ngbDatepicker"
+                      [(ngModel)]="selectedDateModel"
+                      (click)="dp.open()"
+                      container="body"
+                      readonly
+                    />
+                    <input type="time" class="time-input" [(ngModel)]="selectedTime" />
+                  </div>
+                  <div class="date-picker-actions">
+                    <button class="btn-save-date" (click)="saveReleaseDate(album)"><fa-icon icon="check" /> Confirmar fecha</button>
+                    <button class="btn-cancel-date" (click)="cancelEditing()">Cancelar</button>
+                  </div>
+                </div>
+              }
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

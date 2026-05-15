@@ -1,13 +1,44 @@
 @import 'bootstrap/scss/functions';
 @import 'bootstrap/scss/variables';
 
-/* ==========================================================================
-Navbar
-========================================================================== */
+.navbar {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1050;
+  background-color: #000000 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 1.5rem;
+
+  a.nav-link {
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.7);
+
+    &:hover {
+      color: #ffffff;
+    }
+  }
+}
+
+.navbar-brand-icon {
+  font-size: 1.4rem;
+  color: #1db954;
+  margin-right: 0.5rem;
+}
+
+.navbar-brand-text {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
 
 .navbar-version {
   font-size: 0.65em;
   color: $navbar-dark-color;
+  margin-left: 0.5rem;
 }
 
 .profile-image {
@@ -15,22 +46,58 @@ Navbar
   width: 1.75em;
 }
 
-.navbar {
-  padding: 0.2rem 1rem;
+.navbar-search {
+  flex: 1;
+  max-width: 380px;
+  padding: 0 1rem;
 
-  a.nav-link {
-    font-weight: 400;
+  .search-wrapper {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 0.35rem 1rem;
+    transition: all 0.2s ease;
+
+    &:focus-within {
+      background: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.08);
+    }
   }
-}
 
-/* ==========================================================================
-Logo styles
-========================================================================== */
-.logo-img {
-  height: 45px;
-  width: 45px;
-  display: inline-block;
-  vertical-align: middle;
-  background: url('/content/images/logo-jhipster.png') no-repeat center center;
-  background-size: contain;
+  .search-icon {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .search-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    width: 100%;
+    font-size: 0.875rem;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .search-clear {
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 0;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+
+    &:hover {
+      color: white;
+    }
+  }
 }

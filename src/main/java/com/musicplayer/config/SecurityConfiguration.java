@@ -28,7 +28,6 @@ import tech.jhipster.config.JHipsterProperties;
 public class SecurityConfiguration {
 
     private final Environment env;
-
     private final JHipsterProperties jHipsterProperties;
 
     public SecurityConfiguration(Environment env, JHipsterProperties jHipsterProperties) {
@@ -42,7 +41,7 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(withDefaults())
             .csrf(csrf -> csrf.disable())
@@ -58,29 +57,27 @@ public class SecurityConfiguration {
                         )
                     )
             )
-            .authorizeHttpRequests(authz ->
-                // prettier-ignore
+            .authorizeHttpRequests(authz -> {
                 authz
-                    .requestMatchers("/index.html", "/*.js", "/*.txt", "/*.json", "/*.map", "/*.css").permitAll()
-                    .requestMatchers("/*.ico", "/*.png", "/*.svg", "/*.webapp").permitAll()
-                    .requestMatchers("/content/**").permitAll()
-                    .requestMatchers("/resources/**").permitAll()
-                    .requestMatchers("/swagger-ui/**").permitAll()
-                    .requestMatchers(HttpMethod.POST, "/api/authenticate").permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/authenticate").permitAll()
-                    .requestMatchers("/api/register").permitAll()
-                    .requestMatchers("/api/activate").permitAll()
-                    .requestMatchers("/api/account/reset-password/init").permitAll()
-                    .requestMatchers("/api/account/reset-password/finish").permitAll()
-                    .requestMatchers("/api/admin/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers("/api/**").authenticated()
-                    .requestMatchers("/v3/api-docs/**").hasAuthority(AuthoritiesConstants.ADMIN)
-                    .requestMatchers("/management/health").permitAll()
-                    .requestMatchers("/management/health/**").permitAll()
-                    .requestMatchers("/management/info").permitAll()
-                    .requestMatchers("/management/prometheus").permitAll()
-                    .requestMatchers("/management/**").hasAuthority(AuthoritiesConstants.ADMIN)
-            )
+                    .requestMatchers("/index.html", "/*.js", "/*.css", "/*.png", "/*.svg", "/content/**", "/swagger-ui/**")
+                    .permitAll()
+                    .requestMatchers("/api/authenticate", "/api/register", "/api/activate")
+                    .permitAll()
+                    .requestMatchers("/api/upload/**", "/uploads/**")
+                    .permitAll()
+                    .requestMatchers("/api/authenticate", "/api/register", "/api/activate")
+                    .permitAll()
+                    .requestMatchers("/api/upload/**", "/uploads/**")
+                    .permitAll()
+                    .requestMatchers("/api/admin/**")
+                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers("/api/songs/admin/**")
+                    .hasAuthority(AuthoritiesConstants.ADMIN)
+                    .requestMatchers("/api/**")
+                    .authenticated();
+
+                authz.anyRequest().permitAll();
+            })
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .exceptionHandling(exceptions ->
                 exceptions
@@ -88,9 +85,7 @@ public class SecurityConfiguration {
                     .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
             )
             .oauth2ResourceServer(oauth2 -> oauth2.jwt(withDefaults()));
-        if (env.acceptsProfiles(Profiles.of(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT))) {
-            http.authorizeHttpRequests(authz -> authz.requestMatchers("/h2-console/**").permitAll());
-        }
+
         return http.build();
     }
 }

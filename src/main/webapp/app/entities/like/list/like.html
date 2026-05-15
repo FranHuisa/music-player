@@ -1,106 +1,69 @@
-<div>
-  <h2 id="page-heading" data-cy="LikeHeading">
-    <span jhiTranslate="musicPlayerApp.like.home.title">Likes</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.like.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-like"
-        [routerLink]="['/like/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.like.home.createLabel">Crear nuevo Like</span>
-      </button>
-    </div>
-  </h2>
-
+<div class="like-list-page">
   <jhi-alert-error />
-
   <jhi-alert />
 
+  <div class="entity-list-hero">
+    <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #450af5, #e8115b)">
+      <fa-icon icon="heart" />
+    </div>
+
+    <div class="entity-list-hero-info">
+      <span class="entity-list-hero-type">Tu Biblioteca</span>
+      <h1>Me gusta</h1>
+      <span class="entity-list-hero-count">{{ likes().length }} canciones</span>
+    </div>
+  </div>
+
+  <div class="entity-list-actions">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+    </button>
+  </div>
+
   @if (likes().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.like.home.notFound">Ningún Likes encontrado</span>
+    <div class="entity-list-empty">
+      <fa-icon icon="heart" class="entity-list-empty-icon" />
+      <p>Aún no tienes canciones guardadas</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+    <div id="entities">
+      @for (like of likes(); track trackId(like)) {
+        <div class="like-row">
+          <div class="like-row-icon">
+            @if (like.song?.coverImage) {
+              <img [src]="getCoverUrl(like.song)" class="like-row-cover" [alt]="like.song?.title ?? ''" />
+            } @else {
+              <fa-icon icon="music"></fa-icon>
+            }
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.like.createdAt">Created At</span>
+          <div class="like-row-info">
+            @if (like.song) {
+              <a [routerLink]="['/song', like.song.id, 'view']" class="like-row-song">
+                {{ like.song.title }}
+              </a>
+            } @else {
+              <span class="like-row-song">Canción desconocida</span>
+            }
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="user.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.like.user">User</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="song.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.like.song">Song</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (like of likes(); track trackId(like)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/like', like.id, 'view']">{{ like.id }}</a>
-              </td>
-              <td>{{ like.createdAt | formatMediumDatetime }}</td>
-              <td>
-                {{ like.user?.id }}
-              </td>
-              <td>
-                @if (like.song) {
-                  <div>
-                    <a [routerLink]="['/song', like.song.id, 'view']">{{ like.song.id }}</a>
-                  </div>
-                }
-              </td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/like', like.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
-                  </a>
+            <span class="like-row-artist">
+              {{ like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
+            </span>
+          </div>
 
-                  <a [routerLink]="['/like', like.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
-                  </a>
+          <button class="like-row-play" (click)="playSong(like)">
+            <fa-icon icon="play" />
+          </button>
 
-                  <button type="submit" (click)="delete(like)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+          <button class="like-row-btn" (click)="openAddToPlaylist(like)">
+            <fa-icon icon="plus"></fa-icon>
+          </button>
+
+          <button class="like-row-btn danger" (click)="delete(like)">
+            <fa-icon icon="trash"></fa-icon>
+          </button>
+        </div>
+      }
     </div>
   }
 </div>

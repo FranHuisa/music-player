@@ -4,10 +4,25 @@
   <router-outlet name="navbar" />
 </div>
 
-<div class="container-fluid">
-  <div class="card jh-card">
-    <router-outlet />
-  </div>
+<div class="jhi-app-layout">
+  @if (canShowSidebar()) {
+    <jhi-sidebar />
+  }
 
-  <jhi-footer />
+  <div
+    class="jhi-main-content"
+    [class.sidebar-collapsed]="sidebarService.isCollapsed()"
+    [class.no-sidebar]="!canShowSidebar()"
+    [class.no-player]="!canShowPlayerBar()"
+  >
+    <div class="container-fluid">
+      <div class="jh-card">
+        <router-outlet />
+      </div>
+    </div>
+  </div>
 </div>
+
+@if (canShowPlayerBar()) {
+  <jhi-player-bar />
+}

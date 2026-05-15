@@ -1,0 +1,51 @@
+<nav class="jhi-sidebar" [class.collapsed]="sidebarService.isCollapsed()">
+  <button class="sidebar-toggle" (click)="sidebarService.toggle()" aria-label="Alternar barra lateral">
+    <fa-icon icon="bars" />
+  </button>
+
+  <div class="sidebar-brand">
+    <fa-icon icon="music" class="sidebar-brand-icon" />
+    @if (!sidebarService.isCollapsed()) {
+      <span class="sidebar-brand-name">Wisafy </span>
+    }
+  </div>
+  @if (!sidebarService.isCollapsed()) {
+    <div class="sidebar-section-title">Tu Biblioteca</div>
+  } @else {
+    <div class="sidebar-divider"></div>
+  }
+
+  <div class="sidebar-nav">
+    <a
+      [routerLink]="
+        account()?.authorities?.includes('ROLE_ADMIN')
+          ? '/dashboard-admin'
+          : account()?.authorities?.includes('ROLE_EDITOR')
+            ? '/dashboard-editor'
+            : '/dashboard-user'
+      "
+      routerLinkActive="sidebar-active"
+      [routerLinkActiveOptions]="{ exact: true }"
+      class="sidebar-item"
+      title="Inicio"
+    >
+      <fa-icon icon="home" class="sidebar-item-icon" />
+      @if (!sidebarService.isCollapsed()) {
+        <span class="sidebar-item-label">Inicio</span>
+      }
+    </a>
+
+    <a routerLink="/playlist" routerLinkActive="sidebar-active" class="sidebar-item" title="Playlists">
+      <fa-icon icon="list" class="sidebar-item-icon" />
+      @if (!sidebarService.isCollapsed()) {
+        <span class="sidebar-item-label">Playlists</span>
+      }
+    </a>
+    <a routerLink="/like" routerLinkActive="sidebar-active" class="sidebar-item" title="Me gusta">
+      <fa-icon icon="heart" class="sidebar-item-icon" />
+      @if (!sidebarService.isCollapsed()) {
+        <span class="sidebar-item-label">Me gusta</span>
+      }
+    </a>
+  </div>
+</nav>

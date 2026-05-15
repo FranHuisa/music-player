@@ -5,6 +5,8 @@ import jakarta.validation.constraints.*;
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import org.hibernate.annotations.Cache;
 import org.hibernate.annotations.CacheConcurrencyStrategy;
 
@@ -50,6 +52,9 @@ public class Playlist implements Serializable {
     @ManyToOne(optional = false)
     @NotNull
     private User user;
+
+    @OneToMany(mappedBy = "playlist", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<PlaylistSong> playlistSongs = new ArrayList<>();
 
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
@@ -105,6 +110,14 @@ public class Playlist implements Serializable {
         this.isPublic = isPublic;
     }
 
+    public List<PlaylistSong> getPlaylistSongs() {
+        return playlistSongs;
+    }
+
+    public void setPlaylistSongs(List<PlaylistSong> playlistSongs) {
+        this.playlistSongs = playlistSongs;
+    }
+
     public String getCoverImage() {
         return this.coverImage;
     }
@@ -157,7 +170,8 @@ public class Playlist implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -172,7 +186,8 @@ public class Playlist implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -180,13 +195,13 @@ public class Playlist implements Serializable {
     @Override
     public String toString() {
         return "Playlist{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", description='" + getDescription() + "'" +
-            ", isPublic='" + getIsPublic() + "'" +
-            ", coverImage='" + getCoverImage() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            ", updatedAt='" + getUpdatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", name='" + getName() + "'" +
+                ", description='" + getDescription() + "'" +
+                ", isPublic='" + getIsPublic() + "'" +
+                ", coverImage='" + getCoverImage() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", updatedAt='" + getUpdatedAt() + "'" +
+                "}";
     }
 }

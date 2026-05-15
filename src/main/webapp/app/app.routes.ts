@@ -8,13 +8,48 @@ import { errorRoute } from './layouts/error/error.route';
 const routes: Routes = [
   {
     path: '',
-    loadComponent: () => import('./home/home'),
-    title: 'home.title',
+    loadComponent: () => import('./home/home').then(m => m.default),
+    pathMatch: 'full',
+  },
+
+  {
+    path: 'login',
+    loadComponent: () => import('./login/login').then(m => m.default),
+    title: 'login.title',
+  },
+
+  {
+    path: 'dashboard-user',
+    loadComponent: () => import('./home/dashboard-user/dashboard-user').then(m => m.default),
+    canActivate: [UserRouteAccessService],
+    data: {
+      authorities: [Authority.USER],
+    },
+  },
+
+  {
+    path: 'dashboard-editor',
+    loadComponent: () => import('./home/dashboard-editor/dashboard-editor').then(m => m.default),
+    canActivate: [UserRouteAccessService],
+    data: {
+      authorities: [Authority.ADMIN, Authority.EDITOR],
+    },
+  },
+
+  {
+    path: 'dashboard-admin',
+    loadComponent: () => import('./home/dashboard-admin/dashboard-admin').then(m => m.default),
+    canActivate: [UserRouteAccessService],
+    data: {
+      authorities: [Authority.ADMIN],
+    },
+    title: 'Panel Administrador',
   },
   {
-    path: '',
-    loadComponent: () => import('./layouts/navbar/navbar'),
-    outlet: 'navbar',
+    path: 'search',
+    loadComponent: () => import('./layouts/search/search'),
+    runGuardsAndResolvers: 'always',
+    title: 'Buscar',
   },
   {
     path: 'admin',
@@ -24,19 +59,23 @@ const routes: Routes = [
     canActivate: [UserRouteAccessService],
     loadChildren: () => import('./admin/admin.routes'),
   },
+
   {
     path: 'account',
     loadChildren: () => import('./account/account.route'),
   },
-  {
-    path: 'login',
-    loadComponent: () => import('./login/login'),
-    title: 'login.title',
-  },
+
   {
     path: '',
     loadChildren: () => import('./entities/entity.routes'),
   },
+
+  {
+    path: '',
+    loadComponent: () => import('./layouts/navbar/navbar').then(m => m.Navbar),
+    outlet: 'navbar',
+  },
+
   ...errorRoute,
 ];
 

@@ -1,177 +1,182 @@
-<div>
-  <h2 id="page-heading" data-cy="SongHeading">
-    <span jhiTranslate="musicPlayerApp.song.home.title">Songs</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.song.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-song"
-        [routerLink]="['/song/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.song.home.createLabel">Crear nuevo Song</span>
-      </button>
-    </div>
-  </h2>
-
+<div class="song-list-page">
   <jhi-alert-error />
-
   <jhi-alert />
 
-  @if (songs().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.song.home.notFound">Ningún Songs encontrado</span>
+  <div class="song-list-header">
+    <div class="song-list-hero">
+      <div class="song-list-hero-icon">
+        <fa-icon icon="music" />
+      </div>
+      <div class="song-list-hero-info">
+        <span class="song-list-hero-type">Lista</span>
+        <h1>Canciones</h1>
+        <span class="song-list-hero-count">{{ songs().length }} canciones</span>
+      </div>
+    </div>
+    <div class="song-list-actions">
+      <button class="btn-play-all" title="Reproducir todo" aria-label="Reproducir todo" (click)="songs().length && playSong(songs()[0])">
+        <fa-icon icon="play" />
+      </button>
+      <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+      </button>
+      <a
+        class="btn-icon-action btn-add"
+        [routerLink]="['/song/new']"
+        title="Agregar canción"
+        aria-label="Agregar canción"
+        *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']"
+      >
+        <fa-icon icon="plus" />
+      </a>
+    </div>
+    <div class="song-search">
+      <fa-icon icon="search" class="song-search-icon" />
+      <input
+        type="text"
+        class="song-search-input"
+        placeholder="Buscar canción..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+  </div>
+
+  @if (filteredSongs().length === 0) {
+    <div class="song-list-empty">
+      <fa-icon icon="music" class="song-list-empty-icon" />
+      <p>No hay canciones disponibles</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+    <div class="track-list" id="entities">
+      <div class="track-list-header" jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+        <div class="col-num">▶</div>
+        <div class="col-cover"></div>
+        <div class="col-title" jhiSortBy="title">TÍTULO <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-album" jhiSortBy="album.id">ÁLBUM <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-genre" jhiSortBy="genre.id">GÉNERO <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-date" jhiSortBy="releaseDate">FECHA <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-hidden">ESTADO</div>
+        <div class="col-duration">DURACIÓN</div>
+        <div class="col-actions"></div>
+      </div>
+      <div class="track-list-divider"></div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="title">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.title">Title</span>
+      @for (song of filteredSongs(); track trackId(song); let i = $index) {
+        <div class="track-row" [class.inactive]="!song.active" data-cy="entityTable">
+          <!-- PLAY -->
+          <div class="col-num">
+            <span class="track-num">{{ i + 1 }}</span>
+            <button class="track-play-btn" title="Reproducir" aria-label="Reproducir" (click)="playSong(song); $event.stopPropagation()">
+              <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'" />
+            </button>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="duration">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.duration">Duration</span>
+          <!-- COVER (solo foto, sin click) -->
+          <div class="col-cover">
+            <div class="track-cover">
+              @if (song.coverImage) {
+                <img [src]="song.coverImage" class="track-cover-img" alt="{{ song.title }}" />
+              } @else {
+                <fa-icon icon="music" class="track-cover-placeholder" />
+              }
+            </div>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="fileUrl">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.fileUrl">File Url</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="coverImage">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.coverImage">Cover Image</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="lyrics">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.lyrics">Lyrics</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="releaseDate">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.releaseDate">Release Date</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="createdAt">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.createdAt">Created At</span>
-
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="album.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.album">Album</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="genre.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.song.genre">Genre</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (song of songs(); track trackId(song)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/song', song.id, 'view']">{{ song.id }}</a>
-              </td>
-              <td>{{ song.title }}</td>
-              <td>{{ song.duration }}</td>
-              <td>{{ song.fileUrl }}</td>
-              <td>{{ song.coverImage }}</td>
-              <td>{{ song.lyrics }}</td>
-              <td>{{ song.releaseDate | formatMediumDate }}</td>
-              <td>{{ song.createdAt | formatMediumDatetime }}</td>
-              <td>
-                @if (song.album) {
-                  <div>
-                    <a [routerLink]="['/album', song.album.id, 'view']">{{ song.album.id }}</a>
-                  </div>
+          <!-- TÍTULO + ARTISTA -->
+          <div class="col-title">
+            <div class="track-info">
+              <span class="track-title">
+                {{ song.title }}
+                @if (!song.active) {
+                  <span class="track-hidden-badge">- Oculta</span>
                 }
-              </td>
-              <td>
-                @if (song.genre) {
-                  <div>
-                    <a [routerLink]="['/genre', song.genre.id, 'view']">{{ song.genre.id }}</a>
-                  </div>
-                }
-              </td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/song', song.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
-                  </a>
+              </span>
+              @if (song.artistses && song.artistses.length > 0) {
+                <span class="track-artist">{{ song.artistses[0].name ?? 'Artista #' + song.artistses[0].id }}</span>
+              } @else {
+                <span class="track-artist track-subdued">Artista desconocido</span>
+              }
+            </div>
+          </div>
 
-                  <a [routerLink]="['/song', song.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
-                  </a>
+          <div class="col-album">
+            @if (song.album) {
+              <a [routerLink]="['/album', song.album.id, 'view']" class="track-link">Álbum #{{ song.album.id }}</a>
+            } @else {
+              <span class="track-subdued">—</span>
+            }
+          </div>
 
-                  <button type="submit" (click)="delete(song)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
+          <div class="col-genre">
+            @if (song.genre) {
+              <a [routerLink]="['/genre', song.genre.id, 'view']" class="track-link">{{ song.genre.id }}</a>
+            } @else {
+              <span class="track-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-date">
+            @if (song.releaseDate) {
+              {{ song.releaseDate | formatMediumDate }}
+            } @else {
+              <span class="track-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-hidden">
+            @if (song.active) {
+              <span class="song-visible">Visible</span>
+            } @else {
+              <span class="song-hidden">Oculta</span>
+            }
+          </div>
+
+          <div class="col-duration">
+            <span class="track-duration">{{ formatDuration(song.duration) }}</span>
+          </div>
+
+          <div class="col-actions">
+            <div class="song-menu">
+              <button class="track-more-btn" (click)="$event.stopPropagation()">
+                <span class="dots">•••</span>
+              </button>
+              <ul class="song-menu-list">
+                <li>
+                  <a [routerLink]="['/song', song.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles </a>
+                </li>
+                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']">
+                  <button (click)="toggleActive(song)">
+                    <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" [fixedWidth]="true" />
+                    {{ song.active ? 'Ocultar' : 'Publicar' }}
                   </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                </li>
+                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
+                  <a [routerLink]="['/song', song.id, 'edit']"> <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar </a>
+                </li>
+                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
+                  <button class="danger" (click)="delete(song)"><fa-icon icon="times" [fixedWidth]="true" /> Eliminar</button>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
-  @if (songs().length > 0) {
-    <div>
-      <div class="d-flex justify-content-center">
-        <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
-      </div>
 
-      <div class="d-flex justify-content-center">
-        <ngb-pagination
-          [collectionSize]="totalItems()"
-          [page]="page()"
-          [pageSize]="itemsPerPage()"
-          [maxSize]="5"
-          [rotate]="true"
-          [boundaryLinks]="true"
-          (pageChange)="navigateToPage($event)"
-        />
-      </div>
+  @if (songs().length > 0) {
+    <div class="song-list-pagination">
+      <jhi-item-count [params]="{ page: page(), totalItems: totalItems(), itemsPerPage: itemsPerPage() }" />
+      <ngb-pagination
+        [collectionSize]="totalItems()"
+        [page]="page()"
+        [pageSize]="itemsPerPage()"
+        [maxSize]="5"
+        [rotate]="true"
+        [boundaryLinks]="true"
+        (pageChange)="navigateToPage($event)"
+      />
     </div>
   }
 </div>

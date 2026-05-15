@@ -1,71 +1,92 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm">
-      <h2 id="jhi-play-heading" data-cy="PlayCreateUpdateHeading" jhiTranslate="musicPlayerApp.play.home.createOrEditLabel">
-        Crear o editar Play
-      </h2>
-
-      <div>
-        <jhi-alert-error />
-
+<div class="entity-form-page">
+  <form name="editForm" novalidate (ngSubmit)="save()" [formGroup]="editForm" class="entity-form-card">
+    <header class="entity-form-header" style="--form-accent: #f59b23; --form-accent-strong: #e7611a">
+      <span class="entity-form-eyebrow">Reproducciones</span>
+      <h1>
         @if (editForm.controls.id.value !== null) {
-          <div class="mb-3">
-            <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
-            <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
-          </div>
+          Editar reproducción
+        } @else {
+          Registrar reproducción
         }
+      </h1>
+      <p>Actualiza la información del play para tus estadísticas.</p>
+    </header>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_playedAt" jhiTranslate="musicPlayerApp.play.playedAt">Played At</label>
-          <div class="d-flex">
+    <div class="entity-form-body">
+      <jhi-alert-error />
+
+      @if (editForm.controls.id.value !== null) {
+        <div class="entity-form-section">
+          <h3>Identificador</h3>
+          <div class="entity-form-grid">
+            <div>
+              <label class="form-label" for="field_id" jhiTranslate="global.field.id">ID</label>
+              <input type="number" class="form-control" name="id" id="field_id" data-cy="id" formControlName="id" [readonly]="true" />
+            </div>
+          </div>
+        </div>
+      }
+
+      <div class="entity-form-section">
+        <h3>Detalle de reproducción</h3>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_playedAt" jhiTranslate="musicPlayerApp.play.playedAt">Played At</label>
+            <div class="d-flex">
+              <input
+                id="field_playedAt"
+                data-cy="playedAt"
+                type="datetime-local"
+                class="form-control"
+                name="playedAt"
+                formControlName="playedAt"
+                placeholder="YYYY-MM-DD HH:mm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label class="form-label" for="field_durationListened" jhiTranslate="musicPlayerApp.play.durationListened"
+              >Duration Listened</label
+            >
             <input
-              id="field_playedAt"
-              data-cy="playedAt"
-              type="datetime-local"
+              type="number"
               class="form-control"
-              name="playedAt"
-              formControlName="playedAt"
-              placeholder="YYYY-MM-DD HH:mm"
+              name="durationListened"
+              id="field_durationListened"
+              data-cy="durationListened"
+              formControlName="durationListened"
             />
           </div>
         </div>
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_durationListened" jhiTranslate="musicPlayerApp.play.durationListened"
-            >Duration Listened</label
-          >
-          <input
-            type="number"
-            class="form-control"
-            name="durationListened"
-            id="field_durationListened"
-            data-cy="durationListened"
-            formControlName="durationListened"
-          />
-        </div>
+      <div class="entity-form-section">
+        <h3>Relaciones</h3>
+        <div class="entity-form-grid">
+          <div>
+            <label class="form-label" for="field_user" jhiTranslate="musicPlayerApp.play.user">User</label>
+            <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
+              <option [ngValue]="null"></option>
+              @for (userOption of usersSharedCollection(); track $index) {
+                <option [ngValue]="userOption">{{ userOption.id }}</option>
+              }
+            </select>
+          </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="field_user" jhiTranslate="musicPlayerApp.play.user">User</label>
-          <select class="form-control" id="field_user" data-cy="user" name="user" formControlName="user" [compareWith]="compareUser">
-            <option [ngValue]="null"></option>
-            @for (userOption of usersSharedCollection(); track $index) {
-              <option [ngValue]="userOption">{{ userOption.id }}</option>
-            }
-          </select>
-        </div>
-
-        <div class="mb-3">
-          <label class="form-label" for="field_song" jhiTranslate="musicPlayerApp.play.song">Song</label>
-          <select class="form-control" id="field_song" data-cy="song" name="song" formControlName="song" [compareWith]="compareSong">
-            <option [ngValue]="null"></option>
-            @for (songOption of songsSharedCollection(); track $index) {
-              <option [ngValue]="songOption">{{ songOption.id }}</option>
-            }
-          </select>
+          <div>
+            <label class="form-label" for="field_song" jhiTranslate="musicPlayerApp.play.song">Song</label>
+            <select class="form-control" id="field_song" data-cy="song" name="song" formControlName="song" [compareWith]="compareSong">
+              <option [ngValue]="null"></option>
+              @for (songOption of songsSharedCollection(); track $index) {
+                <option [ngValue]="songOption">{{ songOption.id }}</option>
+              }
+            </select>
+          </div>
         </div>
       </div>
 
-      <div>
+      <div class="entity-form-actions">
         <button type="button" id="cancel-save" data-cy="entityCreateCancelButton" class="btn btn-secondary" (click)="previousState()">
           <fa-icon icon="ban" />&nbsp;<span jhiTranslate="entity.action.cancel">Cancelar</span>
         </button>
@@ -80,6 +101,6 @@
           <fa-icon icon="save" />&nbsp;<span jhiTranslate="entity.action.save">Guardar</span>
         </button>
       </div>
-    </form>
-  </div>
+    </div>
+  </form>
 </div>

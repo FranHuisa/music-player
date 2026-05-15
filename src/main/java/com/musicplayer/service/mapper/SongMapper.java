@@ -12,36 +12,15 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.mapstruct.*;
 
-/**
- * Mapper for the entity {@link Song} and its DTO {@link SongDTO}.
- */
 @Mapper(componentModel = "spring")
 public interface SongMapper extends EntityMapper<SongDTO, Song> {
-    @Mapping(target = "album", source = "album", qualifiedByName = "albumId")
-    @Mapping(target = "genre", source = "genre", qualifiedByName = "genreId")
-    @Mapping(target = "artistses", source = "artistses", qualifiedByName = "artistIdSet")
-    SongDTO toDto(Song s);
+    @Mapping(target = "album", source = "album")
+    @Mapping(target = "coverImage", source = "coverImage")
+    @Mapping(target = "genre", source = "genre")
+    @Mapping(target = "artistses", source = "artistses")
+    SongDTO toDto(Song song);
 
-    @Mapping(target = "removeArtists", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "artist", ignore = true)
     Song toEntity(SongDTO songDTO);
-
-    @Named("albumId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    AlbumDTO toDtoAlbumId(Album album);
-
-    @Named("genreId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    GenreDTO toDtoGenreId(Genre genre);
-
-    @Named("artistId")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    ArtistDTO toDtoArtistId(Artist artist);
-
-    @Named("artistIdSet")
-    default Set<ArtistDTO> toDtoArtistIdSet(Set<Artist> artist) {
-        return artist.stream().map(this::toDtoArtistId).collect(Collectors.toSet());
-    }
 }

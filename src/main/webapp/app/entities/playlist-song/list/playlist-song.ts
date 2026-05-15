@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, filter, tap } from 'rxjs';
@@ -20,10 +21,14 @@ import { PlaylistSongService } from '../service/playlist-song.service';
 @Component({
   selector: 'jhi-playlist-song',
   templateUrl: './playlist-song.html',
+  styleUrls: ['./playlist-song.scss'],
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
     SortDirective,

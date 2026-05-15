@@ -1,4 +1,11 @@
 ######################
+# Personal / local
+######################
+.context.md
+docs/GUION_DEFENSA.md
+.claude/settings.local.json
+
+######################
 # Node
 ######################
 /node/

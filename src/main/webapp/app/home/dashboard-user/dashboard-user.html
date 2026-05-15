@@ -1,0 +1,26 @@
+@let acc = account();
+
+<div class="dashboard-user-page">
+  <header class="user-hero">
+    <div class="user-hero-greeting">
+      <span class="user-hero-eyebrow">Tu música, tu momento</span>
+      <h1>{{ greeting }}{{ acc?.firstName ? ', ' + acc!.firstName : '' }}</h1>
+      <p>Sigue donde lo dejaste o descubre algo nuevo en Streamify.</p>
+    </div>
+  </header>
+
+  <section class="user-quick-grid">
+    <a routerLink="/like" class="user-quick-card user-quick-liked">
+      <div class="user-quick-icon"><fa-icon icon="heart" /></div>
+      <span>Canciones que te gustan</span>
+    </a>
+    <a routerLink="/playlist" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #1db954, #189b45)"><fa-icon icon="list" /></div>
+      <span>Tus playlists</span>
+    </a>
+    <a routerLink="/play" class="user-quick-card">
+      <div class="user-quick-icon" style="background: linear-gradient(135deg, #f59b23, #e7611a)"><fa-icon icon="chart-bar" /></div>
+      <span>Reproducidas recientemente</span>
+    </a>
+  </section>
+</div>

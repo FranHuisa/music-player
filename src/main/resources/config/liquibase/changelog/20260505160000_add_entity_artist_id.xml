@@ -1,0 +1,24 @@
+<changeSet id="add-artist-to-song" author="tu">
+
+    <addColumn tableName="song">
+        <column name="artist_id" type="BIGINT" />
+    </addColumn>
+    
+    <update tableName="song">
+        <column name="artist_id" valueNumeric="1" />
+        <where>artist_id IS NULL</where>
+    </update>
+
+    <addNotNullConstraint
+        tableName="song"
+        columnName="artist_id"
+        columnDataType="BIGINT" />
+
+    <addForeignKeyConstraint
+        baseTableName="song"
+        baseColumnNames="artist_id"
+        constraintName="fk_song_artist"
+        referencedTableName="artist"
+        referencedColumnNames="id" />
+
+</changeSet>

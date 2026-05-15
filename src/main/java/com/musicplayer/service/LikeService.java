@@ -53,4 +53,8 @@ public interface LikeService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    void toggleLike(Long songId);
+
+    List<LikeDTO> findMyLikes();
 }

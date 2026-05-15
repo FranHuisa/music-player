@@ -7,6 +7,7 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 import org.hibernate.annotations.Cache;
@@ -51,7 +52,7 @@ public class Song implements Serializable {
     private String lyrics;
 
     @Column(name = "release_date")
-    private LocalDate releaseDate;
+    private LocalDateTime releaseDate;
 
     @Column(name = "created_at")
     private Instant createdAt;
@@ -62,6 +63,9 @@ public class Song implements Serializable {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Genre genre;
+
+    @ManyToOne
+    private Artist artist;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -110,6 +114,10 @@ public class Song implements Serializable {
         return this;
     }
 
+    public Artist getArtist() {
+        return this.artist;
+    }
+
     public void setDuration(Integer duration) {
         this.duration = duration;
     }
@@ -153,16 +161,16 @@ public class Song implements Serializable {
         this.lyrics = lyrics;
     }
 
-    public LocalDate getReleaseDate() {
+    public LocalDateTime getReleaseDate() {
         return this.releaseDate;
     }
 
-    public Song releaseDate(LocalDate releaseDate) {
+    public Song releaseDate(LocalDateTime releaseDate) {
         this.setReleaseDate(releaseDate);
         return this;
     }
 
-    public void setReleaseDate(LocalDate releaseDate) {
+    public void setReleaseDate(LocalDateTime releaseDate) {
         this.releaseDate = releaseDate;
     }
 
@@ -177,6 +185,22 @@ public class Song implements Serializable {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    @Column(name = "active", nullable = false)
+    private Boolean active = true;
+
+    public Boolean getActive() {
+        return this.active;
+    }
+
+    public Song active(Boolean active) {
+        this.setActive(active);
+        return this;
+    }
+
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 
     public Album getAlbum() {
@@ -218,6 +242,10 @@ public class Song implements Serializable {
         return this;
     }
 
+    public void setArtist(Artist artist) {
+        this.artist = artist;
+    }
+
     public Song addArtists(Artist artist) {
         this.artistses.add(artist);
         return this;
@@ -228,7 +256,8 @@ public class Song implements Serializable {
         return this;
     }
 
-    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here
+    // jhipster-needle-entity-add-getters-setters - JHipster will add getters and
+    // setters here
 
     @Override
     public boolean equals(Object o) {
@@ -243,7 +272,8 @@ public class Song implements Serializable {
 
     @Override
     public int hashCode() {
-        // see https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
+        // see
+        // https://vladmihalcea.com/how-to-implement-equals-and-hashcode-using-the-jpa-entity-identifier/
         return getClass().hashCode();
     }
 
@@ -251,14 +281,14 @@ public class Song implements Serializable {
     @Override
     public String toString() {
         return "Song{" +
-            "id=" + getId() +
-            ", title='" + getTitle() + "'" +
-            ", duration=" + getDuration() +
-            ", fileUrl='" + getFileUrl() + "'" +
-            ", coverImage='" + getCoverImage() + "'" +
-            ", lyrics='" + getLyrics() + "'" +
-            ", releaseDate='" + getReleaseDate() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", title='" + getTitle() + "'" +
+                ", duration=" + getDuration() +
+                ", fileUrl='" + getFileUrl() + "'" +
+                ", coverImage='" + getCoverImage() + "'" +
+                ", lyrics='" + getLyrics() + "'" +
+                ", releaseDate='" + getReleaseDate() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                "}";
     }
 }

@@ -1,0 +1,127 @@
+@if (showLyrics()) {
+  <div class="lyrics-panel">
+    <div class="lyrics-panel-header">
+      <span class="lyrics-title">Letra</span>
+      <button class="lyrics-close-btn" (click)="toggleLyrics()" aria-label="Cerrar letras">
+        <fa-icon icon="times" />
+      </button>
+    </div>
+    <div class="lyrics-body">
+      @if (cargandoLetras()) {
+        <div class="lyrics-loading">
+          <div class="lyrics-spinner"></div>
+          <span>Buscando letra...</span>
+        </div>
+      } @else {
+        <pre class="lyrics-text">{{ letras() }}</pre>
+      }
+    </div>
+  </div>
+}
+
+<div class="player-bar">
+  <div class="player-now-playing">
+    <div class="player-cover">
+      @if (player.currentSong()?.coverImage) {
+        <img
+          [src]="
+            player.currentSong()?.coverImage?.startsWith('http')
+              ? player.currentSong()?.coverImage
+              : 'http://localhost:8080' + player.currentSong()?.coverImage
+          "
+          class="player-cover-img"
+          alt="cover"
+        />
+      } @else {
+        <fa-icon icon="music" class="player-cover-placeholder"></fa-icon>
+      }
+    </div>
+    <div class="player-song-info">
+      <span class="player-song-name">{{ player.currentSong()?.title ?? 'No hay canción' }}</span>
+      <span class="player-artist-name">
+        {{ $any(player.currentSong())?.artist?.name ?? 'Selecciona una canción' }}
+      </span>
+    </div>
+  </div>
+
+  <div class="player-controls">
+    <div class="player-buttons">
+      <button
+        class="player-icon-btn secondary-btn"
+        [class.active]="player.isShuffle()"
+        (click)="toggleShuffle()"
+        title="Aleatorio"
+        aria-label="Aleatorio"
+      >
+        <fa-icon icon="random"></fa-icon>
+      </button>
+
+      <button class="player-icon-btn secondary-btn" (click)="player.prev()" title="Anterior" aria-label="Anterior">
+        <fa-icon icon="step-backward"></fa-icon>
+      </button>
+
+      <button class="player-icon-btn play-pause-btn" (click)="togglePlay()" title="Reproducir/Pausar" aria-label="Reproducir/Pausar">
+        <fa-icon [icon]="player.isPlaying() ? 'pause' : 'play'"></fa-icon>
+      </button>
+
+      <button class="player-icon-btn secondary-btn" (click)="player.next()" title="Siguiente" aria-label="Siguiente">
+        <fa-icon icon="step-forward"></fa-icon>
+      </button>
+
+      <button
+        class="player-icon-btn secondary-btn"
+        [class.active]="player.isRepeat()"
+        (click)="toggleRepeat()"
+        title="Repetir"
+        aria-label="Repetir"
+      >
+        <fa-icon icon="redo"></fa-icon>
+      </button>
+    </div>
+
+    <div class="player-progress-row">
+      <span class="player-time">{{ player.currentTime() | formatDuration }}</span>
+      <div class="progress-track">
+        <input
+          type="range"
+          class="player-slider progress-slider"
+          min="0"
+          max="100"
+          [value]="player.progress()"
+          (input)="setProgress($event)"
+          aria-label="Progreso"
+        />
+        <div class="progress-fill" [style.width.%]="player.progress()"></div>
+      </div>
+      <span class="player-time">{{ player.duration() | formatDuration }}</span>
+    </div>
+  </div>
+
+  <!-- Right: Volume -->
+  <div class="player-right">
+    <button
+      class="player-icon-btn secondary-btn"
+      [class.active]="showLyrics()"
+      (click)="toggleLyrics()"
+      title="Ver letra"
+      aria-label="Ver letra"
+    >
+      <fa-icon icon="microphone" />
+    </button>
+    <button class="player-icon-btn secondary-btn" (click)="toggleMute()" title="Silenciar" aria-label="Silenciar">
+      <fa-icon [icon]="player.volumeIcon()"></fa-icon>
+    </button>
+    <div class="volume-track">
+      <input
+        type="range"
+        class="player-slider volume-slider"
+        min="0"
+        max="100"
+        [value]="player.isMuted() ? 0 : player.volume()"
+        (input)="setVolume($event)"
+        aria-label="Volumen"
+      />
+      <div class="volume-fill" [style.width.%]="player.isMuted() ? 0 : player.volume()"></div>
+    </div>
+  </div>
+</div>

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { NgbPagination } from '@ng-bootstrap/ng-bootstrap/pagination';
 import { TranslateModule } from '@ngx-translate/core';
@@ -29,6 +30,9 @@ import { PlaylistService } from '../service/playlist.service';
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
     SortDirective,
@@ -49,7 +53,8 @@ export class Playlist implements OnInit {
   readonly itemsPerPage = signal(ITEMS_PER_PAGE);
   readonly totalItems = signal(0);
   readonly page = signal(1);
-
+  selectedCover: File | null = null;
+  coverPreviewUrl: string | null = null;
   readonly router = inject(Router);
   protected readonly playlistService = inject(PlaylistService);
   // eslint-disable-next-line @typescript-eslint/member-ordering
@@ -89,7 +94,45 @@ export class Playlist implements OnInit {
   openFile(base64String: string, contentType: string | null | undefined): void {
     return this.dataUtils.openFile(base64String, contentType);
   }
+  onCoverSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
 
+    if (!input.files || input.files.length === 0) {
+      this.selectedCover = null;
+      this.coverPreviewUrl = null;
+      return;
+    }
+
+    const file = input.files[0];
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Formato no permitido');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      alert('Máximo 5MB');
+      return;
+    }
+
+    const img = new Image();
+
+    img.onload = () => {
+      if (img.width < 300 || img.height < 300) {
+        alert('Resolución mínima 300x300');
+        return;
+      }
+
+      this.selectedCover = file;
+      this.coverPreviewUrl = URL.createObjectURL(file);
+    };
+
+    img.src = URL.createObjectURL(file);
+  }
   delete(playlist: IPlaylist): void {
     const modalRef = this.modalService.open(PlaylistDeleteDialog, { size: 'lg', backdrop: 'static' });
     modalRef.componentInstance.playlist = playlist;

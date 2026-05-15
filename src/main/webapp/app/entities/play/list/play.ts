@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Data, ParamMap, Router, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { NgbDropdown, NgbDropdownMenu, NgbDropdownToggle } from '@ng-bootstrap/ng-bootstrap/dropdown';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap/modal';
 import { TranslateModule } from '@ngx-translate/core';
 import { Subscription, combineLatest, filter, tap } from 'rxjs';
@@ -10,6 +11,7 @@ import { Subscription, combineLatest, filter, tap } from 'rxjs';
 import { DEFAULT_SORT_DATA, ITEM_DELETED_EVENT, SORT } from 'app/config/navigation.constants';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
+import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { SortByDirective, SortDirective, SortService, type SortState, sortStateSignal } from 'app/shared/sort';
@@ -20,12 +22,17 @@ import { PlayService } from '../service/play.service';
 @Component({
   selector: 'jhi-play',
   templateUrl: './play.html',
+  styleUrl: './play.scss',
   imports: [
     RouterLink,
     FormsModule,
     FontAwesomeModule,
+    NgbDropdown,
+    NgbDropdownMenu,
+    NgbDropdownToggle,
     AlertError,
     Alert,
+    HasAnyAuthorityDirective,
     SortDirective,
     SortByDirective,
     TranslateDirective,
@@ -54,6 +61,14 @@ export class Play implements OnInit {
   }
 
   trackId = (item: IPlay): number => this.playService.getPlayIdentifier(item);
+
+  formatDuration(seconds: number | null | undefined): string {
+    if (!seconds) return '—';
+    const s = Math.abs(Math.round(seconds));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
+  }
 
   ngOnInit(): void {
     this.subscription = combineLatest([this.activatedRoute.queryParamMap, this.activatedRoute.data])

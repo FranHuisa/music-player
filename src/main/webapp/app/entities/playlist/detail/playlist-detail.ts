@@ -1,35 +1,63 @@
-import { Component, inject, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateModule } from '@ngx-translate/core';
 
-import { DataUtils } from 'app/core/util/data-util.service';
 import { Alert } from 'app/shared/alert/alert';
 import { AlertError } from 'app/shared/alert/alert-error';
 import { FormatMediumDatetimePipe } from 'app/shared/date';
 import { TranslateDirective } from 'app/shared/language';
 import { IPlaylist } from '../playlist.model';
+import { PlayerService } from 'app/layouts/player-bar/player.service';
+import { PlaylistSongService } from 'app/entities/playlist-song/service/playlist-song.service';
+import { ISong } from 'app/entities/song/song.model';
+import { IPlaylistSong } from 'app/entities/playlist-song/playlist-song.model';
 
 @Component({
   selector: 'jhi-playlist-detail',
   templateUrl: './playlist-detail.html',
+  styleUrls: ['./playlist-detail.scss'],
   imports: [FontAwesomeModule, Alert, AlertError, TranslateDirective, TranslateModule, RouterLink, FormatMediumDatetimePipe],
 })
 export class PlaylistDetail {
-  readonly playlist = input<IPlaylist | null>(null);
+  private route = inject(ActivatedRoute);
+  protected readonly player = inject(PlayerService);
+  private readonly playlistSongService = inject(PlaylistSongService);
 
-  protected dataUtils = inject(DataUtils);
+  playlist: IPlaylist | null = null;
 
-  byteSize(base64String: string): string {
-    return this.dataUtils.byteSize(base64String);
-  }
-
-  openFile(base64String: string, contentType: string | null | undefined): void {
-    this.dataUtils.openFile(base64String, contentType);
+  constructor() {
+    this.route.data.subscribe(({ playlist }) => {
+      this.playlist = playlist;
+    });
   }
 
   previousState(): void {
     globalThis.history.back();
+  }
+
+  playPlaylist(): void {
+    const songs = this.playlist?.playlistSongs?.map(ps => ps.song).filter(Boolean) as ISong[];
+    if (songs?.length) {
+      this.player.playSong(songs[0], songs);
+    }
+  }
+
+  playSong(playlistSong: IPlaylistSong): void {
+    if (!playlistSong.song) return;
+    const queue = this.playlist?.playlistSongs?.map(ps => ps.song).filter(Boolean) as ISong[];
+    this.player.playSong(playlistSong.song as ISong, queue);
+  }
+
+  removeSong(playlistSong: IPlaylistSong): void {
+    if (!playlistSong.id) return;
+    this.playlistSongService.delete(playlistSong.id).subscribe({
+      next: () => {
+        if (this.playlist?.playlistSongs) {
+          this.playlist.playlistSongs = this.playlist.playlistSongs.filter(ps => ps.id !== playlistSong.id);
+        }
+      },
+    });
   }
 }

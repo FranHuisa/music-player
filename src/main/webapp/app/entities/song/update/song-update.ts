@@ -1,4 +1,4 @@
-import { HttpResponse } from '@angular/common/http';
+import { HttpResponse, HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
@@ -28,6 +28,8 @@ import { SongFormGroup, SongFormService } from './song-form.service';
 @Component({
   selector: 'jhi-song-update',
   templateUrl: './song-update.html',
+  styleUrl: './song-update.scss',
+
   imports: [TranslateDirective, TranslateModule, FontAwesomeModule, AlertError, ReactiveFormsModule, NgbInputDatepicker],
 })
 export class SongUpdate implements OnInit {
@@ -37,7 +39,7 @@ export class SongUpdate implements OnInit {
   albumsSharedCollection = signal<IAlbum[]>([]);
   genresSharedCollection = signal<IGenre[]>([]);
   artistsSharedCollection = signal<IArtist[]>([]);
-
+  protected http = inject(HttpClient);
   protected dataUtils = inject(DataUtils);
   protected eventManager = inject(EventManager);
   protected songService = inject(SongService);
@@ -46,6 +48,10 @@ export class SongUpdate implements OnInit {
   protected genreService = inject(GenreService);
   protected artistService = inject(ArtistService);
   protected activatedRoute = inject(ActivatedRoute);
+  // Validación de archivos
+  selectedFile: File | null = null;
+  selectedCover: File | null = null;
+  coverPreviewUrl: string | null = null;
 
   // eslint-disable-next-line @typescript-eslint/member-ordering
   editForm: SongFormGroup = this.songFormService.createSongFormGroup();
@@ -90,14 +96,45 @@ export class SongUpdate implements OnInit {
 
   save(): void {
     this.isSaving.set(true);
+
+    if (this.selectedFile) {
+      const formData = new FormData();
+      formData.append('file', this.selectedFile);
+
+      this.http.post<{ url: string; filename: string }>('/api/upload/audio', formData).subscribe({
+        next: res => {
+          this.editForm.patchValue({ fileUrl: res.filename });
+          this.saveSong();
+        },
+        error: () => {
+          alert('Error al subir el archivo de audio');
+          this.isSaving.set(false);
+        },
+      });
+    } else {
+      this.saveSong();
+    }
+  }
+  private saveSong(): void {
     const song = this.songFormService.getSong(this.editForm);
+
+    const artistsText = this.editForm.get('artistsText')?.value ?? '';
+
+    song.artistses = artistsText
+      .split(',')
+      .map((name: string) => name.trim())
+      .filter((name: string) => name.length > 0)
+      .map((name: string, index: number) => ({
+        id: index + 1,
+        name,
+      }));
+
     if (song.id === null) {
       this.subscribeToSaveResponse(this.songService.create(song));
     } else {
       this.subscribeToSaveResponse(this.songService.update(song));
     }
   }
-
   protected subscribeToSaveResponse(result: Observable<ISong | null>): void {
     result.pipe(finalize(() => this.onSaveFinalize())).subscribe({
       next: () => this.onSaveSuccess(),
@@ -112,7 +149,97 @@ export class SongUpdate implements OnInit {
   protected onSaveError(): void {
     // Api for inheritance.
   }
+  formatDuration(seconds: number): string {
+    if (seconds == null) return '0:00';
 
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      this.selectedFile = null;
+      return;
+    }
+
+    const file = input.files[0];
+    const allowedTypes = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/x-wav', 'audio/x-mpeg', 'audio/mpeg3'];
+    if (!allowedTypes.includes(file.type)) {
+      alert('Solo se permiten archivos MP3 o WAV');
+      return;
+    }
+
+    const maxSize = 15 * 1024 * 1024;
+    if (file.size > maxSize) {
+      alert('El archivo es demasiado grande (máx 15MB)');
+      return;
+    }
+
+    this.selectedFile = file;
+
+    const audio = new Audio();
+    audio.src = URL.createObjectURL(file);
+    audio.onloadedmetadata = () => {
+      this.editForm.patchValue({ duration: Math.floor(audio.duration) });
+      URL.revokeObjectURL(audio.src);
+    };
+  }
+
+  onCoverSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      this.selectedCover = null;
+      this.coverPreviewUrl = null;
+      return;
+    }
+
+    const file = input.files[0];
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      alert('Formato no permitido');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      alert('Máximo 5MB');
+      return;
+    }
+
+    const img = new Image();
+
+    img.onload = () => {
+      if (img.width < 300 || img.height < 300) {
+        alert('Resolución mínima 300x300');
+        return;
+      }
+
+      this.selectedCover = file;
+      this.coverPreviewUrl = URL.createObjectURL(file);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      this.songService.uploadImage(formData).subscribe({
+        next: res => {
+          this.editForm.patchValue({
+            coverImage: res.url,
+          });
+        },
+        error: () => {
+          alert('Error subiendo imagen');
+        },
+      });
+    };
+
+    img.src = URL.createObjectURL(file);
+  }
   protected onSaveFinalize(): void {
     this.isSaving.set(false);
   }
@@ -120,6 +247,10 @@ export class SongUpdate implements OnInit {
   protected updateForm(song: ISong): void {
     this.song = song;
     this.songFormService.resetForm(this.editForm, song);
+
+    if (song.coverImage) {
+      this.coverPreviewUrl = song.coverImage;
+    }
 
     this.albumsSharedCollection.update(albums => this.albumService.addAlbumToCollectionIfMissing<IAlbum>(albums, song.album));
     this.genresSharedCollection.update(genres => this.genreService.addGenreToCollectionIfMissing<IGenre>(genres, song.genre));
@@ -129,24 +260,23 @@ export class SongUpdate implements OnInit {
   }
 
   protected loadRelationshipsOptions(): void {
-    this.albumService
-      .query()
-      .pipe(map((res: HttpResponse<IAlbum[]>) => res.body ?? []))
-      .pipe(map((albums: IAlbum[]) => this.albumService.addAlbumToCollectionIfMissing<IAlbum>(albums, this.song?.album)))
-      .subscribe((albums: IAlbum[]) => this.albumsSharedCollection.set(albums));
+    this.http.get<any[]>('/api/albums/my').subscribe({
+      next: albums => {
+        this.albumsSharedCollection.set(this.albumService.addAlbumToCollectionIfMissing(albums, this.song?.album));
+      },
+      error: () => this.albumsSharedCollection.set([]),
+    });
 
     this.genreService
       .query()
       .pipe(map((res: HttpResponse<IGenre[]>) => res.body ?? []))
-      .pipe(map((genres: IGenre[]) => this.genreService.addGenreToCollectionIfMissing<IGenre>(genres, this.song?.genre)))
-      .subscribe((genres: IGenre[]) => this.genresSharedCollection.set(genres));
+      .pipe(map(genres => this.genreService.addGenreToCollectionIfMissing(genres, this.song?.genre)))
+      .subscribe(genres => this.genresSharedCollection.set(genres));
 
     this.artistService
       .query()
       .pipe(map((res: HttpResponse<IArtist[]>) => res.body ?? []))
-      .pipe(
-        map((artists: IArtist[]) => this.artistService.addArtistToCollectionIfMissing<IArtist>(artists, ...(this.song?.artistses ?? []))),
-      )
-      .subscribe((artists: IArtist[]) => this.artistsSharedCollection.set(artists));
+      .pipe(map(artists => this.artistService.addArtistToCollectionIfMissing(artists, ...(this.song?.artistses ?? []))))
+      .subscribe(artists => this.artistsSharedCollection.set(artists));
   }
 }

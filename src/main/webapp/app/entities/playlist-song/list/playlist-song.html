@@ -1,118 +1,112 @@
-<div>
-  <h2 id="page-heading" data-cy="PlaylistSongHeading">
-    <span jhiTranslate="musicPlayerApp.playlistSong.home.title">Playlist Songs</span>
-
-    <div class="d-flex justify-content-end">
-      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading()">
-        <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
-        <span jhiTranslate="musicPlayerApp.playlistSong.home.refreshListLabel">Refrescar lista</span>
-      </button>
-
-      <button
-        id="jh-create-entity"
-        data-cy="entityCreateButton"
-        class="btn btn-primary jh-create-entity create-playlist-song"
-        [routerLink]="['/playlist-song/new']"
-      >
-        <fa-icon icon="plus" />
-        <span jhiTranslate="musicPlayerApp.playlistSong.home.createLabel">Crear nuevo Playlist Song</span>
-      </button>
-    </div>
-  </h2>
-
+<div class="playlist-song-page">
   <jhi-alert-error />
-
   <jhi-alert />
 
+  <div class="entity-list-hero">
+    <div class="entity-list-hero-icon" style="background: linear-gradient(135deg, #450af5, #1db954)">
+      <fa-icon icon="list" />
+    </div>
+    <div class="entity-list-hero-info">
+      <span class="entity-list-hero-type">Playlists</span>
+      <h1>Canciones en playlists</h1>
+      <span class="entity-list-hero-count">{{ playlistSongs().length }} canciones</span>
+    </div>
+  </div>
+
+  <div class="entity-list-actions">
+    <button class="btn-icon-action" (click)="load()" [disabled]="isLoading()" title="Actualizar" aria-label="Actualizar">
+      <fa-icon icon="sync" [animation]="isLoading() ? 'spin' : undefined" />
+    </button>
+  </div>
+
   @if (playlistSongs().length === 0) {
-    <div class="alert alert-warning" id="no-result">
-      <span jhiTranslate="musicPlayerApp.playlistSong.home.notFound">Ningún Playlist Songs encontrado</span>
+    <div class="entity-list-empty">
+      <fa-icon icon="list" class="entity-list-empty-icon" />
+      <p>No hay canciones en playlists</p>
     </div>
   } @else {
-    <div class="table-responsive table-entities" id="entities">
-      <table class="table table-striped" aria-describedby="page-heading">
-        <thead>
-          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
-            <th scope="col" jhiSortBy="id">
-              <div class="d-flex">
-                <span jhiTranslate="global.field.id">ID</span>
+    <div class="playlist-song-table" id="entities">
+      <div class="playlist-song-header" jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+        <div class="col-num">#</div>
+        <div class="col-song" jhiSortBy="song.id">Canción <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-playlist" jhiSortBy="playlist.id">Playlist <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-added" jhiSortBy="addedAt">Añadida <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-position" jhiSortBy="position">Posición <fa-icon class="sort-icon" icon="sort" /></div>
+        <div class="col-actions"></div>
+      </div>
+      <div class="playlist-song-divider"></div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="position">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.playlistSong.position">Position</span>
+      @for (playlistSong of playlistSongs(); track trackId(playlistSong); let i = $index) {
+        <div class="playlist-song-row" data-cy="entityTable">
+          <div class="col-num">
+            <span class="track-num">{{ i + 1 }}</span>
+            <button class="track-play-btn" title="Reproducir" aria-label="Reproducir">
+              <fa-icon icon="play" />
+            </button>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="addedAt">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.playlistSong.addedAt">Added At</span>
+          <div class="col-song">
+            <div class="playlist-song-cover">
+              <fa-icon icon="music" />
+            </div>
+            <div class="playlist-song-info">
+              @if (playlistSong.song) {
+                <a [routerLink]="['/song', playlistSong.song.id, 'view']" class="playlist-song-title"
+                  >Canción #{{ playlistSong.song.id }}</a
+                >
+              } @else {
+                <span class="playlist-song-title">Canción desconocida</span>
+              }
+              @if (playlistSong.playlist) {
+                <span class="playlist-song-sub">En playlist #{{ playlistSong.playlist.id }}</span>
+              } @else {
+                <span class="playlist-song-sub">Sin playlist</span>
+              }
+            </div>
+          </div>
 
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="playlist.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.playlistSong.playlist">Playlist</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col" jhiSortBy="song.id">
-              <div class="d-flex">
-                <span jhiTranslate="musicPlayerApp.playlistSong.song">Song</span>
-                <fa-icon class="p-1" icon="sort" />
-              </div>
-            </th>
-            <th scope="col"></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (playlistSong of playlistSongs(); track trackId(playlistSong)) {
-            <tr data-cy="entityTable">
-              <td>
-                <a [routerLink]="['/playlist-song', playlistSong.id, 'view']">{{ playlistSong.id }}</a>
-              </td>
-              <td>{{ playlistSong.position }}</td>
-              <td>{{ playlistSong.addedAt | formatMediumDatetime }}</td>
-              <td>
-                @if (playlistSong.playlist) {
-                  <div>
-                    <a [routerLink]="['/playlist', playlistSong.playlist.id, 'view']">{{ playlistSong.playlist.id }}</a>
-                  </div>
-                }
-              </td>
-              <td>
-                @if (playlistSong.song) {
-                  <div>
-                    <a [routerLink]="['/song', playlistSong.song.id, 'view']">{{ playlistSong.song.id }}</a>
-                  </div>
-                }
-              </td>
-              <td class="text-end">
-                <div class="btn-group">
-                  <a [routerLink]="['/playlist-song', playlistSong.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
-                    <fa-icon icon="eye" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
+          <div class="col-playlist">
+            @if (playlistSong.playlist) {
+              <a [routerLink]="['/playlist', playlistSong.playlist.id, 'view']" class="playlist-song-link"
+                >Playlist #{{ playlistSong.playlist.id }}</a
+              >
+            } @else {
+              <span class="playlist-song-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-added">
+            @if (playlistSong.addedAt) {
+              {{ playlistSong.addedAt | formatMediumDatetime }}
+            } @else {
+              <span class="playlist-song-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-position">
+            @if (playlistSong.position !== null && playlistSong.position !== undefined) {
+              {{ playlistSong.position }}
+            } @else {
+              <span class="playlist-song-subdued">—</span>
+            }
+          </div>
+
+          <div class="col-actions">
+            <div ngbDropdown display="dynamic" placement="left-start">
+              <button class="track-more-btn" ngbDropdownToggle [id]="'playlist-song-actions-' + playlistSong.id" aria-label="Más acciones">
+                <span class="dots">•••</span>
+              </button>
+              <ul ngbDropdownMenu [attr.aria-labelledby]="'playlist-song-actions-' + playlistSong.id">
+                <li>
+                  <a class="dropdown-item" [routerLink]="['/playlist-song', playlistSong.id, 'view']">
+                    <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalle
                   </a>
-
-                  <a [routerLink]="['/playlist-song', playlistSong.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
-                    <fa-icon icon="pencil-alt" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
-                  </a>
-
-                  <button type="submit" (click)="delete(playlistSong)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
-                    <fa-icon icon="times" />
-                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
-                  </button>
-                </div>
-              </td>
-            </tr>
-          }
-        </tbody>
-      </table>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 </div>
