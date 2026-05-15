@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 
 import { ASC } from 'app/config/navigation.constants';
 import { UserRouteAccessService } from 'app/core/auth/user-route-access.service';
+import { Authority } from 'app/shared/jhipster/constants';
 
 import GenreResolve from './route/genre-routing-resolve.service';
 
@@ -10,7 +11,7 @@ const genreRoute: Routes = [
     path: '',
     loadComponent: () => import('./list/genre').then(m => m.Genre),
     data: {
-      defaultSort: `id,${ASC}`,
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },

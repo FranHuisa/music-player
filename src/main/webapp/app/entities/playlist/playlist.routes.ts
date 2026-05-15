@@ -10,7 +10,7 @@ const playlistRoute: Routes = [
     path: '',
     loadComponent: () => import('./list/playlist').then(m => m.Playlist),
     data: {
-      defaultSort: `id,${ASC}`,
+      authorities: ['ROLE_USER'],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -28,6 +28,9 @@ const playlistRoute: Routes = [
     resolve: {
       playlist: PlaylistResolve,
     },
+    data: {
+      authorities: ['ROLE_USER'],
+    },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -35,6 +38,9 @@ const playlistRoute: Routes = [
     loadComponent: () => import('./update/playlist-update').then(m => m.PlaylistUpdate),
     resolve: {
       playlist: PlaylistResolve,
+    },
+    data: {
+      authorities: ['ROLE_USER'],
     },
     canActivate: [UserRouteAccessService],
   },

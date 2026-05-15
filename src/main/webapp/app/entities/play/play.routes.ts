@@ -11,7 +11,7 @@ const playRoute: Routes = [
     path: '',
     loadComponent: () => import('./list/play').then(m => m.Play),
     data: {
-      defaultSort: `id,${ASC}`,
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },

@@ -8,6 +8,7 @@ import com.musicplayer.repository.PlaylistRepository;
 import com.musicplayer.repository.PlaylistSongRepository;
 import com.musicplayer.repository.SongRepository;
 import com.musicplayer.repository.UserRepository;
+import com.musicplayer.security.OwnershipSecurityService;
 import com.musicplayer.service.PlaylistService;
 import com.musicplayer.service.dto.PlaylistDTO;
 import com.musicplayer.service.mapper.PlaylistMapper;
@@ -32,7 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class PlaylistServiceImpl implements PlaylistService {
 
     private static final Logger LOG = LoggerFactory.getLogger(PlaylistServiceImpl.class);
-
+    private final OwnershipSecurityService ownershipSecurityService;
     private final PlaylistRepository playlistRepository;
     private final UserRepository userRepository;
     private final PlaylistMapper playlistMapper;
@@ -44,13 +45,15 @@ public class PlaylistServiceImpl implements PlaylistService {
         PlaylistMapper playlistMapper,
         PlaylistSongRepository playlistSongRepository,
         SongRepository songRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        OwnershipSecurityService ownershipSecurityService
     ) {
         this.playlistRepository = playlistRepository;
         this.playlistMapper = playlistMapper;
         this.playlistSongRepository = playlistSongRepository;
         this.songRepository = songRepository;
         this.userRepository = userRepository;
+        this.ownershipSecurityService = ownershipSecurityService;
     }
 
     @Override
@@ -69,16 +72,22 @@ public class PlaylistServiceImpl implements PlaylistService {
 
     @Override
     public PlaylistDTO update(PlaylistDTO playlistDTO) {
-        LOG.debug("Request to update Playlist : {}", playlistDTO);
+        Playlist playlist = playlistRepository
+            .findById(playlistDTO.getId())
+            .orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
 
-        Playlist playlist = playlistMapper.toEntity(playlistDTO);
+        if (!ownershipSecurityService.canAccessPlaylist(playlist)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        Playlist updated = playlistMapper.toEntity(playlistDTO);
 
         User user = getCurrentUser();
-        playlist.setUser(user);
+        updated.setUser(user);
 
-        playlist = playlistRepository.save(playlist);
+        updated = playlistRepository.save(updated);
 
-        return playlistMapper.toDto(playlist);
+        return playlistMapper.toDto(updated);
     }
 
     @Override
@@ -114,24 +123,37 @@ public class PlaylistServiceImpl implements PlaylistService {
     @Override
     @Transactional(readOnly = true)
     public Optional<PlaylistDTO> findOne(Long id) {
-        LOG.debug("Request to get Playlist : {}", id);
-        return playlistRepository.findById(id).map(playlistMapper::toDto);
+        Playlist playlist = playlistRepository.findById(id).orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
+
+        if (!ownershipSecurityService.canAccessPlaylist(playlist)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        return Optional.of(playlistMapper.toDto(playlist));
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete Playlist : {}", id);
-        playlistRepository.deleteById(id);
+        Playlist playlist = playlistRepository.findById(id).orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
+
+        if (!ownershipSecurityService.canAccessPlaylist(playlist)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        playlistRepository.delete(playlist);
     }
 
     @Override
     public void addSongToPlaylist(Long playlistId, Long songId) {
         Playlist playlist = playlistRepository.findById(playlistId).orElseThrow(() -> new RuntimeException("Playlist no encontrada"));
 
+        if (!ownershipSecurityService.canAccessPlaylist(playlist)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
         Song song = songRepository.findById(songId).orElseThrow(() -> new RuntimeException("Canción no encontrada"));
 
         boolean exists = playlistSongRepository.findByPlaylistIdAndSongId(playlistId, songId).isPresent();
-
         if (exists) return;
 
         PlaylistSong ps = new PlaylistSong();

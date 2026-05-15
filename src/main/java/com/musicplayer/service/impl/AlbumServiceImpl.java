@@ -4,6 +4,7 @@ import com.musicplayer.domain.Album;
 import com.musicplayer.domain.Artist;
 import com.musicplayer.repository.AlbumRepository;
 import com.musicplayer.repository.ArtistRepository;
+import com.musicplayer.security.OwnershipSecurityService;
 import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.AlbumService;
 import com.musicplayer.service.dto.AlbumDTO;
@@ -38,13 +39,20 @@ public class AlbumServiceImpl implements AlbumService {
 
     private final AlbumRepository albumRepository;
     private final ArtistRepository artistRepository;
+    private final OwnershipSecurityService ownershipSecurityService;
 
     private final AlbumMapper albumMapper;
 
-    public AlbumServiceImpl(AlbumRepository albumRepository, AlbumMapper albumMapper, ArtistRepository artistRepository) {
+    public AlbumServiceImpl(
+        AlbumRepository albumRepository,
+        AlbumMapper albumMapper,
+        ArtistRepository artistRepository,
+        OwnershipSecurityService ownershipSecurityService
+    ) {
         this.albumRepository = albumRepository;
         this.artistRepository = artistRepository;
         this.albumMapper = albumMapper;
+        this.ownershipSecurityService = ownershipSecurityService;
     }
 
     @Override
@@ -72,9 +80,15 @@ public class AlbumServiceImpl implements AlbumService {
 
     @Override
     public AlbumDTO update(AlbumDTO albumDTO) {
-        LOG.debug("Request to update Album : {}", albumDTO);
-        Album album = albumMapper.toEntity(albumDTO);
+        Album album = albumRepository.findById(albumDTO.getId()).orElseThrow(() -> new RuntimeException("Album not found"));
+
+        if (!ownershipSecurityService.canAccessAlbum(album)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        album = albumMapper.toEntity(albumDTO);
         album = albumRepository.save(album);
+
         return albumMapper.toDto(album);
     }
 
@@ -103,14 +117,24 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     @Transactional(readOnly = true)
     public Optional<AlbumDTO> findOne(Long id) {
-        LOG.debug("Request to get Album : {}", id);
-        return albumRepository.findById(id).map(albumMapper::toDto);
+        Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
+
+        if (!ownershipSecurityService.canAccessAlbum(album)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        return Optional.of(albumMapper.toDto(album));
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete Album : {}", id);
-        albumRepository.deleteById(id);
+        Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
+
+        if (!ownershipSecurityService.canAccessAlbum(album)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        albumRepository.delete(album);
     }
 
     @Override
@@ -145,6 +169,11 @@ public class AlbumServiceImpl implements AlbumService {
     @Override
     public AlbumDTO toggleActive(Long id) {
         Album album = albumRepository.findById(id).orElseThrow(() -> new RuntimeException("Album not found"));
+
+        if (!ownershipSecurityService.canAccessAlbum(album)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
         album.setActive(!Boolean.TRUE.equals(album.getActive()));
         return albumMapper.toDto(albumRepository.save(album));
     }

@@ -12,7 +12,7 @@ const albumRoute: Routes = [
     pathMatch: 'full',
     loadComponent: () => import('./list/album').then(m => m.Album),
     data: {
-      defaultSort: `id,${ASC}`,
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },

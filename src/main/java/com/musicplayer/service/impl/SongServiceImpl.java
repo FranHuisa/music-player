@@ -4,6 +4,7 @@ import com.musicplayer.domain.Artist;
 import com.musicplayer.domain.Song;
 import com.musicplayer.repository.ArtistRepository;
 import com.musicplayer.repository.SongRepository;
+import com.musicplayer.security.OwnershipSecurityService;
 import com.musicplayer.security.SecurityUtils;
 import com.musicplayer.service.SongService;
 import com.musicplayer.service.dto.SongDTO;
@@ -35,10 +36,18 @@ public class SongServiceImpl implements SongService {
 
     private final ArtistRepository artistRepository;
 
-    public SongServiceImpl(SongRepository songRepository, SongMapper songMapper, ArtistRepository artistRepository) {
+    private final OwnershipSecurityService ownershipSecurityService;
+
+    public SongServiceImpl(
+        SongRepository songRepository,
+        SongMapper songMapper,
+        ArtistRepository artistRepository,
+        OwnershipSecurityService ownershipSecurityService
+    ) {
         this.songRepository = songRepository;
         this.songMapper = songMapper;
         this.artistRepository = artistRepository;
+        this.ownershipSecurityService = ownershipSecurityService;
     }
 
     @Override
@@ -59,6 +68,10 @@ public class SongServiceImpl implements SongService {
     @Override
     public SongDTO update(SongDTO songDTO) {
         Song song = songRepository.findById(songDTO.getId()).orElseThrow(() -> new RuntimeException("Song not found"));
+
+        if (!ownershipSecurityService.canAccessSong(song)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
 
         song.setTitle(songDTO.getTitle());
         song.setDuration(songDTO.getDuration());
@@ -105,14 +118,24 @@ public class SongServiceImpl implements SongService {
     @Override
     @Transactional(readOnly = true)
     public Optional<SongDTO> findOne(Long id) {
-        LOG.debug("Request to get Song : {}", id);
-        return songRepository.findOneWithEagerRelationships(id).map(songMapper::toDto);
+        Song song = songRepository.findOneWithEagerRelationships(id).orElseThrow(() -> new RuntimeException("Song not found"));
+
+        if (!ownershipSecurityService.canAccessSong(song)) {
+            throw new org.springframework.security.access.AccessDeniedException("No access");
+        }
+
+        return Optional.of(songMapper.toDto(song));
     }
 
     @Override
     public void delete(Long id) {
-        LOG.debug("Request to delete Song : {}", id);
-        songRepository.deleteById(id);
+        Song song = songRepository.findById(id).orElseThrow(() -> new RuntimeException("Song not found"));
+
+        if (!ownershipSecurityService.canAccessSong(song)) {
+            throw new org.springframework.security.access.AccessDeniedException("No permitido");
+        }
+
+        songRepository.delete(song);
     }
 
     @Override
