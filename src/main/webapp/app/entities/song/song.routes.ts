@@ -11,7 +11,7 @@ const songRoute: Routes = [
     path: '',
     loadComponent: () => import('./list/song').then(m => m.Song),
     data: {
-      defaultSort: `id,${ASC}`,
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
@@ -20,6 +20,9 @@ const songRoute: Routes = [
     loadComponent: () => import('./detail/song-detail').then(m => m.SongDetail),
     resolve: {
       song: SongResolve,
+    },
+    data: {
+      authorities: [Authority.ADMIN, Authority.EDITOR],
     },
     canActivate: [UserRouteAccessService],
   },
