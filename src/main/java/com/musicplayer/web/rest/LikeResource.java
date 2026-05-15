@@ -56,9 +56,7 @@ public class LikeResource {
             throw new BadRequestAlertException("A new like cannot already have an ID", ENTITY_NAME, "idexists");
         }
         likeDTO = likeService.save(likeDTO);
-        return ResponseEntity.created(new URI("/api/likes/" + likeDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, likeDTO.getId().toString()))
-            .body(likeDTO);
+        return ResponseEntity.created(new URI("/api/likes/" + likeDTO.getId())).body(likeDTO);
     }
 
     /**
@@ -89,9 +87,7 @@ public class LikeResource {
         }
 
         likeDTO = likeService.update(likeDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, likeDTO.getId().toString()))
-            .body(likeDTO);
+        return ResponseEntity.ok().body(likeDTO);
     }
 
     /**
@@ -169,9 +165,7 @@ public class LikeResource {
     public ResponseEntity<Void> deleteLike(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Like : {}", id);
         likeService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/toggle/{songId}")
