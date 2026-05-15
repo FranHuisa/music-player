@@ -290,4 +290,13 @@ public class SongResource {
 
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
+
+    @GetMapping("/by-artist/{artistId}")
+    public ResponseEntity<List<SongDTO>> getSongsByArtist(@PathVariable Long artistId) {
+        LOG.debug("REST request to get Songs by Artist : {}", artistId);
+
+        List<SongDTO> songs = songService.findByArtistId(artistId);
+
+        return ResponseEntity.ok(songs);
+    }
 }

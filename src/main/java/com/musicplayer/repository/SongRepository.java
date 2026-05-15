@@ -53,4 +53,13 @@ public interface SongRepository extends SongRepositoryWithBagRelationships, JpaR
     @Modifying
     @Query("UPDATE Song s SET s.active = true WHERE s.album.id = :albumId")
     void activateByAlbumId(@Param("albumId") Long albumId);
+
+    @Query(
+        """
+            SELECT s FROM Song s
+            LEFT JOIN s.artistses a
+            WHERE a.id = :artistId OR s.artist.id = :artistId
+        """
+    )
+    List<Song> findByArtistId(Long artistId);
 }

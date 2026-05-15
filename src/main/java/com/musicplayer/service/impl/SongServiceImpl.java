@@ -171,4 +171,9 @@ public class SongServiceImpl implements SongService {
     public Page<SongDTO> findPublicSongs(Pageable pageable) {
         return songRepository.findByActiveTrue(pageable).map(songMapper::toDto);
     }
+
+    @Override
+    public List<SongDTO> findByArtistId(Long artistId) {
+        return songRepository.findByArtistId(artistId).stream().map(songMapper::toDto).toList();
+    }
 }

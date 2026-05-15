@@ -41,8 +41,8 @@
       <h2>Canciones</h2>
     </div>
     <div class="artist-songs-list">
-      @if (a?.songses && a!.songses!.length > 0) {
-        @for (song of a!.songses!; track song.id) {
+      @if (songs().length > 0) {
+        @for (song of songs(); track song.id) {
           <div class="artist-song-row">
             <div class="artist-song-cover">
               @if (song.coverImage) {

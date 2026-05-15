@@ -47,6 +47,7 @@ export class ArtistDetail {
   readonly albums = signal<IAlbum[]>([]);
   readonly likedSongs = signal<number[]>([]);
   readonly player = inject(PlayerService);
+  readonly songs = signal<ISong[]>([]);
 
   ngOnInit(): void {
     this.loadLikes();
@@ -56,6 +57,9 @@ export class ArtistDetail {
 
     this.albumService.queryByArtist(artist.id).subscribe(res => {
       this.albums.set(res ?? []);
+    });
+    this.http.get<ISong[]>(`/api/songs/by-artist/${artist.id}`).subscribe(res => {
+      this.songs.set(res ?? []);
     });
   }
   byteSize(base64String: string): string {
