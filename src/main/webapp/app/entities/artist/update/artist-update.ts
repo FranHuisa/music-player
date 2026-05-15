@@ -99,6 +99,8 @@ export class ArtistUpdate implements OnInit {
   save(): void {
     this.isSaving.set(true);
     const artist = this.artistFormService.getArtist(this.editForm);
+    console.log('💾 save() llamado, artist.id:', artist.id);
+
     if (artist.id === null) {
       this.subscribeToSaveResponse(this.artistService.create(artist), true);
     } else {
@@ -106,8 +108,7 @@ export class ArtistUpdate implements OnInit {
     }
   }
 
-  openAssignUserDialog(): void {
-    const artistId = this.editForm.controls.id.value;
+  openAssignUserDialog(artistId: number): void {
     if (!artistId) return;
 
     const usersUrl = this.appConfig.getEndpointFor('api/admin/users');
@@ -115,16 +116,38 @@ export class ArtistUpdate implements OnInit {
 
     this.http.get<IUser[]>(usersUrl).subscribe({
       next: users => {
+        console.log('✅ Usuarios recibidos:', users); // <-- 1
+        console.log('🔍 Authorities del primero:', users[0]?.authorities); // <-- 2
+        console.log(
+          'Todos los roles:',
+          users.map(u => ({ login: u.login, authorities: u.authorities })),
+        );
+
         this.http.get<number[]>(assignedUrl).subscribe({
           next: assignedIds => {
-            const available = users.filter(u => u.authorities?.includes('ROLE_EDITOR') && !assignedIds.includes(u.id));
+            console.log('✅ IDs asignados:', assignedIds); // <-- 3
+
+            const available = users.filter(u => u.authorities?.includes('ROLE_EDITOR') && !assignedIds.map(Number).includes(Number(u.id)));
+            console.log('👥 Disponibles tras filtro:', available); // <-- 4
+
             this.showAssignDialog(artistId, available);
           },
-          error: () => this.showAssignDialog(artistId, users),
+          error: err => {
+            console.error('❌ Error assigned-user-ids:', err); // <-- 5
+            this.showAssignDialog(artistId, users);
+          },
         });
       },
-      error: () =>
-        Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudieron cargar los usuarios.', background: '#0f172a', color: '#ffffff' }),
+      error: err => {
+        console.error('❌ Error cargando usuarios:', err); // <-- 6
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'No se pudieron cargar los usuarios.',
+          background: '#0f172a',
+          color: '#ffffff',
+        });
+      },
     });
   }
   private showAssignDialog(artistId: number, users: IUser[]): void {
@@ -224,40 +247,46 @@ export class ArtistUpdate implements OnInit {
       error: () => this.onSaveError(),
     });
   }
-
   protected onSaveSuccess(saved?: IArtist | null, isNew = false): void {
-    if (!saved?.id) {
-      this.previousState();
+    console.log('🎯 onSaveSuccess llamado', { saved, isNew }); // <-- 1
+
+    if (!saved || !saved.id) {
+      console.warn('⚠️ saved o saved.id es null/undefined', saved); // <-- 2
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se recibió el ID del artista',
+        background: '#0f172a',
+        color: '#ffffff',
+      });
       return;
     }
 
+    const artistId = saved.id;
+    console.log('✅ artistId obtenido:', artistId); // <-- 3
+
     if (this.selectedCover) {
-      this.artistService.uploadImage(saved.id, this.selectedCover).subscribe({
+      console.log('🖼️ Subiendo imagen...'); // <-- 4
+      this.artistService.uploadImage(artistId, this.selectedCover).subscribe({
         next: () => {
           if (isNew) {
-            this.artistFormService.resetForm(this.editForm, saved);
-            this.openAssignUserDialog();
+            console.log('📞 Llamando openAssignUserDialog tras imagen'); // <-- 5
+            this.openAssignUserDialog(artistId);
           } else {
             this.previousState();
           }
         },
-        error: () => {
-          Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: 'No se pudo subir la imagen',
-            color: '#ffffff',
-            background: '#0f172a',
-          });
+        error: err => {
+          console.error('❌ Error subiendo imagen:', err); // <-- 6
+          Swal.fire({ icon: 'error', title: 'Error', text: 'No se pudo subir la imagen' });
         },
       });
-
       return;
     }
 
     if (isNew) {
-      this.artistFormService.resetForm(this.editForm, saved);
-      this.openAssignUserDialog();
+      console.log('📞 Llamando openAssignUserDialog directo (sin imagen)'); // <-- 7
+      this.openAssignUserDialog(artistId);
     } else {
       this.previousState();
     }

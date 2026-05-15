@@ -47,7 +47,11 @@
     </div>
 
     @if (editForm.controls.id.value !== null) {
-      <button type="button" class="btn-assign-user" (click)="openAssignUserDialog()">
+      <button
+        type="button"
+        class="btn-assign-user"
+        (click)="editForm.controls.id.value && openAssignUserDialog(editForm.controls.id.value)"
+      >
         <fa-icon icon="user-plus" />
         Asignar usuario
       </button>

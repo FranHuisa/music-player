@@ -65,7 +65,7 @@ public class ArtistResource {
             throw new BadRequestAlertException("A new artist cannot already have an ID", ENTITY_NAME, "idexists");
         }
         artistDTO = artistService.save(artistDTO);
-        return ResponseEntity.created(new URI("/api/artists/" + artistDTO.getId())).build();
+        return ResponseEntity.created(new URI("/api/artists/" + artistDTO.getId())).body(artistDTO); // <-- añade esto
     }
 
     /**
