@@ -41,4 +41,6 @@ public interface AlbumRepository extends JpaRepository<Album, Long> {
     List<Album> findByArtistUserLoginAndActiveTrueAndReleaseDateAfter(String login, LocalDateTime date);
 
     List<Album> findByActiveFalseAndReleaseDateLessThanEqual(LocalDateTime date);
+
+    List<Album> findByArtistId(Long artistId);
 }

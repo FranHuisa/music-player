@@ -30,7 +30,7 @@
       </div>
       <div class="user-recent-grid">
         @for (play of recentPlays(); track play.id) {
-          <div class="user-recent-card">
+          <div class="user-recent-card" (click)="playSong(play)">
             @if (play.song?.coverImage) {
               <img [src]="getCoverUrl(play.song!.coverImage)" class="user-recent-cover" alt="cover" />
             } @else {

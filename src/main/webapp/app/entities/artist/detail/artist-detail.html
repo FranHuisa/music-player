@@ -62,6 +62,15 @@
                 <span class="artist-song-duration">{{ formatDuration(song.duration) }}</span>
               }
             </div>
+            <div class="artist-song-actions">
+              <button class="play-btn" (click)="playSong(song)" aria-label="Reproducir">
+                <fa-icon [icon]="playerService.currentSong()?.id === song.id && playerService.isPlaying() ? 'pause' : 'play'"></fa-icon>
+              </button>
+
+              <button class="like-btn" (click)="toggleLike(song)" aria-label="Me gusta">
+                <fa-icon icon="heart" [class.text-danger]="likedSongs().includes(song.id)"></fa-icon>
+              </button>
+            </div>
           </div>
         }
       } @else {
@@ -69,4 +78,30 @@
       }
     </div>
   </section>
+  @if (albums().length > 0) {
+    <section class="artist-section">
+      <div class="artist-section-head">
+        <h2>Álbumes</h2>
+      </div>
+
+      <div class="artist-albums-grid">
+        @for (album of albums(); track album.id) {
+          <div class="artist-album-card" [routerLink]="['/album', album.id]">
+            <div class="artist-album-cover">
+              @if (album.coverImage) {
+                <img [src]="album.coverImage" />
+              } @else {
+                <fa-icon icon="compact-disc" />
+              }
+            </div>
+
+            <div class="artist-album-info">
+              <span class="artist-album-title">{{ album.title }}</span>
+              <span class="artist-album-year">{{ album.releaseDate }}</span>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
 </div>

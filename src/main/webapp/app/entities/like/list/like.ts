@@ -22,6 +22,7 @@ import { PlayerService } from 'app/layouts/player-bar/player.service';
 import { ISong } from 'app/entities/song/song.model';
 import { AddToPlaylistService } from 'app/entities/playlist/service/add-to-playlists.service';
 import { ApplicationConfigService } from 'app/core/config/application-config.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'jhi-like',
@@ -86,15 +87,30 @@ export class Like implements OnInit {
   }
 
   delete(like: ILike): void {
-    const modalRef = this.modalService.open(LikeDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.like = like;
-    // unsubscribe not needed because closed completes on modal close
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
-      )
-      .subscribe();
+    Swal.fire({
+      title: '¿Quitar canción de la playlist?',
+      text: 'Esta acción eliminará la canción de tus likes.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#1db954',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, quitar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.likeService.delete(like.id).subscribe(() => {
+          this.load();
+
+          Swal.fire({
+            title: 'Eliminado',
+            text: 'La canción fue quitada de la playlist',
+            icon: 'success',
+            timer: 1500,
+            showConfirmButton: false,
+          });
+        });
+      }
+    });
   }
   getCoverUrl(song: ISong | null | undefined): string {
     if (!song?.coverImage) return '';

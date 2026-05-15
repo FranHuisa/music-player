@@ -138,8 +138,8 @@ export class AddToPlaylistService {
           icon: 'success',
           title: '¡Añadida!',
           text: 'Canción añadida a la playlist.',
-          background: '#1a1a2e',
-          color: '#fff',
+          background: '#0f172a',
+          color: '#ffffff',
           timer: 1800,
           showConfirmButton: false,
         }),
@@ -148,8 +148,8 @@ export class AddToPlaylistService {
           icon: 'error',
           title: 'Error',
           text: 'No se pudo añadir la canción.',
-          background: '#1a1a2e',
-          color: '#fff',
+          background: '#0f172a',
+          color: '#ffffff',
         }),
     });
   }

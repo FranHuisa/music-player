@@ -167,4 +167,10 @@ public class AlbumServiceImpl implements AlbumService {
         album.setCoverImage("/uploads/album/" + filename);
         return albumMapper.toDto(albumRepository.save(album));
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AlbumDTO> findByArtistId(Long artistId) {
+        return albumRepository.findByArtistId(artistId).stream().map(albumMapper::toDto).toList();
+    }
 }

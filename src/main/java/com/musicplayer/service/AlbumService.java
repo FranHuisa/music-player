@@ -1,5 +1,6 @@
 package com.musicplayer.service;
 
+import com.musicplayer.domain.Album;
 import com.musicplayer.service.dto.AlbumDTO;
 import java.util.List;
 import java.util.Optional;
@@ -67,4 +68,6 @@ public interface AlbumService {
     AlbumDTO toggleActive(Long id);
 
     AlbumDTO uploadImage(Long id, MultipartFile file) throws Exception;
+
+    List<AlbumDTO> findByArtistId(Long artistId);
 }

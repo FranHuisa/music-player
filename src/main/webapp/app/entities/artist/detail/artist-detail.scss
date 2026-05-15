@@ -229,3 +229,40 @@
   font-size: 0.9rem;
   padding: 1rem 0;
 }
+
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.like-btn:hover {
+  color: red;
+}
+
+.play-btn {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.4rem;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: #1db954;
+  }
+}
+
+.artist-song-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.artist-song-row:hover .artist-song-actions {
+  opacity: 1;
+}

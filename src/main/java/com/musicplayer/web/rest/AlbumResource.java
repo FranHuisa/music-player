@@ -262,4 +262,9 @@ public class AlbumResource {
         AlbumDTO album = albumService.uploadImage(id, file);
         return ResponseEntity.ok(album);
     }
+
+    @GetMapping("/artist/{artistId}")
+    public ResponseEntity<List<AlbumDTO>> getByArtist(@PathVariable Long artistId) {
+        return ResponseEntity.ok(albumService.findByArtistId(artistId));
+    }
 }

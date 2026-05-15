@@ -23,7 +23,7 @@ export type PartialUpdateRestAlbum = RestOf<PartialUpdateAlbum>;
 @Injectable()
 export class AlbumsService {
   readonly albumsParams = signal<Record<string, string | number | boolean | readonly (string | number | boolean)[]> | undefined>(undefined);
-
+  protected readonly http = inject(HttpClient);
   protected readonly applicationConfigService = inject(ApplicationConfigService);
   protected readonly accountService = inject(AccountService);
 
@@ -71,7 +71,9 @@ export class AlbumsService {
       releaseDate: album.releaseDate ? dayjs(album.releaseDate).format('YYYY-MM-DDTHH:mm:ss') : null,
     };
   }
-
+  queryByArtist(artistId: number) {
+    return this.http.get<IAlbum[]>(`/api/albums/artist/${artistId}`);
+  }
   protected convertValueFromServer(restAlbum: RestAlbum): IAlbum {
     return {
       ...restAlbum,

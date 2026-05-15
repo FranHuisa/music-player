@@ -82,9 +82,7 @@ public class PlayResource {
 
         playDTO = playService.save(playDTO);
 
-        return ResponseEntity.created(new URI("/api/plays/" + playDTO.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, playDTO.getId().toString()))
-            .body(playDTO);
+        return ResponseEntity.created(new URI("/api/plays/" + playDTO.getId())).body(playDTO);
     }
 
     /**
@@ -115,9 +113,7 @@ public class PlayResource {
         }
 
         playDTO = playService.update(playDTO);
-        return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, playDTO.getId().toString()))
-            .body(playDTO);
+        return ResponseEntity.ok().body(playDTO);
     }
 
     /**
@@ -195,9 +191,7 @@ public class PlayResource {
     public ResponseEntity<Void> deletePlay(@PathVariable("id") Long id) {
         LOG.debug("REST request to delete Play : {}", id);
         playService.delete(id);
-        return ResponseEntity.noContent()
-            .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
-            .build();
+        return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/recent")
