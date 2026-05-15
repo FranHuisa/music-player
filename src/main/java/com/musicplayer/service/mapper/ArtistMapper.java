@@ -2,6 +2,7 @@ package com.musicplayer.service.mapper;
 
 import com.musicplayer.domain.Artist;
 import com.musicplayer.domain.Song;
+import com.musicplayer.service.dto.AlbumDTO;
 import com.musicplayer.service.dto.ArtistDTO;
 import com.musicplayer.service.dto.SongDTO;
 import java.util.Set;
@@ -24,7 +25,7 @@ public interface ArtistMapper extends EntityMapper<ArtistDTO, Artist> {
         dto.setDuration(song.getDuration());
         dto.setCoverImage(song.getCoverImage());
         if (song.getAlbum() != null) {
-            var albumDto = new com.musicplayer.service.dto.AlbumDTO();
+            AlbumDTO albumDto = new AlbumDTO();
             albumDto.setId(song.getAlbum().getId());
             albumDto.setTitle(song.getAlbum().getTitle());
             dto.setAlbum(albumDto);

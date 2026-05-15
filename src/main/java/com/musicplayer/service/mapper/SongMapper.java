@@ -17,10 +17,20 @@ public interface SongMapper extends EntityMapper<SongDTO, Song> {
     @Mapping(target = "album", source = "album")
     @Mapping(target = "coverImage", source = "coverImage")
     @Mapping(target = "genre", source = "genre")
-    @Mapping(target = "artistses", source = "artistses")
+    @Mapping(target = "artistses", ignore = true)
+    @Mapping(target = "artist", ignore = true)
     SongDTO toDto(Song song);
 
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "artistses", ignore = true)
     @Mapping(target = "artist", ignore = true)
     Song toEntity(SongDTO songDTO);
+
+    default ArtistDTO artistToArtistDTO(Artist artist) {
+        if (artist == null) return null;
+        ArtistDTO dto = new ArtistDTO();
+        dto.setId(artist.getId());
+        dto.setName(artist.getName());
+        return dto;
+    }
 }
