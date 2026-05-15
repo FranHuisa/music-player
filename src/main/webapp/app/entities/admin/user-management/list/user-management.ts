@@ -85,6 +85,8 @@ export class UserManagement implements OnInit {
               icon: 'success',
               timer: 2000,
               showConfirmButton: false,
+              color: '#ffffff',
+              background: '#0f172a',
             }).then(() => this.loadAll());
           },
           error: () => {

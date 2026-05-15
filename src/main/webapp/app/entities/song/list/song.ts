@@ -25,6 +25,7 @@ import { SongDeleteDialog } from '../delete/song-delete-dialog';
 import { SongService } from '../service/song.service';
 import { ISong } from '../song.model';
 import { AccountService } from 'app/core/auth/account.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'jhi-song',
@@ -115,14 +116,43 @@ export class Song implements OnInit {
   }
 
   delete(song: ISong): void {
-    const modalRef = this.modalService.open(SongDeleteDialog, { size: 'lg', backdrop: 'static' });
-    modalRef.componentInstance.song = song;
-    modalRef.closed
-      .pipe(
-        filter(reason => reason === ITEM_DELETED_EVENT),
-        tap(() => this.load()),
-      )
-      .subscribe();
+    Swal.fire({
+      title: '¿Eliminar canción?',
+      text: `Se eliminará "${song.title}"`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+      reverseButtons: true,
+      confirmButtonColor: '#d33',
+    }).then(result => {
+      if (result.isConfirmed && song.id) {
+        this.songService.delete(song.id).subscribe({
+          next: () => {
+            Swal.fire({
+              title: 'Eliminada',
+              text: 'La canción fue eliminada correctamente',
+              icon: 'success',
+              timer: 1500,
+              showConfirmButton: false,
+              color: '#ffffff',
+              background: '#0f172a',
+            });
+
+            this.load();
+          },
+          error: () => {
+            Swal.fire({
+              title: 'Error',
+              text: 'No se pudo eliminar la canción',
+              icon: 'error',
+              color: '#ffffff',
+              background: '#0f172a',
+            });
+          },
+        });
+      }
+    });
   }
 
   load(): void {
