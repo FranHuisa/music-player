@@ -21,6 +21,9 @@ const genreRoute: Routes = [
     resolve: {
       genre: GenreResolve,
     },
+    data: {
+      authorities: [Authority.ADMIN],
+    },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -29,6 +32,9 @@ const genreRoute: Routes = [
     resolve: {
       genre: GenreResolve,
     },
+    data: {
+      authorities: [Authority.ADMIN],
+    },
     canActivate: [UserRouteAccessService],
   },
   {
@@ -36,6 +42,9 @@ const genreRoute: Routes = [
     loadComponent: () => import('./update/genre-update').then(m => m.GenreUpdate),
     resolve: {
       genre: GenreResolve,
+    },
+    data: {
+      authorities: [Authority.ADMIN],
     },
     canActivate: [UserRouteAccessService],
   },
