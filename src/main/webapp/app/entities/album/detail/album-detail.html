@@ -40,7 +40,6 @@
       </div>
     </div>
 
-    <!-- ================= SONGS ================= -->
     <div class="album-detail-songs">
       <div class="album-detail-songs-header">
         <h2>Canciones</h2>
@@ -87,17 +86,13 @@
           <fa-icon icon="music" />
           <p>Este álbum no tiene canciones todavía</p>
         </div>
-      }
 
-      <!-- ================= SONG LIST ================= -->
-      @else {
+      } @else {
         <div class="songs-list">
           @for (song of albumSongs(); track song.id; let i = $index) {
             <div class="song-row" (click)="playSong(song)">
-              <!-- INDEX -->
               <span class="song-number">{{ i + 1 }}</span>
 
-              <!-- INFO -->
               <div class="song-info">
                 <div class="song-title-row">
                   <span class="song-title">{{ song.title }}</span>
@@ -123,13 +118,17 @@
                   }
                 </div>
               </div>
+              <button class="play-btn" (click)="playSong(song); $event.stopPropagation()">
+                <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>
+              </button>
+              <button
+                class="btn-like"
+                (click)="toggleLike(song); $event.stopPropagation()"
+                [title]="likedSongs().includes(song.id) ? 'Quitar me gusta' : 'Me gusta'"
+              >
+                <fa-icon icon="heart" [ngClass]="{ liked: likedSongs().includes(song.id) }"></fa-icon>
+              </button>
 
-              <!-- PLAY -->
-              <div class="song-play">
-                <fa-icon icon="play" />
-              </div>
-
-              <!-- ACTIONS (ADMIN / EDITOR ONLY) -->
               <div class="song-actions" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']" (click)="$event.stopPropagation()">
                 <button class="btn-toggle-active" (click)="toggleSongActive(song)" [title]="song.active ? 'Ocultar' : 'Publicar'">
                   <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" />

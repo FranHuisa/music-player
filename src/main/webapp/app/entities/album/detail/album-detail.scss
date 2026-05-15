@@ -282,3 +282,34 @@
     background: rgba(239, 68, 68, 0.1);
   }
 }
+
+.play-btn {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0.4rem;
+  transition: color 0.15s ease;
+  margin-left: 0.5rem;
+
+  &:hover {
+    color: #1db954;
+  }
+}
+
+.btn-like {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #cbd5e1;
+  margin-left: 0.5rem;
+
+  &:hover {
+    color: red;
+  }
+}
+
+.liked {
+  color: red;
+}

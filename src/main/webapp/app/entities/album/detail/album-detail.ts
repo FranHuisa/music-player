@@ -15,12 +15,14 @@ import { SongService } from 'app/entities/song/service/song.service';
 import { AccountService } from 'app/core/auth/account.service';
 import { PlayerService } from 'app/layouts/player-bar/player.service';
 import HasAnyAuthorityDirective from 'app/shared/auth/has-any-authority.directive';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'jhi-album-detail',
   templateUrl: './album-detail.html',
   styleUrls: ['./album-detail.scss'],
   imports: [
+    CommonModule,
     FontAwesomeModule,
     Alert,
     AlertError,
@@ -38,6 +40,7 @@ export class AlbumDetail implements OnInit {
   readonly allMySongs = signal<ISong[]>([]);
   readonly showAddPanel = signal(false);
   readonly searchTerm = signal('');
+  readonly likedSongs = signal<number[]>([]);
 
   readonly availableSongs = computed(() => {
     const albumSongIds = new Set(this.albumSongs().map(s => s.id));
@@ -54,6 +57,7 @@ export class AlbumDetail implements OnInit {
   protected readonly player = inject(PlayerService);
 
   ngOnInit(): void {
+    this.loadLikes();
     const album = this.album();
     if (album?.id) {
       this.loadAlbumSongs(album.id);
@@ -68,7 +72,11 @@ export class AlbumDetail implements OnInit {
   toggleAddPanel(): void {
     this.showAddPanel.update(v => !v);
   }
-
+  private loadLikes(): void {
+    this.http.get<any[]>('/api/likes/my').subscribe({
+      next: res => this.likedSongs.set(res.map(l => l.song.id)),
+    });
+  }
   onSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
   }
@@ -100,7 +108,13 @@ export class AlbumDetail implements OnInit {
       error: err => console.error('Error añadiendo canción', err),
     });
   }
-
+  toggleLike(song: ISong): void {
+    this.http.post(`/api/likes/toggle/${song.id}`, {}).subscribe({
+      next: () => {
+        this.likedSongs.update(list => (list.includes(song.id) ? list.filter(id => id !== song.id) : [...list, song.id]));
+      },
+    });
+  }
   removeSongFromAlbum(song: ISong): void {
     const updated: ISong = { ...song, album: null };
     this.songService.update(updated).subscribe({
