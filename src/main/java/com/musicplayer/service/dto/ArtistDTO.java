@@ -33,6 +33,8 @@ public class ArtistDTO implements Serializable {
 
     private Instant createdAt;
 
+    private Set<SongDTO> songses = new HashSet<>();
+
     public Long getId() {
         return id;
     }
@@ -89,6 +91,14 @@ public class ArtistDTO implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public Set<SongDTO> getSongses() {
+        return songses;
+    }
+
+    public void setSongses(Set<SongDTO> songses) {
+        this.songses = songses;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -114,13 +124,14 @@ public class ArtistDTO implements Serializable {
     @Override
     public String toString() {
         return "ArtistDTO{" +
-            "id=" + getId() +
-            ", name='" + getName() + "'" +
-            ", bio='" + getBio() + "'" +
-            ", image='" + getImage() + "'" +
-            ", country='" + getCountry() + "'" +
-            ", verified='" + getVerified() + "'" +
-            ", createdAt='" + getCreatedAt() + "'" +
-            "}";
+                "id=" + getId() +
+                ", name='" + getName() + "'" +
+                ", bio='" + getBio() + "'" +
+                ", image='" + getImage() + "'" +
+                ", country='" + getCountry() + "'" +
+                ", verified='" + getVerified() + "'" +
+                ", createdAt='" + getCreatedAt() + "'" +
+                ", songses='" + getSongses() + "'" +
+                "}";
     }
 }

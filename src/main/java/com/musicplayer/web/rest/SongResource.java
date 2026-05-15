@@ -16,6 +16,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -82,7 +83,7 @@ public class SongResource {
             .findByUserLogin(login)
             .orElseThrow(() -> new BadRequestAlertException("Artista no encontrado", ENTITY_NAME, "artistnotfound"));
 
-        songDTO.setArtist(artistDTO);
+        songDTO.setArtistses(Set.of(artistDTO));
 
         songDTO = songService.save(songDTO);
 

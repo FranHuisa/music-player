@@ -14,7 +14,7 @@ export interface ISong {
   releaseDate?: dayjs.Dayjs | null;
   createdAt?: dayjs.Dayjs | null;
   active?: boolean | null;
-  album?: Pick<IAlbum, 'id'> | null;
+  album?: Pick<IAlbum, 'id' | 'title'> | null;
   genre?: Pick<IGenre, 'id'> | null;
   artistses?: Pick<IArtist, 'id' | 'name'>[] | null;
   artist?: Pick<IArtist, 'id' | 'name'> | null;

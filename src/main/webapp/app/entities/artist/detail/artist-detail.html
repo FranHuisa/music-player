@@ -1,63 +1,72 @@
-<div class="d-flex justify-content-center">
-  <div class="col-8">
-    @if (artist(); as artistRef) {
-      <div>
-        <h2 data-cy="artistDetailsHeading"><span jhiTranslate="musicPlayerApp.artist.detail.title">Artist</span></h2>
+<div class="artist-page">
+  @let a = artist();
 
-        <hr />
+  <div class="artist-hero">
+    <div class="artist-hero-cover">
+      @if (a?.image) {
+        <img [src]="a!.image!.startsWith('http') ? a!.image! : 'http://localhost:8080' + a!.image!" alt="cover" />
+      } @else {
+        <div class="artist-hero-cover-placeholder">
+          <fa-icon icon="music" />
+        </div>
+      }
+    </div>
 
-        <jhi-alert-error />
+    <div class="artist-hero-info">
+      <span class="artist-hero-eyebrow">Artista</span>
+      <h1>{{ a?.name ?? '—' }}</h1>
 
-        <jhi-alert />
+      @if (a?.country) {
+        <span class="artist-hero-country">
+          <fa-icon icon="globe" />
+          {{ a!.country | uppercase }}
+        </span>
+      }
 
-        <dl class="row-md jh-entity-details">
-          <dt><span jhiTranslate="global.field.id">ID</span></dt>
-          <dd>
-            <span>{{ artistRef.id }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.name">Name</span></dt>
-          <dd>
-            <span>{{ artistRef.name }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.bio">Bio</span></dt>
-          <dd>
-            <span>{{ artistRef.bio }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.image">Image</span></dt>
-          <dd>
-            <span>{{ artistRef.image }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.country">Country</span></dt>
-          <dd>
-            <span>{{ artistRef.country }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.verified">Verified</span></dt>
-          <dd>
-            <span>{{ artistRef.verified }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.createdAt">Created At</span></dt>
-          <dd>
-            <span>{{ artistRef.createdAt | formatMediumDatetime }}</span>
-          </dd>
-          <dt><span jhiTranslate="musicPlayerApp.artist.songs">Songs</span></dt>
-          <dd>
-            @for (songs of artistRef.songses; track $index; let last = $last) {
-              <span>
-                <a [routerLink]="['/song', songs.id, 'view']">{{ songs?.id }}</a
-                >{{ last ? '' : ', ' }}
-              </span>
-            }
-          </dd>
-        </dl>
+      @if (a?.bio) {
+        <p class="artist-hero-bio">{{ a!.bio }}</p>
+      }
 
-        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
-          <fa-icon icon="arrow-left" />&nbsp;<span jhiTranslate="entity.action.back">Volver</span>
-        </button>
-
-        <button type="button" [routerLink]="['/artist', artistRef.id, 'edit']" class="btn btn-primary">
-          <fa-icon icon="pencil-alt" />&nbsp;<span jhiTranslate="entity.action.edit">Editar</span>
+      <div class="artist-hero-actions">
+        <button class="btn-back" (click)="previousState()">
+          <fa-icon icon="arrow-left" />
+          Volver
         </button>
       </div>
-    }
+    </div>
   </div>
+
+  <section class="artist-section">
+    <div class="artist-section-head">
+      <h2>Canciones</h2>
+    </div>
+    <div class="artist-songs-list">
+      @if (a?.songses && a!.songses!.length > 0) {
+        @for (song of a!.songses!; track song.id) {
+          <div class="artist-song-row">
+            <div class="artist-song-cover">
+              @if (song.coverImage) {
+                <img [src]="song.coverImage.startsWith('http') ? song.coverImage : 'http://localhost:8080' + song.coverImage" alt="cover" />
+              } @else {
+                <div class="artist-song-cover-placeholder">
+                  <fa-icon icon="music" />
+                </div>
+              }
+            </div>
+            <div class="artist-song-info">
+              <span class="artist-song-title">{{ song.title }}</span>
+              @if (song.album) {
+                <span class="artist-song-album">{{ getSongAlbumTitle(song) }}</span>
+              }
+              @if (song.duration) {
+                <span class="artist-song-duration">{{ formatDuration(song.duration) }}</span>
+              }
+            </div>
+          </div>
+        }
+      } @else {
+        <p class="artist-empty">Sin canciones todavía.</p>
+      }
+    </div>
+  </section>
 </div>

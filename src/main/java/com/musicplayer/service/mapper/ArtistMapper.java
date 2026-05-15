@@ -13,7 +13,29 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface ArtistMapper extends EntityMapper<ArtistDTO, Artist> {
+    @Mapping(target = "songses", source = "songses")
     ArtistDTO toDto(Artist s);
+
+    default SongDTO songToDto(Song song) {
+        if (song == null) return null;
+        SongDTO dto = new SongDTO();
+        dto.setId(song.getId());
+        dto.setTitle(song.getTitle());
+        dto.setDuration(song.getDuration());
+        dto.setCoverImage(song.getCoverImage());
+        if (song.getAlbum() != null) {
+            var albumDto = new com.musicplayer.service.dto.AlbumDTO();
+            albumDto.setId(song.getAlbum().getId());
+            albumDto.setTitle(song.getAlbum().getTitle());
+            dto.setAlbum(albumDto);
+        }
+        return dto;
+    }
+
+    default Set<SongDTO> songsesToDto(Set<Song> songs) {
+        if (songs == null) return null;
+        return songs.stream().map(this::songToDto).collect(Collectors.toSet());
+    }
 
     @Mapping(target = "songses", ignore = true)
     @Mapping(target = "removeSongs", ignore = true)

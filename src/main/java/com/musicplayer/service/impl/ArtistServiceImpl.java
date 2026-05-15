@@ -82,7 +82,7 @@ public class ArtistServiceImpl implements ArtistService {
     @Transactional(readOnly = true)
     public Optional<ArtistDTO> findOne(Long id) {
         LOG.debug("Request to get Artist : {}", id);
-        return artistRepository.findById(id).map(artistMapper::toDto);
+        return artistRepository.findByIdWithSongs(id).map(artistMapper::toDto);
     }
 
     @Override

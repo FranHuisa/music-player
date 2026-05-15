@@ -22,4 +22,14 @@ public interface ArtistRepository extends JpaRepository<Artist, Long> {
 
     @Query("select a.user.id from Artist a where a.user is not null")
     List<Long> findAllAssignedUserIds();
+
+    @Query(
+        """
+        select a from Artist a
+        left join fetch a.songses s
+        left join fetch s.album
+        where a.id = :id
+        """
+    )
+    Optional<Artist> findByIdWithSongs(@Param("id") Long id);
 }
