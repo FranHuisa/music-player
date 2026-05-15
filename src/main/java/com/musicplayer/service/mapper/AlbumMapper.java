@@ -13,14 +13,15 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface AlbumMapper extends EntityMapper<AlbumDTO, Album> {
-    @Mapping(target = "artist", source = "artist", qualifiedByName = "artistId")
+    @Mapping(target = "artist", source = "artist", qualifiedByName = "artistBasic")
     @Mapping(target = "genre", source = "genre", qualifiedByName = "genreId")
     AlbumDTO toDto(Album s);
 
-    @Named("artistId")
+    @Named("artistBasic")
     @BeanMapping(ignoreByDefault = true)
     @Mapping(target = "id", source = "id")
-    ArtistDTO toDtoArtistId(Artist artist);
+    @Mapping(target = "name", source = "name")
+    ArtistDTO toDtoArtistBasic(Artist artist);
 
     @Named("genreId")
     @BeanMapping(ignoreByDefault = true)

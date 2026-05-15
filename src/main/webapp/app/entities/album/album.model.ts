@@ -10,7 +10,7 @@ export interface IAlbum {
   coverImage?: string | null;
   releaseDate?: string | null;
   albumType?: keyof typeof AlbumType | null;
-  artist?: Pick<IArtist, 'id'> | null;
+  artist?: Pick<IArtist, 'id' | 'name'> | null;
   genre?: Pick<IGenre, 'id'> | null;
   active?: boolean;
 }

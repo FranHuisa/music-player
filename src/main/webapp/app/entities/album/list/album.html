@@ -96,7 +96,7 @@
               }
               @if (album.artist) {
                 <a [routerLink]="['/artist', album.artist.id, 'view']" class="album-artist-link" (click)="$event.stopPropagation()">
-                  Artista #{{ album.artist.id }}
+                  {{ album.artist.name }}
                 </a>
               }
             </div>
