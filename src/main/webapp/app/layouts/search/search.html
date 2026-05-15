@@ -18,7 +18,6 @@
       </p>
     </div>
   } @else {
-    <!-- ARTISTAS -->
     @if (artists().length > 0) {
       <section class="search-section">
         <h3 class="section-title"><fa-icon icon="user"></fa-icon> Artistas</h3>
@@ -41,8 +40,6 @@
         </div>
       </section>
     }
-
-    <!-- ÁLBUMES -->
     @if (albums().length > 0) {
       <section class="search-section">
         <h3 class="section-title"><fa-icon icon="record-vinyl"></fa-icon> Álbumes</h3>
@@ -63,8 +60,6 @@
         </div>
       </section>
     }
-
-    <!-- CANCIONES -->
     @if (songs().length > 0) {
       <section class="search-section">
         <h3 class="section-title">
@@ -89,7 +84,9 @@
                 <span class="song-artist">{{ song.releaseDate?.year() }}</span>
               </div>
 
-              <span class="song-duration">{{ song.duration }}s</span>
+              <span class="song-duration">
+                {{ formatDuration(song.duration) }}
+              </span>
 
               <button class="play-btn" (click)="playSong(song)" aria-label="Reproducir">
                 <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>

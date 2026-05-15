@@ -76,7 +76,6 @@ export default class SearchComponent {
       if (++completed === 3) this.isLoading.set(false);
     };
 
-    // Canciones
     this.songService.query({ 'title.contains': q, 'active.equals': true, size: 20 }).subscribe({
       next: res => {
         this.songs.set(res.body ?? []);
@@ -88,7 +87,6 @@ export default class SearchComponent {
       },
     });
 
-    // Artistas
     this.artistService.query({ 'name.contains': q, size: 10 }).subscribe({
       next: res => {
         this.artists.set(res.body ?? []);
@@ -110,5 +108,14 @@ export default class SearchComponent {
         checkDone();
       },
     });
+  }
+  formatDuration(seconds: number | null | undefined): string {
+    if (!seconds) return '—';
+
+    const s = Math.abs(Math.round(seconds));
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+
+    return `${m}:${sec.toString().padStart(2, '0')}`;
   }
 }
