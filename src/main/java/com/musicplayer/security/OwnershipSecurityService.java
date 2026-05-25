@@ -24,9 +24,7 @@ public class OwnershipSecurityService {
     public boolean canAccessSong(Song song) {
         if (isAdmin()) return true;
 
-        if (!isEditor()) return false;
-
-        return song.getArtist() != null && song.getArtist().getUser() != null && song.getArtist().getUser().getLogin().equals(getLogin());
+        return true;
     }
 
     public boolean canManageMusicContent() {
