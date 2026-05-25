@@ -20,8 +20,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
-import tech.jhipster.web.util.HeaderUtil;
-import tech.jhipster.web.util.ResponseUtil;
 
 /**
  * REST controller for managing {@link com.musicplayer.domain.Play}.
@@ -149,10 +147,7 @@ public class PlayResource {
 
         Optional<PlayDTO> result = playService.partialUpdate(playDTO);
 
-        return ResponseUtil.wrapOrNotFound(
-            result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, playDTO.getId().toString())
-        );
+        return result.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     /**
@@ -178,7 +173,7 @@ public class PlayResource {
     public ResponseEntity<PlayDTO> getPlay(@PathVariable("id") Long id) {
         LOG.debug("REST request to get Play : {}", id);
         Optional<PlayDTO> playDTO = playService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(playDTO);
+        return playDTO.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
     /**

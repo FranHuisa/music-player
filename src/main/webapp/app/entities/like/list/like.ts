@@ -108,6 +108,8 @@ export class Like implements OnInit {
             text: 'La canción fue quitada de la playlist',
             icon: 'success',
             timer: 1500,
+            background: '#0f172a',
+            color: '#ffffff',
             showConfirmButton: false,
           });
         });
