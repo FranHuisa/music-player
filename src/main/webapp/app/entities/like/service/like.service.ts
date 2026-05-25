@@ -29,7 +29,7 @@ export class LikesService {
     if (!params) {
       return undefined;
     }
-    return { url: this.resourceUrl, params };
+    return { url: this.applicationConfigService.getEndpointFor('api/likes/my'), params };
   });
   /**
    * This signal holds the list of like that have been fetched. It is updated when the likesResource emits a new value.

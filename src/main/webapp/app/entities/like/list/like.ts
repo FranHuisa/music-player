@@ -92,6 +92,8 @@ export class Like implements OnInit {
       text: 'Esta acción eliminará la canción de tus likes.',
       icon: 'warning',
       showCancelButton: true,
+      background: '#0f172a',
+      color: '#ffffff',
       confirmButtonColor: '#1db954',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Sí, quitar',
