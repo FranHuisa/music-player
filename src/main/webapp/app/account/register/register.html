@@ -5,7 +5,7 @@
 
       @if (success()) {
         <div class="alert alert-success" jhiTranslate="register.messages.success">
-          <strong>¡Registro guardado!</strong> Por favor, revise su correo electrónico para confirmar.
+          <strong>¡Cuenta Creada!</strong>Si desea el rol de artista contacte con el soporte.
         </div>
       }
 
@@ -80,7 +80,31 @@
               </div>
             }
           </div>
+          <div class="mb-3">
+            <label class="form-label" for="firstName" jhiTranslate="userManagement.firstName">Nombre</label>
+            <input type="text" class="form-control" id="firstName" name="firstName" formControlName="firstName" data-cy="firstName" />
+            @let firstNameRef = registerForm.get('firstName')!;
+            @if (firstNameRef.invalid && (firstNameRef.dirty || firstNameRef.touched)) {
+              <div>
+                @if (firstNameRef?.errors?.maxlength) {
+                  <small class="form-text text-danger">El nombre no puede superar 50 caracteres.</small>
+                }
+              </div>
+            }
+          </div>
 
+          <div class="mb-3">
+            <label class="form-label" for="lastName" jhiTranslate="userManagement.lastName">Apellidos</label>
+            <input type="text" class="form-control" id="lastName" name="lastName" formControlName="lastName" data-cy="lastName" />
+            @let lastNameRef = registerForm.get('lastName')!;
+            @if (lastNameRef.invalid && (lastNameRef.dirty || lastNameRef.touched)) {
+              <div>
+                @if (lastNameRef?.errors?.maxlength) {
+                  <small class="form-text text-danger">Los apellidos no pueden superar 50 caracteres.</small>
+                }
+              </div>
+            }
+          </div>
           <div class="mb-3">
             <label class="form-label" for="email" jhiTranslate="global.form.email.label">Correo electrónico</label>
             <input
