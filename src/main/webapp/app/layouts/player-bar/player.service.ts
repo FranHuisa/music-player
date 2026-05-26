@@ -59,6 +59,38 @@ export class PlayerService {
 
     this.audio.addEventListener('play', () => this.isPlaying.set(true));
     this.audio.addEventListener('pause', () => this.isPlaying.set(false));
+
+    this.restoreFromServer(); // 👈 añadido
+  }
+
+  restoreFromServer(): void {
+    this.accountService.identity().subscribe(account => {
+      if (!account) return;
+
+      this.playService.findLast().subscribe(play => {
+        if (!play?.song) return;
+
+        const song = play.song as ISong;
+        const resumeAt = play.durationListened ?? 0;
+
+        this.currentSong.set(song);
+        this.audio.src = (song.fileUrl ?? '').startsWith('/')
+          ? song.fileUrl!
+          : `/api/upload/stream/${encodeURIComponent(song.fileUrl ?? '')}`;
+        this.audio.load();
+
+        this.audio.addEventListener(
+          'loadedmetadata',
+          () => {
+            this.audio.currentTime = resumeAt;
+            this.duration.set(Math.floor(this.audio.duration));
+            this.progress.set((resumeAt / this.audio.duration) * 100);
+            this.currentTime.set(resumeAt);
+          },
+          { once: true },
+        );
+      });
+    });
   }
 
   playSong(song: ISong, queue: ISong[] = []): void {
@@ -128,12 +160,10 @@ export class PlayerService {
 
   private loadAndPlay(song: ISong): void {
     this.saveCurrentPlay();
-
     this.currentSong.set(song);
     this.audio.src = (song.fileUrl ?? '').startsWith('/') ? song.fileUrl! : `/api/upload/stream/${encodeURIComponent(song.fileUrl ?? '')}`;
     this.audio.load();
     this.audio.play().catch(console.error);
-
     this.registerNewPlay(song);
   }
 
@@ -156,11 +186,13 @@ export class PlayerService {
         error: err => console.error('Error registrando play:', err),
       });
   }
+
   loadOnly(song: ISong): void {
     this.currentSong.set(song);
     this.audio.src = (song.fileUrl ?? '').startsWith('/') ? song.fileUrl! : `/api/upload/stream/${encodeURIComponent(song.fileUrl ?? '')}`;
     this.audio.load();
   }
+
   private saveCurrentPlay(): void {
     if (!this.activePlayId || !this.songStartTime) return;
 
@@ -178,6 +210,7 @@ export class PlayerService {
     this.activePlayId = null;
     this.songStartTime = null;
   }
+
   pause(): void {
     this.audio.pause();
   }
