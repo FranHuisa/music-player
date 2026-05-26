@@ -240,8 +240,10 @@ public class SongResource {
 
     @GetMapping("/by-album/{albumId}")
     public ResponseEntity<List<SongDTO>> getSongsByAlbum(@PathVariable Long albumId) {
-        LOG.debug("REST request to get Songs by Album : {}", albumId);
-        List<SongDTO> songs = songService.findByAlbumId(albumId);
+        boolean isAdminOrEditor = SecurityUtils.hasCurrentUserAnyOfAuthorities("ROLE_ADMIN", "ROLE_EDITOR");
+
+        List<SongDTO> songs = isAdminOrEditor ? songService.findByAlbumId(albumId) : songService.findActiveByAlbumId(albumId);
+
         return ResponseEntity.ok(songs);
     }
 

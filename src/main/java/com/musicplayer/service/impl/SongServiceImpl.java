@@ -199,4 +199,9 @@ public class SongServiceImpl implements SongService {
     public List<SongDTO> findByArtistId(Long artistId) {
         return songRepository.findByArtistId(artistId).stream().map(songMapper::toDto).toList();
     }
+
+    @Override
+    public List<SongDTO> findActiveByAlbumId(Long albumId) {
+        return songRepository.findActiveByAlbumId(albumId).stream().map(songMapper::toDto).toList();
+    }
 }

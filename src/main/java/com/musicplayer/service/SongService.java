@@ -83,4 +83,6 @@ public interface SongService {
     Page<SongDTO> findPublicSongs(Pageable pageable);
 
     List<SongDTO> findByArtistId(Long artistId);
+
+    List<SongDTO> findActiveByAlbumId(Long albumId);
 }

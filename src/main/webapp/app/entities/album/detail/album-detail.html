@@ -86,7 +86,6 @@
           <fa-icon icon="music" />
           <p>Este álbum no tiene canciones todavía</p>
         </div>
-
       } @else {
         <div class="songs-list">
           @for (song of albumSongs(); track song.id; let i = $index) {
@@ -97,10 +96,12 @@
                 <div class="song-title-row">
                   <span class="song-title">{{ song.title }}</span>
 
-                  @if (!song.active) {
-                    <span class="song-badge song-badge-hidden">Oculta</span>
-                  } @else {
-                    <span class="song-badge song-badge-active">Pública</span>
+                  @if (isEditorOrAdmin()) {
+                    @if (!song.active) {
+                      <span class="song-badge song-badge-hidden">Oculta</span>
+                    } @else {
+                      <span class="song-badge song-badge-active">Pública</span>
+                    }
                   }
                 </div>
 

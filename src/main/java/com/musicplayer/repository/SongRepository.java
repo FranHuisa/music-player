@@ -62,4 +62,7 @@ public interface SongRepository extends SongRepositoryWithBagRelationships, JpaR
         """
     )
     List<Song> findByArtistId(Long artistId);
+
+    @Query("SELECT s FROM Song s WHERE s.album.id = :albumId AND s.active = true")
+    List<Song> findActiveByAlbumId(@Param("albumId") Long albumId);
 }
