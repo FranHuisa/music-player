@@ -49,6 +49,10 @@
             <span class="like-row-artist">
               {{ like.song?.artistses?.[0]?.name ?? 'Artista desconocido' }}
             </span>
+
+            <span class="like-row-duration">
+              {{ formatDuration(like.song?.duration) }}
+            </span>
           </div>
 
           <button class="like-row-play" (click)="playSong(like)">

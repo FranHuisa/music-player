@@ -61,7 +61,7 @@
                   <div class="song-artist">{{ playlistSong.song?.artistses ?? 'Artista desconocido' }}</div>
                 </div>
 
-                <div class="song-duration">{{ playlistSong.song?.duration ?? 0 }}s</div>
+                <div class="song-duration">{{ formatDuration(playlistSong.song?.duration) }}</div>
 
                 <div class="song-actions">
                   <button class="like-row-play" (click)="playSong(playlistSong)" title="Reproducir">
