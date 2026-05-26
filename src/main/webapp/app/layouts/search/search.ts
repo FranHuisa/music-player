@@ -10,11 +10,12 @@ import { IAlbum } from 'app/entities/album/album.model';
 import { PlayerService } from '../player-bar/player.service';
 import { HttpClient } from '@angular/common/http';
 import { forkJoin } from 'rxjs';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'jhi-search',
   standalone: true,
-  imports: [FaIconComponent, RouterLink],
+  imports: [FaIconComponent, RouterLink, DatePipe],
   templateUrl: './search.html',
   styleUrl: './search.scss',
 })

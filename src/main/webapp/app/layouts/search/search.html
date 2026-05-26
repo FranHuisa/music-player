@@ -54,7 +54,9 @@
                 }
               </div>
               <span class="album-title">{{ album.title }}</span>
-              <span class="album-year">{{ album.releaseDate }}</span>
+              <span class="album-year">
+                {{ album.releaseDate | date: 'yyyy' }}
+              </span>
             </a>
           }
         </div>
