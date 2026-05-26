@@ -144,9 +144,15 @@ export class AlbumDetail implements OnInit {
   }
 
   private loadMySongs(): void {
-    this.songService.query({ size: 200 }).subscribe({
-      next: res => this.allMySongs.set(res.body ?? []),
-      error: err => console.error('Error cargando canciones', err),
+    const album = this.album();
+    const artistId = album?.artist?.id;
+
+    if (!artistId) return;
+
+    const url = this.appConfig.getEndpointFor(`api/songs/by-artist/${artistId}`);
+    this.http.get<ISong[]>(url).subscribe({
+      next: res => this.allMySongs.set(res ?? []),
+      error: err => console.error('Error cargando canciones del artista', err),
     });
   }
 }
