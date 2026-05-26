@@ -156,7 +156,7 @@ export class SongService extends SongsService {
     return {
       ...song,
       releaseDate: song.releaseDate?.format(DATE_FORMAT) ?? null,
-      createdAt: song.createdAt?.toJSON() ?? null,
+      createdAt: song.createdAt ? (typeof song.createdAt === 'string' ? song.createdAt : song.createdAt.toJSON()) : null,
     };
   }
 

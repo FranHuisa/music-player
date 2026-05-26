@@ -82,10 +82,8 @@ public class SongServiceImpl implements SongService {
         song.setActive(songDTO.getActive());
         song.setAlbum(songMapper.toEntity(songDTO).getAlbum());
         song.setGenre(songMapper.toEntity(songDTO).getGenre());
-        song.setArtistses(songMapper.toEntity(songDTO).getArtistses());
 
         song = songRepository.save(song);
-
         return songMapper.toDto(song);
     }
 

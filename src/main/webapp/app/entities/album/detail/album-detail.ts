@@ -96,6 +96,7 @@ export class AlbumDetail implements OnInit {
     this.player.playSong(song, this.albumSongs());
   }
   addSongToAlbum(song: ISong): void {
+    console.log('addSongToAlbum called', song.id);
     const album = this.album();
     if (!album) return;
 
@@ -116,6 +117,7 @@ export class AlbumDetail implements OnInit {
     });
   }
   removeSongFromAlbum(song: ISong): void {
+    console.log('removeSongFromAlbum called', song.id);
     const updated: ISong = { ...song, album: null };
     this.songService.update(updated).subscribe({
       next: savedSong => {

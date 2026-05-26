@@ -89,10 +89,10 @@
       } @else {
         <div class="songs-list">
           @for (song of albumSongs(); track song.id; let i = $index) {
-            <div class="song-row" (click)="playSong(song)">
+            <div class="song-row">
               <span class="song-number">{{ i + 1 }}</span>
 
-              <div class="song-info">
+              <div class="song-info" (click)="playSong(song)">
                 <div class="song-title-row">
                   <span class="song-title">{{ song.title }}</span>
 
@@ -119,18 +119,16 @@
                   }
                 </div>
               </div>
-              <button class="play-btn" (click)="playSong(song); $event.stopPropagation()">
+
+              <button class="play-btn" (click)="playSong(song)">
                 <fa-icon [icon]="player.currentSong()?.id === song.id && player.isPlaying() ? 'pause' : 'play'"></fa-icon>
               </button>
-              <button
-                class="btn-like"
-                (click)="toggleLike(song); $event.stopPropagation()"
-                [title]="likedSongs().includes(song.id) ? 'Quitar me gusta' : 'Me gusta'"
-              >
+
+              <button class="btn-like" (click)="toggleLike(song)" [title]="likedSongs().includes(song.id) ? 'Quitar me gusta' : 'Me gusta'">
                 <fa-icon icon="heart" [ngClass]="{ liked: likedSongs().includes(song.id) }"></fa-icon>
               </button>
 
-              <div class="song-actions" *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']" (click)="$event.stopPropagation()">
+              <div class="song-actions" *ngIf="isEditorOrAdmin()">
                 <button class="btn-toggle-active" (click)="toggleSongActive(song)" [title]="song.active ? 'Ocultar' : 'Publicar'">
                   <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" />
                 </button>
