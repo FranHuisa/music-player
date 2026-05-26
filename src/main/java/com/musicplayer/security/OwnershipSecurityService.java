@@ -23,7 +23,6 @@ public class OwnershipSecurityService {
 
     public boolean canAccessSong(Song song) {
         if (isAdmin()) return true;
-
         return true;
     }
 
@@ -37,17 +36,14 @@ public class OwnershipSecurityService {
 
     public boolean canAccessArtist(Artist artist) {
         if (isAdmin()) return true;
-
         if (!isEditor()) return false;
-
         return artist.getUser() != null && artist.getUser().getLogin().equals(getLogin());
     }
 
     public boolean canAccessAlbum(Album album) {
         if (isAdmin()) return true;
-
+        if (isUser()) return true;
         if (!isEditor()) return false;
-
         return (
             album.getArtist() != null && album.getArtist().getUser() != null && album.getArtist().getUser().getLogin().equals(getLogin())
         );
@@ -55,9 +51,7 @@ public class OwnershipSecurityService {
 
     public boolean canAccessPlaylist(Playlist playlist) {
         if (isAdmin()) return true;
-
         if (!isUser() && !isEditor()) return false;
-
         return playlist.getUser() != null && playlist.getUser().getLogin().equals(getLogin());
     }
 }
