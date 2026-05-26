@@ -50,6 +50,9 @@ import Swal from 'sweetalert2';
     NgbPagination,
     ItemCount,
   ],
+  host: {
+    '(document:click)': 'closeMenu()',
+  },
 })
 export class Song implements OnInit {
   subscription: Subscription | null = null;
@@ -72,6 +75,7 @@ export class Song implements OnInit {
   protected dataUtils = inject(DataUtils);
   protected modalService = inject(NgbModal);
   protected readonly accountService = inject(AccountService);
+  readonly openMenuId = signal<number | null>(null);
 
   constructor() {
     effect(() => {
@@ -212,7 +216,12 @@ export class Song implements OnInit {
       },
     });
   }
-
+  toggleMenu(id: number): void {
+    this.openMenuId.set(this.openMenuId() === id ? null : id);
+  }
+  closeMenu(): void {
+    this.openMenuId.set(null);
+  }
   filteredSongs(): ISong[] {
     const term = this.searchTerm().toLowerCase();
     if (!term) return this.songs();

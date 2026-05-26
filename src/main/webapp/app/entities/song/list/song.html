@@ -138,26 +138,30 @@
 
           <div class="col-actions">
             <div class="song-menu">
-              <button class="track-more-btn" (click)="$event.stopPropagation()">
+              <button class="track-more-btn" (click)="toggleMenu(song.id!); $event.stopPropagation()">
                 <span class="dots">•••</span>
               </button>
-              <ul class="song-menu-list">
-                <li>
-                  <a [routerLink]="['/song', song.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles </a>
-                </li>
-                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']">
-                  <button (click)="toggleActive(song)">
-                    <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" [fixedWidth]="true" />
-                    {{ song.active ? 'Ocultar' : 'Publicar' }}
-                  </button>
-                </li>
-                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
-                  <a [routerLink]="['/song', song.id, 'edit']"> <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar </a>
-                </li>
-                <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
-                  <button class="danger" (click)="delete(song)"><fa-icon icon="times" [fixedWidth]="true" /> Eliminar</button>
-                </li>
-              </ul>
+              @if (openMenuId() === song.id) {
+                <ul class="song-menu-list">
+                  <li>
+                    <a [routerLink]="['/song', song.id, 'view']"> <fa-icon icon="eye" [fixedWidth]="true" /> Ver detalles </a>
+                  </li>
+                  <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR']">
+                    <button (click)="toggleActive(song); closeMenu()">
+                      <fa-icon [icon]="song.active ? 'eye-slash' : 'eye'" [fixedWidth]="true" />
+                      {{ song.active ? 'Ocultar' : 'Publicar' }}
+                    </button>
+                  </li>
+                  <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
+                    <a [routerLink]="['/song', song.id, 'edit']"> <fa-icon icon="pencil-alt" [fixedWidth]="true" /> Editar </a>
+                  </li>
+                  <li *jhiHasAnyAuthority="['ROLE_ADMIN', 'ROLE_EDITOR', 'ROLE_ARTIST']">
+                    <button class="danger" (click)="delete(song); closeMenu()">
+                      <fa-icon icon="times" [fixedWidth]="true" /> Eliminar
+                    </button>
+                  </li>
+                </ul>
+              }
             </div>
           </div>
         </div>

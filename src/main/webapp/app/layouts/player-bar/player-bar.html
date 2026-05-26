@@ -18,13 +18,7 @@
     <div class="player-song-info">
       <span class="player-song-name">{{ player.currentSong()?.title ?? 'No hay canción' }}</span>
       <span class="player-artist-name">
-        {{
-          $any(player.currentSong())?.artistses?.[0]?.name ??
-            $any(player.currentSong())?.artist?.name ??
-            'Selecciona
-        una canción'
-        }}
-        {{ player.currentSong() | json }}
+        {{ $any(player.currentSong())?.album?.artist?.name ?? 'Artista No Encontrado' }}
       </span>
     </div>
   </div>

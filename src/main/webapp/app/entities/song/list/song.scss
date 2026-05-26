@@ -108,6 +108,7 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
     &:hover {
       color: $text-primary;
     }
+
     &.btn-add {
       font-size: 1.5rem;
     }
@@ -171,9 +172,11 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
     font-size: 0.6rem;
     opacity: 0.6;
   }
+
   .col-num {
     text-align: center;
   }
+
   .col-duration {
     text-align: right;
     justify-self: end;
@@ -201,12 +204,15 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
     .track-num {
       display: none;
     }
+
     .track-play-btn {
       display: flex;
     }
+
     .track-more-btn {
       opacity: 1;
     }
+
     .track-title {
       color: $accent;
     }
@@ -329,6 +335,7 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
 .track-link {
   color: $text-secondary;
   text-decoration: none;
+
   &:hover {
     color: $text-primary;
     text-decoration: underline;
@@ -348,6 +355,7 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
   color: #1db954;
   font-weight: 600;
 }
+
 .song-hidden {
   color: #ff4d4f;
   font-weight: 600;
@@ -377,23 +385,21 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
   position: relative;
   display: flex;
   justify-content: center;
-
-  &:hover .song-menu-list {
-    display: flex;
-  }
 }
 
 .song-menu-list {
-  display: none;
+  display: flex;
   flex-direction: column;
-  position: fixed;
+  position: absolute;
+  top: auto;
+  bottom: calc(100% + 4px); // aparece ARRIBA del botón
+  right: 0;
   background: #1e293b;
   border: 1px solid #334155;
   border-radius: 8px;
   padding: 0.4rem 0;
   min-width: 160px;
   z-index: 9999;
-  right: 60px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   list-style: none;
   margin: 0;
@@ -462,6 +468,7 @@ $grid: 48px 52px 1fr 1fr 120px 100px 100px 100px 64px;
     font-size: 3rem;
     color: $text-subdued;
   }
+
   p {
     font-size: 1.1rem;
     margin: 0;
